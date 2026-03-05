@@ -22,6 +22,7 @@ const TruthTable = () => {
     const [indexEjercicio, setIndexEjercicio] = useState(0);
     const ejercicioActual = ejercicios[indexEjercicio];
     const [rows, setRows] = useState(ejercicioActual.rows.map(r => ({ ...r, res: null })));
+    const [localError, setLocalError] = useState(null);
     const [feedback, setFeedback] = useState(null);
     const [loading, setLoading] = useState(false);
 
@@ -30,33 +31,49 @@ const TruthTable = () => {
         newRows[index].res = val;
         setRows(newRows);
         setFeedback(null);
+        setLocalError(null);
     };
 
     const verify = async () => {
         if (rows.some(r => r.res === null)) {
-            alert("Completa todas las filas antes de verificar.");
+            setLocalError("Debes completar todas las filas de la tabla antes de verificar.");
             return;
         }
         setLoading(true);
+        setLocalError(null);
         try {
             const res = await axios.post('http://localhost:8000/api/logica/verificar/', {
                 proposition: ejercicioActual.proposition,
                 rows
             });
             setFeedback(res.data);
+            if (!res.data.all_correct) {
+                setLocalError("Hay errores en tu tabla. Revisa los iconos rojos y corrige tus respuestas.");
+            }
         } catch (err) {
-            alert("Error al verificar. Asegúrate que el servidor está corriendo.");
+            setLocalError("Error al conectar con el servidor. Por favor, inténtalo de nuevo.");
         } finally {
             setLoading(false);
         }
     };
 
     const siguienteEjercicio = () => {
+        if (!feedback) {
+            setLocalError("No puedes avanzar sin antes verificar tus respuestas.");
+            return;
+        }
+
+        if (!feedback.all_correct) {
+            setLocalError("Debes corregir los errores actuales antes de poder pasar al siguiente ejercicio.");
+            return;
+        }
+
         if (indexEjercicio < ejercicios.length - 1) {
             const nuevoIndex = indexEjercicio + 1;
             setIndexEjercicio(nuevoIndex);
             setRows(ejercicios[nuevoIndex].rows.map(r => ({ ...r, res: null })));
             setFeedback(null);
+            setLocalError(null);
         } else {
             alert("¡Felicidades! Has completado todos los ejercicios disponibles.");
         }
@@ -140,10 +157,16 @@ const TruthTable = () => {
                     </button>
                 </div>
 
-                {feedback && (
-                    <div className={feedback.all_correct ? 'success-message' : 'error-message'} style={{ marginTop: '2rem', textAlign: 'center' }}>
-                        <h3 style={{ color: feedback.all_correct ? 'var(--success)' : 'var(--error)' }}>
-                            {feedback.all_correct ? '¡Excelente! Todas las respuestas son correctas.' : 'Algunas respuestas no son correctas. ¡Sigue intentando!'}
+                {localError && (
+                    <div className="error-message" style={{ marginTop: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <XCircle size={18} /> {localError}
+                    </div>
+                )}
+
+                {feedback && feedback.all_correct && (
+                    <div className="success-message" style={{ marginTop: '2rem', textAlign: 'center' }}>
+                        <h3 style={{ color: 'var(--success)' }}>
+                            ¡Excelente! Todas las respuestas son correctas.
                         </h3>
                     </div>
                 )}

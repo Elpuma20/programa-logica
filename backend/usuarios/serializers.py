@@ -5,22 +5,14 @@ from .models import Usuario
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
-<<<<<<< HEAD
-        fields = ['cedula', 'nombres', 'apellidos', 'correo', 'telefono']
-=======
         fields = ['cedula', 'nombres', 'apellidos', 'semestre', 'area_estudios', 'correo', 'telefono', 'direccion']
->>>>>>> 02a0cd1547dd2cdfafbcf8e7daf8736d90b20194
 
 class RegistroSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     
     class Meta:
         model = Usuario
-<<<<<<< HEAD
-        fields = ['cedula', 'nombres', 'apellidos', 'correo', 'telefono', 'password']
-=======
         fields = ['cedula', 'nombres', 'apellidos', 'semestre', 'area_estudios', 'correo', 'telefono', 'direccion', 'password']
->>>>>>> 02a0cd1547dd2cdfafbcf8e7daf8736d90b20194
         
     def create(self, validated_data):
         user = Usuario.objects.create_user(**validated_data)

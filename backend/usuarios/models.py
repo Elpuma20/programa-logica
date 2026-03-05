@@ -20,16 +20,11 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     cedula = models.CharField(max_length=20, unique=True)
     nombres = models.CharField(max_length=100)
     apellidos = models.CharField(max_length=100)
-<<<<<<< HEAD
-    correo = models.EmailField(unique=True)
-    telefono = models.CharField(max_length=20)
-=======
     semestre = models.CharField(max_length=20)
     area_estudios = models.CharField(max_length=100)
     correo = models.EmailField(unique=True)
     telefono = models.CharField(max_length=20)
     direccion = models.TextField()
->>>>>>> 02a0cd1547dd2cdfafbcf8e7daf8736d90b20194
     
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)

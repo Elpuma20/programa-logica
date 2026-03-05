@@ -6,12 +6,15 @@ import { UserPlus, AlertCircle } from 'lucide-react';
 
 const Register = () => {
     const [formData, setFormData] = useState({
-<<<<<<< HEAD
-        cedula: '', nombres: '', apellidos: '', correo: '', telefono: '', password: ''
-=======
-        cedula: '', nombres: '', apellidos: '', semestre: '',
-        area_estudios: '', correo: '', telefono: '', direccion: '', password: ''
->>>>>>> 02a0cd1547dd2cdfafbcf8e7daf8736d90b20194
+        cedula: '',
+        nombres: '',
+        apellidos: '',
+        semestre: '',
+        area_estudios: '',
+        correo: '',
+        telefono: '',
+        direccion: '',
+        password: ''
     });
     const [error, setError] = useState('');
     const { login } = useAuth();
@@ -29,19 +32,20 @@ const Register = () => {
             login(res.data.token, res.data.user);
             navigate('/dashboard');
         } catch (err) {
-<<<<<<< HEAD
             if (err.response && err.response.data) {
                 const errors = err.response.data;
-                const errorMessages = Object.keys(errors).map(key => {
-                    return `${key}: ${errors[key].join(', ')}`;
-                }).join(' | ');
-                setError(`Error: ${errorMessages}`);
+                if (typeof errors === 'object' && errors !== null) {
+                    const errorMessages = Object.keys(errors).map(key => {
+                        const label = key.charAt(0).toUpperCase() + key.slice(1);
+                        return `${label}: ${Array.isArray(errors[key]) ? errors[key].join(', ') : errors[key]}`;
+                    }).join(' | ');
+                    setError(`Error: ${errorMessages}`);
+                } else {
+                    setError(`Error: ${errors}`);
+                }
             } else {
                 setError('Error al conectar con el servidor. Inténtalo de nuevo.');
             }
-=======
-            setError('Error al registrar usuario. Verifica los datos ingresados.');
->>>>>>> 02a0cd1547dd2cdfafbcf8e7daf8736d90b20194
         }
     };
 
@@ -60,52 +64,98 @@ const Register = () => {
                 )}
 
                 <form onSubmit={handleSubmit}>
-<<<<<<< HEAD
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-=======
                     <div className="form-grid">
->>>>>>> 02a0cd1547dd2cdfafbcf8e7daf8736d90b20194
                         <div className="form-group">
                             <label>Cédula</label>
-                            <input className="input-field" name="cedula" onChange={handleChange} required />
+                            <input
+                                className="input-field"
+                                name="cedula"
+                                value={formData.cedula}
+                                onChange={handleChange}
+                                required
+                            />
                         </div>
                         <div className="form-group">
                             <label>Correo Electrónico</label>
-                            <input className="input-field" name="correo" type="email" onChange={handleChange} required />
+                            <input
+                                className="input-field"
+                                name="correo"
+                                type="email"
+                                value={formData.correo}
+                                onChange={handleChange}
+                                required
+                            />
                         </div>
                         <div className="form-group">
                             <label>Nombres</label>
-                            <input className="input-field" name="nombres" onChange={handleChange} required />
+                            <input
+                                className="input-field"
+                                name="nombres"
+                                value={formData.nombres}
+                                onChange={handleChange}
+                                required
+                            />
                         </div>
                         <div className="form-group">
                             <label>Apellidos</label>
-                            <input className="input-field" name="apellidos" onChange={handleChange} required />
+                            <input
+                                className="input-field"
+                                name="apellidos"
+                                value={formData.apellidos}
+                                onChange={handleChange}
+                                required
+                            />
                         </div>
                         <div className="form-group">
-<<<<<<< HEAD
-=======
                             <label>Semestre</label>
-                            <input className="input-field" name="semestre" onChange={handleChange} required />
+                            <input
+                                className="input-field"
+                                name="semestre"
+                                value={formData.semestre}
+                                onChange={handleChange}
+                                required
+                            />
                         </div>
                         <div className="form-group">
                             <label>Área de Estudios</label>
-                            <input className="input-field" name="area_estudios" onChange={handleChange} required />
+                            <input
+                                className="input-field"
+                                name="area_estudios"
+                                value={formData.area_estudios}
+                                onChange={handleChange}
+                                required
+                            />
                         </div>
                         <div className="form-group">
->>>>>>> 02a0cd1547dd2cdfafbcf8e7daf8736d90b20194
                             <label>Teléfono</label>
-                            <input className="input-field" name="telefono" onChange={handleChange} required />
+                            <input
+                                className="input-field"
+                                name="telefono"
+                                value={formData.telefono}
+                                onChange={handleChange}
+                                required
+                            />
                         </div>
                         <div className="form-group">
-<<<<<<< HEAD
-=======
                             <label>Dirección</label>
-                            <input className="input-field" name="direccion" onChange={handleChange} required />
+                            <input
+                                className="input-field"
+                                name="direccion"
+                                value={formData.direccion}
+                                onChange={handleChange}
+                                required
+                            />
                         </div>
                         <div className="form-group" style={{ gridColumn: 'span 2' }}>
->>>>>>> 02a0cd1547dd2cdfafbcf8e7daf8736d90b20194
                             <label>Contraseña</label>
-                            <input className="input-field" name="password" type="password" onChange={handleChange} required />
+                            <input
+                                className="input-field"
+                                name="password"
+                                type="password"
+                                value={formData.password}
+                                onChange={handleChange}
+                                required
+                            />
                         </div>
                     </div>
 
