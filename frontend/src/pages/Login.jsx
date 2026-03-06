@@ -25,8 +25,11 @@ const Login = () => {
 
     return (
         <div className="container" style={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <div className="card" style={{ padding: '2.5rem', width: '100%', maxWidth: '420px' }}>
+            <div className="card card-animated" style={{ padding: '2.5rem', width: '100%', maxWidth: '420px', borderRadius: '12px' }}>
+
+
                 <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                    <div className="logo" style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>Edu<span>Lógica</span></div>
                     <h2 style={{ marginBottom: '0.5rem' }}>Bienvenido</h2>
                     <p style={{ color: 'var(--text-muted)' }}>Ingresa tus credenciales para continuar</p>
                 </div>
@@ -38,28 +41,28 @@ const Login = () => {
                 )}
 
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                    <div className="form-group">
+                    <div className="form-group stagger-item">
                         <label>Correo Electrónico</label>
-                        <input 
-                            className="input-field" 
-                            placeholder="ejemplo@correo.com" 
-                            type="email" 
-                            value={correo} 
-                            onChange={(e) => setCorreo(e.target.value)} 
-                            required 
+                        <input
+                            className="input-field"
+                            placeholder="ejemplo@correo.com"
+                            type="email"
+                            value={correo}
+                            onChange={(e) => setCorreo(e.target.value)}
+                            required
                         />
                     </div>
-                    <div className="form-group">
+                    <div className="form-group stagger-item">
                         <label>Contraseña</label>
-                        <input 
-                            className="input-field" 
-                            type="password" 
-                            value={password} 
-                            onChange={(e) => setPassword(e.target.value)} 
-                            required 
+                        <input
+                            className="input-field"
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
                         />
                     </div>
-                    <button className="btn-primary" type="submit" style={{ marginTop: '0.5rem' }}>
+                    <button className="btn-primary stagger-item" type="submit" style={{ marginTop: '0.5rem' }}>
                         <LogIn size={18} style={{ verticalAlign: 'middle', marginRight: '8px' }} /> Entrar
                     </button>
                 </form>

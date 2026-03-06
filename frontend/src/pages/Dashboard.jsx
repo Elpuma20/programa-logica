@@ -9,21 +9,21 @@ const Dashboard = () => {
     return (
         <div className="container">
             <nav className="nav">
-                <div className="logo">Academia <span>Virtual</span></div>
+                <div className="logo" style={{ fontSize: '2rem' }}>Edu<span>Lógica</span></div>
                 <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)' }}>
-                        <User size={18} /> 
+                        <User size={18} />
                         <span style={{ fontWeight: 500 }}>{user?.nombres} {user?.apellidos}</span>
                     </div>
-                    <button 
-                        onClick={logout} 
-                        style={{ 
-                            background: 'none', 
-                            border: '1px solid var(--border-dark)', 
-                            color: 'var(--text-muted)', 
-                            cursor: 'pointer', 
-                            display: 'flex', 
-                            alignItems: 'center', 
+                    <button
+                        onClick={logout}
+                        style={{
+                            background: 'none',
+                            border: '1px solid var(--border-dark)',
+                            color: 'var(--text-muted)',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
                             gap: '0.4rem',
                             padding: '8px 16px',
                             borderRadius: '4px',
@@ -42,7 +42,7 @@ const Dashboard = () => {
             </div>
 
             <div className="feature-grid">
-                <Link to="/logica" style={{ textDecoration: 'none', color: 'inherit' }}>
+                <Link to="/leccion" style={{ textDecoration: 'none', color: 'inherit' }}>
                     <div className="module-card">
                         <div className="module-icon">
                             <Table2 size={24} />

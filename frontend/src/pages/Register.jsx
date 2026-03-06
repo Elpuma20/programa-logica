@@ -9,11 +9,7 @@ const Register = () => {
         cedula: '',
         nombres: '',
         apellidos: '',
-        semestre: '',
-        area_estudios: '',
         correo: '',
-        telefono: '',
-        direccion: '',
         password: ''
     });
     const [error, setError] = useState('');
@@ -51,8 +47,11 @@ const Register = () => {
 
     return (
         <div className="container" style={{ padding: '3rem 1rem' }}>
-            <div className="card" style={{ padding: '2.5rem', maxWidth: '800px', margin: '0 auto' }}>
+            <div className="card card-animated" style={{ padding: '2.5rem', maxWidth: '500px', margin: '0 auto', borderRadius: '12px' }}>
+
+
                 <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                    <div className="logo" style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>Edu<span>Lógica</span></div>
                     <h2>Crear Cuenta</h2>
                     <p style={{ color: 'var(--text-muted)' }}>Regístrate para acceder a la plataforma</p>
                 </div>
@@ -64,8 +63,8 @@ const Register = () => {
                 )}
 
                 <form onSubmit={handleSubmit}>
-                    <div className="form-grid">
-                        <div className="form-group">
+                    <div className="form-grid" style={{ gridTemplateColumns: '1fr' }}>
+                        <div className="form-group stagger-item">
                             <label>Cédula</label>
                             <input
                                 className="input-field"
@@ -75,7 +74,7 @@ const Register = () => {
                                 required
                             />
                         </div>
-                        <div className="form-group">
+                        <div className="form-group stagger-item">
                             <label>Correo Electrónico</label>
                             <input
                                 className="input-field"
@@ -86,7 +85,7 @@ const Register = () => {
                                 required
                             />
                         </div>
-                        <div className="form-group">
+                        <div className="form-group stagger-item">
                             <label>Nombres</label>
                             <input
                                 className="input-field"
@@ -96,7 +95,7 @@ const Register = () => {
                                 required
                             />
                         </div>
-                        <div className="form-group">
+                        <div className="form-group stagger-item">
                             <label>Apellidos</label>
                             <input
                                 className="input-field"
@@ -106,47 +105,7 @@ const Register = () => {
                                 required
                             />
                         </div>
-                        <div className="form-group">
-                            <label>Semestre</label>
-                            <input
-                                className="input-field"
-                                name="semestre"
-                                value={formData.semestre}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label>Área de Estudios</label>
-                            <input
-                                className="input-field"
-                                name="area_estudios"
-                                value={formData.area_estudios}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label>Teléfono</label>
-                            <input
-                                className="input-field"
-                                name="telefono"
-                                value={formData.telefono}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label>Dirección</label>
-                            <input
-                                className="input-field"
-                                name="direccion"
-                                value={formData.direccion}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-                        <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                        <div className="form-group stagger-item">
                             <label>Contraseña</label>
                             <input
                                 className="input-field"
@@ -159,7 +118,7 @@ const Register = () => {
                         </div>
                     </div>
 
-                    <button className="btn-primary" type="submit" style={{ width: '100%', marginTop: '1.5rem' }}>
+                    <button className="btn-primary stagger-item" type="submit" style={{ width: '100%', marginTop: '1.5rem' }}>
                         <UserPlus size={18} style={{ marginRight: '8px', verticalAlign: 'middle' }} /> Registrarse
                     </button>
                 </form>
