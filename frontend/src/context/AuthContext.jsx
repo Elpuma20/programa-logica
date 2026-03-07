@@ -1,5 +1,5 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import axios from 'axios';
+import { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import api from '../api';
 
 const AuthContext = createContext();
 
@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         if (token) {
-            axios.defaults.headers.common['Authorization'] = `Token ${token}`;
+            api.defaults.headers.common['Authorization'] = `Token ${token}`;
             fetchUser();
         } else {
             setLoading(false);
@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
 
     const fetchUser = async () => {
         try {
-            const res = await axios.get('http://localhost:8000/api/user/');
+            const res = await api.get('/user/');
             setUser(res.data);
         } catch (err) {
             logout();
@@ -28,19 +28,19 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const login = (newToken, userData) => {
+    const login = useCallback((newToken, userData) => {
         localStorage.setItem('token', newToken);
         setToken(newToken);
         setUser(userData);
-        axios.defaults.headers.common['Authorization'] = `Token ${newToken}`;
-    };
+        api.defaults.headers.common['Authorization'] = `Token ${newToken}`;
+    }, []);
 
-    const logout = () => {
+    const logout = useCallback(() => {
         localStorage.removeItem('token');
         setToken(null);
         setUser(null);
-        delete axios.defaults.headers.common['Authorization'];
-    };
+        delete api.defaults.headers.common['Authorization'];
+    }, []);
 
     return (
         <AuthContext.Provider value={{ user, token, login, logout, loading }}>
