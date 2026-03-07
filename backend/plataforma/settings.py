@@ -119,10 +119,15 @@ USE_I18N = True
 
 USE_TZ = True
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
+CORS_ALLOW_ALL_ORIGINS = True
+
+CSRF_TRUSTED_ORIGINS = [
     "https://edulogica.onrender.com",
+    "https://*.onrender.com",
 ]
+
+ALLOWED_HOSTS = ['edulogica.onrender.com', '.onrender.com', 'localhost', '127.0.0.1']
+
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
