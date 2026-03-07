@@ -119,14 +119,17 @@ USE_I18N = True
 
 USE_TZ = True
 
+ALLOWED_HOSTS = ['edulogica.onrender.com', 'edulogica-m.onrender.com', '.onrender.com', 'localhost', '127.0.0.1']
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 CORS_ALLOW_ALL_ORIGINS = True
 
 CSRF_TRUSTED_ORIGINS = [
     "https://edulogica.onrender.com",
+    "https://edulogica-m.onrender.com",
     "https://*.onrender.com",
 ]
-
-ALLOWED_HOSTS = ['edulogica.onrender.com', '.onrender.com', 'localhost', '127.0.0.1']
 
 
 REST_FRAMEWORK = {
