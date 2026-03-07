@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-5xv7ic7mn$%e8fh^%iac$8zum252*ig+y7ziy=lm*a_-@(zqw_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['edulogica.onrender.com', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -121,6 +121,7 @@ USE_TZ = True
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "https://edulogica.onrender.com",
 ]
 
 REST_FRAMEWORK = {
