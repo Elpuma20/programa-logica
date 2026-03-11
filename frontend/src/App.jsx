@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard';
 import TruthTable from './pages/TruthTable';
 import LogicLesson from './pages/LogicLesson';
 import Profile from './pages/Profile';
+import LogicGames from './pages/LogicGames';
 
 const PrivateRoute = ({ children }) => {
   const { token, loading } = useAuth();
@@ -42,6 +43,7 @@ const AppContent = () => {
             <Route path="/perfil" element={<PrivateRoute><Profile /></PrivateRoute>} />
             <Route path="/leccion" element={<PrivateRoute><LogicLesson /></PrivateRoute>} />
             <Route path="/logica" element={<PrivateRoute><TruthTable /></PrivateRoute>} />
+            <Route path="/juegos" element={<PrivateRoute><LogicGames /></PrivateRoute>} />
           </Routes>
         </main>
         <Footer />

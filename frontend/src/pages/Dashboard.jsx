@@ -38,6 +38,24 @@ const Dashboard = () => {
                     </div>
                 </Link>
 
+                <Link to="/juegos" style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <div className="module-card">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                            <div className="module-icon">
+                                <Brain size={24} strokeWidth={2.5} />
+                            </div>
+                            <span className="badge badge-indigo">Diversión</span>
+                        </div>
+                        <div>
+                            <h3 style={{ fontWeight: '700', fontSize: 'var(--text-lg)', marginBottom: '0.5rem' }}>Juegos de Lógica</h3>
+                            <p style={{ lineHeight: '1.6' }}>Desafía tu mente con mini-juegos interactivos diseñados para fortalecer tu razonamiento lógico.</p>
+                        </div>
+                        <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--brand-indigo)', fontWeight: '600', fontSize: 'var(--text-sm)' }}>
+                            Jugar ahora <Terminal size={14} />
+                        </div>
+                    </div>
+                </Link>
+
                 <div className="module-card" style={{ opacity: 0.8, cursor: 'default', background: 'var(--bg-secondary)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
                         <div className="module-icon" style={{ opacity: 0.5 }}>
