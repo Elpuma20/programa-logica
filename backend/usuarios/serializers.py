@@ -5,7 +5,7 @@ from .models import Usuario
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
-        fields = ['cedula', 'nombres', 'apellidos', 'semestre', 'area_estudios', 'correo', 'telefono', 'direccion']
+        fields = ['cedula', 'nombres', 'apellidos', 'semestre', 'area_estudios', 'correo', 'telefono', 'direccion', 'is_staff', 'is_verified']
 
 class RegistroSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)

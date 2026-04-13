@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, Brain, Target, Shield, Zap, RotateCcw, CheckCircle2, XCircle, Timer, Award } from 'lucide-react';
+import api from '../api';
+import { 
+    ArrowLeft, Brain, Target, Shield, Zap, RotateCcw, 
+    CheckCircle2, XCircle, Timer, Award, HelpCircle, 
+    Puzzle, ScrollText, ChevronRight, Eye, RefreshCw
+} from 'lucide-react';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import Badge from '../components/ui/Badge';
 
 const SymbolMatch = () => {
     const symbols = [
@@ -57,26 +65,29 @@ const SymbolMatch = () => {
     };
 
     return (
-        <div className="card animate-fade-up" style={{ padding: '2rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Target size={20} className="text-accent" /> Emparejamiento de Símbolos
+        <Card className="fade-in" style={{ borderTop: '4px solid var(--brand-primary)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <Target size={24} color="var(--brand-primary)" /> Emparejamiento Lógico
                 </h3>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}>Movimientos: {moves}</span>
-                    <button className="btn-secondary" onClick={initializeGame} style={{ padding: '0.4rem 0.8rem', minHeight: 'auto' }}>
-                        <RotateCcw size={14} /> Reiniciar
-                    </button>
+                    <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)' }}>MOVIMIENTOS</div>
+                        <div style={{ fontSize: '1rem', fontWeight: 900, color: 'var(--brand-primary)' }}>{moves}</div>
+                    </div>
+                    <Button variant="secondary" onClick={initializeGame} style={{ padding: '0.5rem' }}>
+                        <RotateCcw size={16} />
+                    </Button>
                 </div>
             </div>
 
-            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
-                Encuentra el par correspondiente: el símbolo lógico y su nombre/significado.
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', fontSize: '0.9rem' }}>
+                Relaciona los símbolos proposicionales con sus definiciones técnicas.
             </p>
 
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))',
                 gap: '1rem'
             }}>
                 {cards.map((card, index) => {
@@ -88,36 +99,34 @@ const SymbolMatch = () => {
                             key={index}
                             onClick={() => handleClick(index)}
                             style={{
-                                height: '100px',
-                                background: isSolved ? 'var(--brand-indigo-soft)' : (isFlipped ? 'var(--bg-secondary)' : 'var(--bg-surface-raised)'),
-                                border: `2px solid ${isSolved ? 'var(--semantic-success)' : (isFlipped ? 'var(--brand-indigo)' : 'var(--border-default)')}`,
+                                height: '90px',
+                                background: isSolved ? 'rgba(16, 185, 129, 0.1)' : (isFlipped ? 'var(--bg-secondary)' : 'var(--bg-surface)'),
+                                border: `2px solid ${isSolved ? '#10b981' : (isFlipped ? 'var(--brand-primary)' : 'var(--border-default)')}`,
                                 borderRadius: 'var(--radius-md)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 cursor: 'pointer',
                                 transition: 'all var(--transition-base)',
-                                fontSize: card.symbol ? 'var(--text-2xl)' : 'var(--text-xs)',
+                                fontSize: card.symbol ? '1.5rem' : '0.75rem',
                                 padding: '0.5rem',
                                 textAlign: 'center',
-                                fontWeight: '600',
-                                transform: isFlipped || isSolved ? 'rotateY(0deg)' : 'rotateY(0)',
-                                opacity: isSolved ? 0.7 : 1,
+                                fontWeight: 700,
+                                color: isSolved ? '#10b981' : 'var(--text-primary)',
                             }}
                         >
-                            {(isFlipped || isSolved) ? (card.symbol || card.name) : '?'}
+                            {(isFlipped || isSolved) ? (card.symbol || card.name) : <Brain size={20} style={{ opacity: 0.1 }} />}
                         </div>
                     );
                 })}
             </div>
             {solved.length === symbols.length / 2 && (
-                <div className="success-message animate-fade-up" style={{ marginTop: '2rem', textAlign: 'center' }}>
-                    <CheckCircle2 size={32} style={{ marginBottom: '0.5rem', color: 'var(--semantic-success)' }} />
-                    <h4 style={{ color: 'var(--semantic-success)' }}>¡Lo lograste!</h4>
-                    <p style={{ fontSize: 'var(--text-sm)' }}>Has emparejado todos los símbolos en {moves} movimientos.</p>
+                <div className="fade-in" style={{ marginTop: '2rem', textAlign: 'center', background: 'var(--bg-secondary)', padding: '1.5rem', borderRadius: '16px' }}>
+                    <CheckCircle2 size={32} color="#10b981" />
+                    <h4 style={{ color: '#10b981', mt: '0.5rem' }}>¡Transmisión Completa!</h4>
                 </div>
             )}
-        </div>
+        </Card>
     );
 };
 
@@ -129,14 +138,12 @@ const TruthQuest = () => {
         { p: false, q: false, op: '∨', ans: false },
         { p: true, q: false, op: '→', ans: false },
         { p: false, q: true, op: '→', ans: true },
-        { p: true, q: true, op: '↔', ans: true },
-        { p: true, q: false, op: '↔', ans: false },
     ];
 
     const [current, setCurrent] = useState(0);
     const [score, setScore] = useState(0);
     const [timeLeft, setTimeLeft] = useState(10);
-    const [gameState, setGameState] = useState('start'); // start, playing, end
+    const [gameState, setGameState] = useState('start');
     const [feedback, setFeedback] = useState(null);
 
     useEffect(() => {
@@ -182,108 +189,173 @@ const TruthQuest = () => {
     const q = questions[current];
 
     return (
-        <div className="card animate-fade-up" style={{ padding: '2rem', height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Zap size={20} style={{ color: '#F59E0B' }} /> Desafío de Verdad
+        <Card className="fade-in" style={{ borderTop: '4px solid #f59e0b', height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <Zap size={24} color="#f59e0b" /> Desafío Binario
                 </h3>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{
-                        padding: '0.4rem 0.8rem',
-                        background: 'var(--bg-surface-raised)',
-                        borderRadius: 'var(--radius-sm)',
-                        fontSize: 'var(--text-sm)',
-                        fontWeight: '700',
-                        color: timeLeft <= 3 ? 'var(--semantic-error)' : 'var(--text-primary)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.4rem'
-                    }}>
-                        <Timer size={14} /> {timeLeft}s
-                    </div>
-                    <span style={{ fontWeight: '700', color: 'var(--brand-indigo)' }}>Score: {score}</span>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    <Badge variant="secondary"><Timer size={14} style={{ verticalAlign: 'middle', mr: 4 }} /> {timeLeft}s</Badge>
+                    <Badge variant="primary">PT: {score}</Badge>
                 </div>
             </div>
 
             {gameState === 'start' && (
                 <div style={{ textAlign: 'center', margin: 'auto' }}>
-                    <Award size={48} style={{ color: 'var(--brand-indigo)', marginBottom: '1rem' }} />
-                    <h4>¿Listo para el desafío?</h4>
-                    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
-                        Responde rápido si la proposición es Verdadera o Falsa.
-                    </p>
-                    <button className="btn-primary" onClick={startGame}>Comenzar Juego</button>
+                    <Award size={40} color="#f59e0b" style={{ mb: '1rem' }} />
+                    <h3 className="mb-4">Deducción Veloz</h3>
+                    <Button onClick={startGame}>Iniciar Secuencia</Button>
                 </div>
             )}
 
             {gameState === 'playing' && (
-                <div style={{ margin: 'auto', width: '100%', textAlign: 'center' }}>
-                    <div style={{
-                        fontSize: '2rem',
-                        fontWeight: '700',
-                        background: 'var(--bg-secondary)',
-                        padding: '2rem',
-                        borderRadius: 'var(--radius-lg)',
+                <div style={{ textAlign: 'center', margin: 'auto', width: '100%' }}>
+                    <div style={{ 
+                        fontSize: '2.5rem', 
+                        padding: '2rem', 
+                        background: 'var(--bg-secondary)', 
+                        borderRadius: '20px', 
+                        fontFamily: 'monospace',
                         marginBottom: '2rem',
-                        border: feedback === 'correct' ? '2px solid var(--semantic-success)' : (feedback === 'wrong' ? '2px solid var(--semantic-error)' : '1px solid var(--border-default)'),
-                        transition: 'all 0.2s'
+                        border: feedback === 'correct' ? '2px solid #10b981' : (feedback === 'wrong' ? '2px solid #ef4444' : '1px solid var(--border-default)')
                     }}>
-                        <span style={{ color: q.p ? 'var(--semantic-success)' : 'var(--semantic-error)' }}>{q.p ? 'V' : 'F'}</span>
-                        <span style={{ margin: '0 1rem', color: 'var(--brand-indigo)' }}>{q.op}</span>
-                        <span style={{ color: q.q ? 'var(--semantic-success)' : 'var(--semantic-error)' }}>{q.q ? 'V' : 'F'}</span>
+                        <span style={{ color: q.p ? '#10b981' : '#ef4444' }}>{q.p ? 'V' : 'F'}</span>
+                        <span style={{ margin: '0 1rem', opacity: 0.3 }}>{q.op}</span>
+                        <span style={{ color: q.q ? '#10b981' : '#ef4444' }}>{q.q ? 'V' : 'F'}</span>
                     </div>
-
-                    <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-                        <button
-                            className="btn-success"
-                            style={{ flex: 1, padding: '1.5rem', fontSize: '1.2rem' }}
-                            onClick={() => handleAnswer(true)}
-                        >
-                            Verdadero (V)
-                        </button>
-                        <button
-                            className="btn-primary"
-                            style={{ flex: 1, padding: '1.5rem', fontSize: '1.2rem', background: 'var(--semantic-error)', borderColor: 'var(--semantic-error)' }}
-                            onClick={() => handleAnswer(false)}
-                        >
-                            Falso (F)
-                        </button>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <Button style={{ background: '#10b981' }} onClick={() => handleAnswer(true)}>V</Button>
+                        <Button style={{ background: '#ef4444' }} onClick={() => handleAnswer(false)}>F</Button>
                     </div>
                 </div>
             )}
 
             {gameState === 'end' && (
                 <div style={{ textAlign: 'center', margin: 'auto' }}>
-                    <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🏆</div>
-                    <h4>¡Juego Terminado!</h4>
-                    <p style={{ margin: '0.5rem 0' }}>Tu puntaje final es:</p>
-                    <div style={{ fontSize: '2.5rem', fontWeight: '800', color: 'var(--brand-indigo)', marginBottom: '1.5rem' }}>{score}</div>
-                    <button className="btn-primary" onClick={startGame}>Jugar de Nuevo</button>
+                    <h2 className="text-gradient mb-2">{score} PUNTOS</h2>
+                    <p className="mb-4">Rendimiento cognoscitivo procesado.</p>
+                    <Button onClick={startGame}>Reiniciar</Button>
                 </div>
             )}
-        </div>
+        </Card>
+    );
+};
+
+const DynamicGameModule = ({ type, icon: Icon, color }) => {
+    const [contents, setContents] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [showAnswer, setShowAnswer] = useState(false);
+    const [userFeedback, setUserFeedback] = useState(null);
+
+    useEffect(() => {
+        fetchData();
+    }, [type]);
+
+    const fetchData = async () => {
+        try {
+            const res = await api.get(`/logica/contenido/?tipo=${type}`);
+            setContents(res.data);
+        } catch (err) { console.error(err); } finally { setLoading(false); }
+    };
+
+    if (loading) return <Card style={{ textAlign: 'center' }}>Cargando desafíos...</Card>;
+    if (contents.length === 0) return null;
+
+    const current = contents[currentIndex];
+
+    const handleNext = () => {
+        setCurrentIndex((currentIndex + 1) % contents.length);
+        setShowAnswer(false);
+        setUserFeedback(null);
+    };
+
+    const checkTriviaAnswer = (option) => {
+        setUserFeedback(option === current.respuesta ? 'correct' : 'wrong');
+        setShowAnswer(true);
+    };
+
+    return (
+        <Card className="fade-in" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textTransform: 'capitalize' }}>
+                    <Icon size={20} color={color} /> {type}s
+                </h3>
+                <Badge variant={current.dificultad === 'facil' ? 'success' : 'primary'}>{current.dificultad}</Badge>
+            </div>
+
+            <div style={{ flex: 1 }}>
+                <h4 className="mb-4">{current.titulo}</h4>
+                <div style={{ 
+                    padding: '1.5rem', 
+                    background: 'var(--bg-secondary)', 
+                    borderRadius: '12px', 
+                    textAlign: 'center',
+                    marginBottom: '1.5rem',
+                    minHeight: '80px'
+                }}>
+                    {current.descripcion}
+                </div>
+
+                {type === 'trivia' && current.opciones && (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                        {current.opciones.map((opt, i) => (
+                            <Button 
+                                key={i}
+                                variant="secondary"
+                                onClick={() => !showAnswer && checkTriviaAnswer(opt)}
+                                disabled={showAnswer}
+                                style={{ 
+                                    background: showAnswer && opt === current.respuesta ? 'rgba(16, 185, 129, 0.1)' : 'transparent',
+                                    color: showAnswer && opt === current.respuesta ? '#10b981' : 'inherit',
+                                    borderColor: showAnswer && opt === current.respuesta ? '#10b981' : 'var(--border-default)'
+                                }}
+                            >
+                                {opt}
+                            </Button>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            <div style={{ marginTop: 'auto' }}>
+                {(showAnswer || ['paradoja', 'adivinanza', 'rompecabezas'].includes(type)) && (
+                    <div style={{ padding: '1rem', background: 'var(--bg-secondary)', borderRadius: '8px', borderLeft: `4px solid ${color}`, marginBottom: '1rem' }}>
+                         <small style={{ fontWeight: 800, opacity: 0.5, display: 'block' }}>REVELACIÓN:</small>
+                         <p style={{ fontWeight: 700 }}>{current.respuesta}</p>
+                    </div>
+                )}
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    {!showAnswer && ['adivinanza', 'rompecabezas'].includes(type) && (
+                        <Button variant="secondary" onClick={() => setShowAnswer(true)} style={{ flex: 1 }}><Eye size={16} /> Resolver</Button>
+                    )}
+                    <Button onClick={handleNext} style={{ flex: 1 }}>Siguiente <ChevronRight size={16} /></Button>
+                </div>
+            </div>
+        </Card>
     );
 };
 
 const LogicGames = () => {
     return (
-        <div className="container">
-            <Link to="/dashboard" className="back-link">
-                <ChevronLeft size={16} /> Volver al Panel
-            </Link>
+        <div className="container fade-in">
+            <header className="mb-4" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                     <h1 className="mb-2"><span className="text-gradient">Laboratorio</span> de Juegos</h1>
+                     <p style={{ color: 'var(--text-secondary)' }}>Retos interactivos para expandir tu capacidad de razonamiento.</p>
+                </div>
+                <Link to="/dashboard" style={{ textDecoration: 'none' }}>
+                    <Button variant="secondary"><ArrowLeft size={16} /> Panel</Button>
+                </Link>
+            </header>
 
-            <div className="page-header animate-fade-up" style={{ marginBottom: '2.5rem' }}>
-                <h1 style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <Brain size={32} className="text-accent" /> Juegos de Lógica
-                </h1>
-                <p style={{ color: 'var(--text-muted)' }}>
-                    Diviértete mientras refuerzas tus conocimientos de lógica matemática.
-                </p>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '2rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
                 <SymbolMatch />
                 <TruthQuest />
+                <DynamicGameModule type="trivia" icon={HelpCircle} color="var(--brand-primary)" />
+                <DynamicGameModule type="adivinanza" icon={Brain} color="#8b5cf6" />
+                <DynamicGameModule type="rompecabezas" icon={Puzzle} color="#ec4899" />
+                <DynamicGameModule type="paradoja" icon={ScrollText} color="#f59e0b" />
             </div>
         </div>
     );

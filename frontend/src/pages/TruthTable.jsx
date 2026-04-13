@@ -1,19 +1,22 @@
 import { useState, useCallback } from 'react';
 import api from '../api';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, CheckCircle, XCircle, RefreshCw, Send, ChevronRight } from 'lucide-react';
+import { ArrowLeft, CheckCircle, XCircle, RefreshCw, Send, ChevronRight, AlertCircle } from 'lucide-react';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import Badge from '../components/ui/Badge';
 
 const EJERCICIOS = [
     {
-        proposition: "p and q",
+        proposition: "p ∧ q",
         rows: [{ p: true, q: true }, { p: true, q: false }, { p: false, q: true }, { p: false, q: false }]
     },
     {
-        proposition: "p or q",
+        proposition: "p ∨ q",
         rows: [{ p: true, q: true }, { p: true, q: false }, { p: false, q: true }, { p: false, q: false }]
     },
     {
-        proposition: "not p",
+        proposition: "¬p",
         rows: [{ p: true }, { p: false }]
     }
 ];
@@ -38,35 +41,33 @@ const TruthTable = () => {
 
     const verify = useCallback(async () => {
         if (rows.some(r => r.res === null)) {
-            setLocalError("ERROR: Debes completar todas las filas antes de verificar.");
+            setLocalError("Debes completar todas las filas antes de verificar.");
             return;
         }
         setLoading(true);
         setLocalError(null);
         try {
+            // Mapping UI symbols back to API expected format if necessary
+            // Current API expects symbols or text? Previous code sent "p and q"
+            // I'll send the proposition as defined in EJERCICIOS
             const res = await api.post('/logica/verificar/', {
-                proposition: ejercicioActual.proposition,
+                proposition: ejercicioActual.proposition.replace('∧', 'and').replace('∨', 'or').replace('¬', 'not'),
                 rows
             });
             setFeedback(res.data);
             if (!res.data.all_correct) {
-                setLocalError("WARN: Hay errores en tu tabla. Revisa los indicadores y corrige.");
+                setLocalError("Hay errores en tu tabla. Revisa los indicadores y corrige.");
             }
         } catch (err) {
-            setLocalError("ERROR: No se pudo conectar con el servidor.");
+            setLocalError("Error de conexión con el servidor de validación.");
         } finally {
             setLoading(false);
         }
     }, [rows, ejercicioActual.proposition]);
 
     const siguienteEjercicio = useCallback(() => {
-        if (!feedback) {
-            setLocalError("ERROR: No puedes avanzar sin verificar tus respuestas.");
-            return;
-        }
-
-        if (!feedback.all_correct) {
-            setLocalError("ERROR: Corrige los errores antes de avanzar al siguiente ejercicio.");
+        if (!feedback?.all_correct) {
+            setLocalError("Debes validar correctamente el ejercicio actual antes de avanzar.");
             return;
         }
 
@@ -77,71 +78,76 @@ const TruthTable = () => {
             setFeedback(null);
             setLocalError(null);
         } else {
-            alert("SUCCESS: Has completado todos los ejercicios disponibles.");
+            alert("¡Felicitaciones! Has completado todos los ejercicios.");
         }
     }, [feedback, indexEjercicio]);
 
+    const progress = ((indexEjercicio + 1) / EJERCICIOS.length) * 100;
+
     return (
-        <div className="container" style={{ maxWidth: '800px' }}>
-            <Link to="/dashboard" className="back-link">
-                <ArrowLeft size={16} /> Volver al Panel
-            </Link>
+        <div className="container fade-in" style={{ maxWidth: '900px' }}>
+            <header className="mb-4" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Link to="/dashboard" style={{ textDecoration: 'none' }}>
+                    <Button variant="secondary"><ArrowLeft size={16} /> Volver</Button>
+                </Link>
+                <Badge variant="primary">Ejercicio {indexEjercicio + 1} de {EJERCICIOS.length}</Badge>
+            </header>
 
-            <div className="card animate-fade-up" style={{ padding: '2.5rem' }}>
-                <div className="exercise-header" style={{ marginBottom: '2rem' }}>
-                    <div style={{ fontSize: '0.7rem', color: 'var(--brand-indigo)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.25rem' }}>
-                        Evaluación Continua • Ejercicio {indexEjercicio + 1} / {EJERCICIOS.length}
+            <Card style={{ borderTop: '4px solid var(--brand-primary)' }}>
+                <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+                    <h2 className="mb-4">Validación de <span className="text-gradient">Tablas de Verdad</span></h2>
+                    <div style={{ height: '4px', background: 'var(--bg-secondary)', borderRadius: '2px', overflow: 'hidden', marginBottom: '2rem' }}>
+                        <div style={{ width: `${progress}%`, height: '100%', background: 'var(--brand-primary)', transition: 'width 0.5s ease' }}></div>
                     </div>
-                    <h2 style={{ fontSize: 'var(--text-lg)', margin: 0 }}>Resolución de Proposiciones</h2>
+                    
+                    <div style={{ 
+                        background: 'var(--bg-secondary)', 
+                        padding: '2rem', 
+                        borderRadius: '16px', 
+                        display: 'inline-block',
+                        minWidth: '300px',
+                        border: '1px solid var(--border-default)'
+                    }}>
+                        <p style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '0.5rem' }}>PROPOSICIÓN A EVALUAR</p>
+                        <code style={{ fontSize: '2rem', color: 'var(--brand-primary)', fontWeight: 900 }}>{ejercicioActual.proposition}</code>
+                    </div>
                 </div>
 
-                <div className="progress-bar-container" style={{ height: '4px', marginBottom: '2.5rem' }}>
-                    <div className="progress-bar-fill" style={{ width: `${((indexEjercicio + 1) / EJERCICIOS.length) * 100}%` }} />
-                </div>
-
-                <div className="proposition-display" style={{ marginBottom: '2rem' }}>
-                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginBottom: '0.5rem', fontWeight: '600' }}>ESPRESIÓN A EVALUAR:</div>
-                    <code>{ejercicioActual.proposition}</code>
-                </div>
-
-                <div className="table-responsive" style={{ marginBottom: '2rem' }}>
-                    <table>
-                        <thead>
+                <div style={{ overflowX: 'auto', marginBottom: '2.5rem' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center' }}>
+                        <thead style={{ background: 'var(--bg-secondary)', fontSize: '0.85rem' }}>
                             <tr>
-                                <th>P</th>
-                                {ejercicioActual.rows[0].q !== undefined ? <th>Q</th> : null}
-                                <th style={{ width: '200px' }}>Resultado</th>
-                                {feedback ? <th style={{ width: '80px' }}>Status</th> : null}
+                                <th style={{ padding: '1.25rem' }}>P</th>
+                                {ejercicioActual.rows[0].q !== undefined && <th style={{ padding: '1.25rem' }}>Q</th>}
+                                <th style={{ padding: '1.25rem' }}>Resultado (F/V)</th>
+                                {feedback && <th style={{ padding: '1.25rem' }}>Status</th>}
                             </tr>
                         </thead>
                         <tbody>
                             {rows.map((row, i) => (
-                                <tr key={i}>
-                                    <td className={row.p ? 'truth-v' : 'truth-f'}>{row.p ? 'V' : 'F'}</td>
-                                    {row.q !== undefined ? (
-                                        <td className={row.q ? 'truth-v' : 'truth-f'}>{row.q ? 'V' : 'F'}</td>
-                                    ) : null}
-                                    <td>
-                                        <select
+                                <tr key={i} style={{ borderTop: '1px solid var(--border-default)' }}>
+                                    <td style={{ padding: '1.25rem', fontWeight: 800, color: row.p ? '#10b981' : '#ef4444' }}>{row.p ? 'V' : 'F'}</td>
+                                    {row.q !== undefined && <td style={{ padding: '1.25rem', fontWeight: 800, color: row.q ? '#10b981' : '#ef4444' }}>{row.q ? 'V' : 'F'}</td>}
+                                    <td style={{ padding: '1.25rem' }}>
+                                        <select 
+                                            className="input-field" 
+                                            style={{ maxWidth: '140px', textAlign: 'center', fontWeight: 700 }}
                                             value={row.res === null ? '' : row.res}
                                             onChange={(e) => handleValueChange(i, e.target.value === 'true')}
-                                            className="input-field"
-                                            style={{ textAlign: 'center', py: '4px' }}
                                         >
-                                            <option value="" disabled>Seleccione...</option>
+                                            <option value="" disabled>-</option>
                                             <option value="true">Verdadero (V)</option>
                                             <option value="false">Falso (F)</option>
                                         </select>
                                     </td>
-                                    {feedback ? (
-                                        <td>
-                                            {feedback.results[i].is_correct ? (
-                                                <CheckCircle style={{ color: 'var(--semantic-success)' }} size={20} />
-                                            ) : (
-                                                <XCircle style={{ color: 'var(--semantic-error)' }} size={20} />
-                                            )}
+                                    {feedback && (
+                                        <td style={{ padding: '1.25rem' }}>
+                                            {feedback.results[i].is_correct ? 
+                                                <CheckCircle color="#10b981" size={24} /> : 
+                                                <XCircle color="#ef4444" size={24} />
+                                            }
                                         </td>
-                                    ) : null}
+                                    )}
                                 </tr>
                             ))}
                         </tbody>
@@ -149,32 +155,32 @@ const TruthTable = () => {
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                    <button onClick={verify} disabled={loading} className="btn-primary" style={{ padding: '12px' }}>
-                        {loading ? <RefreshCw size={18} className="spin" /> : <Send size={18} />} Verificar Respuestas
-                    </button>
-
-                    <button
-                        onClick={siguienteEjercicio}
-                        className="btn-secondary"
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', padding: '12px' }}
-                    >
-                        Siguiente Ejercicio <ChevronRight size={18} />
-                    </button>
+                    <Button onClick={verify} disabled={loading}>
+                        {loading ? <RefreshCw className="spin" size={18} /> : <Send size={18} />} Verificar Tabla
+                    </Button>
+                    <Button variant="secondary" onClick={siguienteEjercicio}>
+                        Siguiente Nivel <ChevronRight size={18} />
+                    </Button>
                 </div>
 
-                {localError ? (
-                    <div className="error-message" style={{ marginTop: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <XCircle size={18} /> {localError}
+                {localError && (
+                    <div className="fade-in" style={{ 
+                        marginTop: '1.5rem', 
+                        padding: '1rem', 
+                        background: 'rgba(239, 68, 68, 0.05)', 
+                        color: '#ef4444', 
+                        borderRadius: '12px',
+                        border: '1px solid rgba(239, 68, 68, 0.2)',
+                        display: 'flex',
+                        gap: '0.75rem',
+                        alignItems: 'center',
+                        fontSize: '0.9rem',
+                        fontWeight: 600
+                    }}>
+                        <AlertCircle size={20} /> {localError}
                     </div>
-                ) : null}
-
-                {feedback?.all_correct ? (
-                    <div className="success-message" style={{ marginTop: '1.5rem' }}>
-                        <div style={{ fontWeight: '700', marginBottom: '0.25rem' }}>¡Verificación Correcta!</div>
-                        <p style={{ fontSize: 'var(--text-sm)', opacity: 0.9 }}>Has completado satisfactoriamente este ejercicio.</p>
-                    </div>
-                ) : null}
-            </div>
+                )}
+            </Card>
         </div>
     );
 };

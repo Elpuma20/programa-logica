@@ -2,7 +2,10 @@ import { useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import { useAuth } from '../context/AuthContext';
-import { UserPlus, AlertCircle } from 'lucide-react';
+import { UserPlus, AlertCircle, User, Mail, Lock, CreditCard, ChevronLeft, BrainCircuit } from 'lucide-react';
+import Card from '../components/ui/Card';
+import Input from '../components/ui/Input';
+import Button from '../components/ui/Button';
 
 const Register = () => {
     const [formData, setFormData] = useState({
@@ -39,16 +42,15 @@ const Register = () => {
                 const errors = err.response.data;
                 if (typeof errors === 'object' && errors !== null) {
                     const errorMessages = Object.keys(errors).map(key => {
-                        const label = key.toUpperCase();
                         const message = Array.isArray(errors[key]) ? errors[key].join(', ') : errors[key];
-                        return `${label}: ${message}`;
-                    }).join(' | ');
+                        return `${key.toUpperCase()}: ${message}`;
+                    }).join('\n');
                     setError(errorMessages);
                 } else {
                     setError(String(errors));
                 }
             } else {
-                setError('ERROR: No se pudo conectar con el servidor.');
+                setError('Error en el registro. Verifique sus datos.');
             }
         } finally {
             setIsSubmitting(false);
@@ -56,94 +58,116 @@ const Register = () => {
     }, [formData, login, navigate]);
 
     return (
-        <div className="container" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-secondary)' }}>
-            <div className="card animate-fade-up" style={{ width: '100%', maxWidth: '480px' }}>
-                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                    <div className="logo" style={{ fontSize: '1.75rem', justifyContent: 'center', marginBottom: '0.5rem' }}>Edu<span>Lógica</span></div>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>Registro de Nuevo Estudiante</p>
+        <div className="container flex-center" style={{ minHeight: '90vh' }}>
+            <Card className="fade-in" style={{ width: '600px', maxWidth: '100%' }}>
+                <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+                    <div className="flex-center mb-4">
+                        <div style={{ 
+                            width: 64, height: 64,
+                            background: 'linear-gradient(135deg, var(--brand-primary), var(--brand-secondary))', 
+                            borderRadius: '18px',
+                            color: 'white',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            boxShadow: '0 8px 24px rgba(37, 99, 235, 0.25)'
+                        }}>
+                            <BrainCircuit size={32} />
+                        </div>
+                    </div>
+                    <h2 className="mb-2">Únete a <span style={{ fontWeight: 900 }}>Edu<span className="text-gradient">Lógica</span></span></h2>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Comienza tu viaje en la formación lógica profesional</p>
                 </div>
 
                 <form onSubmit={handleSubmit}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                        <div className="form-group">
-                            <label>Nombre</label>
-                            <input
-                                type="text"
-                                name="nombres"
-                                className="input-field"
-                                placeholder="Escribe tu nombre"
-                                value={formData.nombres}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label>Apellido</label>
-                            <input
-                                type="text"
-                                name="apellidos"
-                                className="input-field"
-                                placeholder="Escribe tu apellido"
-                                value={formData.apellidos}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    <div className="form-group">
-                        <label>Cédula de Identidad</label>
-                        <input
-                            type="text"
-                            name="cedula"
-                            className="input-field"
-                            placeholder="Número de documento"
-                            value={formData.cedula}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
+                        <Input 
+                            label="Nombres"
+                            name="nombres"
+                            placeholder="Nombre completo"
+                            value={formData.nombres}
+                            onChange={handleChange}
+                            required
+                        />
+                        <Input 
+                            label="Apellidos"
+                            name="apellidos"
+                            placeholder="Apellidos completos"
+                            value={formData.apellidos}
                             onChange={handleChange}
                             required
                         />
                     </div>
 
-                    <div className="form-group">
-                        <label>Correo Electrónico</label>
-                        <input
-                            type="email"
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
+                        <Input 
+                            label="Documento (Cédula)"
+                            name="cedula"
+                            placeholder="Ej. 12345678"
+                            value={formData.cedula}
+                            onChange={handleChange}
+                            required
+                        />
+                        <Input 
+                            label="Correo Institucional"
                             name="correo"
-                            className="input-field"
-                            placeholder="nombre@ejemplo.com"
+                            type="email"
+                            placeholder="usuario@edu"
                             value={formData.correo}
                             onChange={handleChange}
                             required
                         />
                     </div>
 
-                    <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-                        <label>Contraseña</label>
-                        <input
-                            type="password"
-                            name="password"
-                            className="input-field"
-                            placeholder="••••••••"
-                            value={formData.password}
-                            onChange={handleChange}
-                            required
-                        />
-                    </div>
+                    <Input 
+                        label="Contraseña"
+                        name="password"
+                        type="password"
+                        placeholder="Crea una contraseña segura"
+                        value={formData.password}
+                        onChange={handleChange}
+                        required
+                    />
 
-                    {error && <div className="error-message" style={{ marginBottom: '1.25rem' }}>{error}</div>}
+                    {error && (
+                        <div className="fade-in" style={{ 
+                            padding: '1rem', 
+                            borderRadius: '12px', 
+                            background: 'rgba(239, 68, 68, 0.1)', 
+                            color: '#ef4444',
+                            fontSize: '0.85rem',
+                            display: 'flex',
+                            gap: '0.5rem',
+                            marginBottom: '1.5rem',
+                            border: '1px solid rgba(239, 68, 68, 0.2)',
+                            whiteSpace: 'pre-line'
+                        }}>
+                            <AlertCircle size={18} /> {error}
+                        </div>
+                    )}
 
-                    <button type="submit" className="btn-primary" style={{ width: '100%', padding: '12px' }} disabled={isSubmitting}>
-                        {isSubmitting ? 'Procesando...' : 'Completar Registro'}
-                    </button>
+                    <Button 
+                        type="submit" 
+                        className="w-full" 
+                        disabled={isSubmitting}
+                        style={{ height: '3.5rem' }}
+                    >
+                        {isSubmitting ? 'Procesando...' : 'Crear Cuenta Estudiantil'}
+                    </Button>
                 </form>
 
-                <div style={{ marginTop: '2rem', textAlign: 'center', fontSize: 'var(--text-sm)', color: 'var(--text-muted)', paddingTop: '1.5rem', borderTop: '1px solid var(--border-subtle)' }}>
-                    ¿Ya tienes una cuenta?{' '}
-                    <Link to="/login" style={{ color: 'var(--brand-indigo)', fontWeight: '600', textDecoration: 'none' }}>
-                        Acceder
-                    </Link>
+                <div style={{ 
+                    marginTop: '2rem', 
+                    textAlign: 'center', 
+                    paddingTop: '1.5rem', 
+                    borderTop: '1px solid var(--border-default)' 
+                }}>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                        ¿Ya tienes cuenta?{' '}
+                        <Link to="/login" style={{ color: 'var(--brand-primary)', fontWeight: 700, textDecoration: 'none' }}>
+                            Inicia sesión aquí
+                        </Link>
+                    </p>
                 </div>
-            </div>
+            </Card>
         </div>
     );
 };

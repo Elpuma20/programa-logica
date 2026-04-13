@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'usuarios',
     'logica',
+    'auditoria',
 ]
 
 MIDDLEWARE = [
@@ -54,6 +55,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'auditoria.middleware.AuditMiddleware',
 ]
 
 ROOT_URLCONF = 'plataforma.urls'

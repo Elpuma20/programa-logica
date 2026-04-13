@@ -10,4 +10,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('usuarios.urls')),
     path('api/logica/', include('logica.urls')),
+    path('api/auditoria/', include('auditoria.urls')),
 ]

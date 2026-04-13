@@ -1,6 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status, permissions
+from rest_framework import status, permissions, viewsets
+from .models import ContenidoLogico
+from .serializers import ContenidoLogicoSerializer
 
 class VerificarTablaView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -45,3 +47,14 @@ class VerificarTablaView(APIView):
             "all_correct": all_correct,
             "results": results
         })
+
+class ContenidoLogicoViewSet(viewsets.ModelViewSet):
+    queryset = ContenidoLogico.objects.all().order_by('-fecha_creacion')
+    serializer_class = ContenidoLogicoSerializer
+    
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            permission_classes = [permissions.IsAuthenticated]
+        else:
+            permission_classes = [permissions.IsAdminUser]
+        return [permission() for permission in permission_classes]

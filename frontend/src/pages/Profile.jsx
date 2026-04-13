@@ -1,79 +1,111 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { User, Mail, Shield, Calendar, ArrowLeft } from 'lucide-react';
+import { User, Mail, Shield, Calendar, ArrowLeft, Award, Settings } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import Badge from '../components/ui/Badge';
 
 const Profile = () => {
     const { user } = useAuth();
 
-    if (!user) return <div className="container">Cargando perfil...</div>;
+    if (!user) return (
+        <div className="container flex-center" style={{ minHeight: '60vh' }}>
+            <h2 className="text-gradient">Identificando Agente...</h2>
+        </div>
+    );
 
     return (
-        <div className="container" style={{ maxWidth: '600px' }}>
-            <Link to="/dashboard" className="back-link">
-                <ArrowLeft size={16} /> Volver al Panel
-            </Link>
+        <div className="container fade-in" style={{ maxWidth: '800px' }}>
+            <header style={{ marginBottom: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Link to="/dashboard" style={{ textDecoration: 'none' }}>
+                    <Button variant="secondary"><ArrowLeft size={16} /> Volver</Button>
+                </Link>
+                <Link to="/configuracion" style={{ textDecoration: 'none' }}>
+                    <Button variant="ghost"><Settings size={18} /> Configuración</Button>
+                </Link>
+            </header>
 
-            <div className="card animate-fade-up" style={{ padding: '2.5rem' }}>
-                <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-                    <div style={{
-                        width: 80, height: 80, borderRadius: '50%',
-                        background: 'var(--brand-indigo-soft)', color: 'var(--brand-indigo)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        margin: '0 auto 1rem', border: '2px solid var(--brand-indigo-soft)'
-                    }}>
-                        <User size={40} />
-                    </div>
-                    <h2 style={{ fontSize: 'var(--text-xl)', margin: '0 0 0.5rem 0' }}>{user.nombres} {user.apellidos}</h2>
-                    <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>Estudiante de EduLógica</p>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                    <div style={{
-                        display: 'flex', alignItems: 'center', gap: '1rem',
-                        padding: '1rem', borderRadius: 'var(--radius-sm)',
-                        background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)'
-                    }}>
-                        <div style={{ color: 'var(--brand-indigo)' }}><Mail size={18} /></div>
-                        <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase' }}>Correo Electrónico</div>
-                            <div style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{user.correo}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+                {/* Profile Info */}
+                <Card style={{ textAlign: 'center' }}>
+                    <div className="flex-center mb-4">
+                        <div style={{
+                            width: 120, height: 120, borderRadius: '30px',
+                            background: 'linear-gradient(135deg, var(--brand-primary), var(--brand-secondary))', 
+                            color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            boxShadow: '0 10px 30px rgba(37, 99, 235, 0.3)',
+                        }}>
+                            <User size={60} />
                         </div>
                     </div>
-
-                    <div style={{
-                        display: 'flex', alignItems: 'center', gap: '1rem',
-                        padding: '1rem', borderRadius: 'var(--radius-sm)',
-                        background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)'
-                    }}>
-                        <div style={{ color: 'var(--brand-indigo)' }}><Shield size={18} /></div>
-                        <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase' }}>Identificación (Cédula)</div>
-                            <div style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{user.cedula}</div>
+                    <h2 className="mb-2">{user.nombres} {user.apellidos}</h2>
+                    <Badge variant="success" className="mb-4">Estatus: Activo</Badge>
+                    
+                    <div style={{ borderTop: '1px solid var(--border-default)', paddingTop: '2rem', marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', textAlign: 'left' }}>
+                            <div style={{ padding: '0.6rem', background: 'var(--bg-secondary)', borderRadius: '10px', color: 'var(--brand-primary)' }}>
+                                <Mail size={18} />
+                            </div>
+                            <div>
+                                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 800 }}>CORREO</div>
+                                <div style={{ fontSize: '0.9rem', fontWeight: 700 }}>{user.correo}</div>
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', textAlign: 'left' }}>
+                            <div style={{ padding: '0.6rem', background: 'var(--bg-secondary)', borderRadius: '10px', color: 'var(--brand-primary)' }}>
+                                <Shield size={18} />
+                            </div>
+                            <div>
+                                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 800 }}>ID (CÉDULA)</div>
+                                <div style={{ fontSize: '0.9rem', fontWeight: 700 }}>{user.cedula}</div>
+                            </div>
                         </div>
                     </div>
+                </Card>
 
-                    <div style={{
-                        display: 'flex', alignItems: 'center', gap: '1rem',
-                        padding: '1rem', borderRadius: 'var(--radius-sm)',
-                        background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)'
-                    }}>
-                        <div style={{ color: 'var(--brand-indigo)' }}><Calendar size={18} /></div>
-                        <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase' }}>Estado de Cuenta</div>
-                            <div style={{ color: 'var(--semantic-success)', fontWeight: '600' }}>Activa</div>
+                {/* Cognitive Stats */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    <Card style={{ borderLeft: '4px solid var(--brand-secondary)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            <div style={{ padding: '0.8rem', background: 'rgba(6, 182, 212, 0.1)', borderRadius: '12px', color: 'var(--brand-secondary)' }}>
+                                <Award size={24} />
+                            </div>
+                            <div>
+                                <h4 style={{ margin: 0 }}>Nivel de Lógica</h4>
+                                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Estadísticas de rendimiento académico</p>
+                            </div>
                         </div>
-                    </div>
-                </div>
+                        <div style={{ marginTop: '1.5rem', background: 'var(--bg-secondary)', height: '8px', borderRadius: '4px', overflow: 'hidden' }}>
+                            <div style={{ width: '65%', height: '100%', background: 'linear-gradient(90deg, var(--brand-primary), var(--brand-secondary))' }}></div>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', fontSize: '0.75rem', fontWeight: 700 }}>
+                            <span>PROGRESO</span>
+                            <span>65%</span>
+                        </div>
+                    </Card>
 
-                <div style={{
-                    marginTop: '2.5rem', paddingTop: '1.5rem',
-                    borderTop: '1px solid var(--border-subtle)', textAlign: 'center'
-                }}>
-                    <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>
-                        Los datos de tu perfil son gestionados por la administración central.
-                        Para cambios, contacta a soporte técnico.
-                    </p>
+                    <Card>
+                        <h4 className="mb-4">Actividad Reciente</h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            {[
+                                { task: 'Trivia de Lógica', date: 'Hace 2 horas', status: 'Completado' },
+                                { task: 'Lección 1: Conectivos', date: 'Ayer', status: 'Completado' },
+                                { task: 'Paradoja de Russell', date: '3 días atrás', status: 'Visto' },
+                            ].map((item, i) => (
+                                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                        <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--brand-primary)' }}></div>
+                                        <div>
+                                            <div style={{ fontWeight: 700 }}>{item.task}</div>
+                                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{item.date}</div>
+                                        </div>
+                                    </div>
+                                    <Badge variant="success" style={{ fontSize: '0.6rem' }}>{item.status}</Badge>
+                                </div>
+                            ))}
+                        </div>
+                    </Card>
                 </div>
             </div>
         </div>
