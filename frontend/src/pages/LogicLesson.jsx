@@ -64,7 +64,7 @@ const LESSON_DATA = [
                         <p style={{ fontSize: '0.9rem' }}>Se asocia con la palabra "y". Una conjunción es <strong>Verdadera</strong> ÚNICAMENTE cuando ambas proposiciones son verdaderas. Si una falla, todo el conjunto es Falso.</p>
                     </Card>
                 </div>
-                <div style={{ overflowX: 'auto', marginBottom: '1.5rem' }}>
+                <div className="table-wrapper">
                     <table style={{ width: '100%', textAlign: 'center', borderCollapse: 'collapse', background: 'var(--bg-secondary)', borderRadius: '12px' }}>
                         <thead><tr style={{ borderBottom: '2px solid var(--border-default)' }}><th style={{ padding: '0.5rem' }}>P</th><th style={{ padding: '0.5rem' }}>Q</th><th style={{ padding: '0.5rem' }}>P ∧ Q</th></tr></thead>
                         <tbody>
@@ -350,7 +350,7 @@ const LogicLesson = () => {
 
     return (
         <div className="container fade-in" style={{ maxWidth: '900px' }}>
-            <header className="mb-4" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <header className="mb-4" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                 <Link to="/dashboard" style={{ textDecoration: 'none' }}>
                     <Button variant="secondary"><ArrowLeft size={16} /> Panel</Button>
                 </Link>
@@ -361,9 +361,8 @@ const LogicLesson = () => {
                 </div>
             </header>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 3fr) minmax(0, 2fr)', gap: '2rem', alignItems: 'start' }}>
-                {/* Theory Section */}
-                <Card style={{ minHeight: '600px', borderTop: '4px solid var(--brand-primary)' }}>
+            <div className="two-column-grid">
+                <Card className="glass-card" style={{ minHeight: '600px', borderTop: '4px solid var(--brand-primary)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', marginBottom: '2.5rem' }}>
                         <div style={{ padding: '1rem', background: 'var(--accent-light)', borderRadius: '16px', color: 'var(--brand-primary)' }}>
                             <step.icon size={28} />
@@ -390,8 +389,7 @@ const LogicLesson = () => {
                     </div>
                 </Card>
 
-                {/* Exercise Section */}
-                <div style={{ position: 'sticky', top: '100px' }}>
+                <div className="glass-card" style={{ position: 'sticky', top: '100px' }}>
                     <Card style={{ borderTop: '4px solid var(--brand-secondary)' }}>
                         {!isQuizPassed ? (
                             <StepQuiz exercises={step.exercises} onComplete={() => setIsQuizPassed(true)} />

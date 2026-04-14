@@ -1,14 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { User, LogOut, Sun, Moon, Instagram, Twitter, Facebook, MessageCircle, Shield, BrainCircuit } from 'lucide-react';
+import { User, LogOut, Sun, Moon, Instagram, Twitter, Facebook, Shield, BrainCircuit, Menu, X } from 'lucide-react';
 import Button from './ui/Button';
 
 const Header = ({ theme, toggleTheme }) => {
     const { user, logout, token } = useAuth();
     const location = useLocation();
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    // Hide header on login and register pages
+    const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
     if (['/login', '/register', '/'].includes(location.pathname)) {
         if (!token) return null;
     }
@@ -16,7 +18,6 @@ const Header = ({ theme, toggleTheme }) => {
     return (
         <div className="nav-container fade-in">
             <header className="header">
-                {/* Logo / Brand */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
                     <Link to={token ? "/dashboard" : "/"} style={{ 
                         display: 'flex', 
@@ -47,19 +48,29 @@ const Header = ({ theme, toggleTheme }) => {
                         </span>
                     </Link>
                     
-                    <div className="social-links" style={{ display: 'flex', gap: '1rem', marginLeft: '1.5rem', borderLeft: '1px solid var(--border-default)', paddingLeft: '1.5rem' }}>
+                    <div className="social-links hide-mobile" style={{ display: 'flex', gap: '1rem', marginLeft: '1.5rem', borderLeft: '1px solid var(--border-default)', paddingLeft: '1.5rem' }}>
                         <a href="#" className="social-icon"><Twitter size={18} /></a>
                         <a href="#" className="social-icon"><Instagram size={18} /></a>
                         <a href="#" className="social-icon"><Facebook size={18} /></a>
                     </div>
                 </div>
 
-                {/* Main Actions */}
-                <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center' }}>
+                <Button 
+                    className="hide-desktop show-mobile"
+                    variant="ghost" 
+                    onClick={toggleMenu}
+                    style={{ display: 'none', width: 42, height: 42, padding: 0, borderRadius: '12px' }}
+                    aria-label="Menú"
+                >
+                    {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+                </Button>
+
+                <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center' }} className={isMenuOpen ? 'mobile-menu-open' : ''}>
                     <Button 
                         variant="ghost" 
                         onClick={toggleTheme}
                         style={{ width: 42, height: 42, padding: 0, borderRadius: '12px' }}
+                        aria-label="Cambiar tema"
                     >
                         {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
                     </Button>

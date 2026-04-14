@@ -84,8 +84,7 @@ const Dashboard = () => {
 
     return (
         <div className="container fade-in">
-            {/* Header section */}
-            <header style={{ marginBottom: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <header style={{ marginBottom: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
                     <div style={{
                         width: 42,
@@ -116,11 +115,7 @@ const Dashboard = () => {
                     Módulos de <span style={{ color: 'var(--brand-secondary)' }}>Entrenamiento</span>
                 </h2>
 
-                <div style={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', 
-                    gap: '2rem' 
-                }}>
+                <div className="feature-grid">
                     {MODULES.map((module, index) => (
                         <Link 
                             key={module.id} 
@@ -140,7 +135,6 @@ const Dashboard = () => {
                                 position: 'relative',
                                 overflow: 'hidden'
                             }}>
-                                {/* Header: Icon + Badge */}
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
                                     <div style={{ 
                                         width: 48, 
@@ -168,7 +162,6 @@ const Dashboard = () => {
                                     </div>
                                 </div>
 
-                                {/* Content */}
                                 <div style={{ flex: 1 }}>
                                     <h3 style={{ fontSize: '1.25rem', marginBottom: '0.75rem', fontWeight: 800 }}>{module.title}</h3>
                                     <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5, marginBottom: '2rem' }}>
@@ -176,7 +169,6 @@ const Dashboard = () => {
                                     </p>
                                 </div>
 
-                                {/* Footer Action */}
                                 <div style={{ 
                                     display: 'flex', 
                                     alignItems: 'center', 
@@ -188,7 +180,6 @@ const Dashboard = () => {
                                     {module.action} <ChevronRight size={16} />
                                 </div>
 
-                                {/* Decorative Element (Subtle background circle as seen in image) */}
                                 <div style={{
                                     position: 'absolute',
                                     top: '-20px',

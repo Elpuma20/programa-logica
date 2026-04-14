@@ -205,7 +205,7 @@ const AdminPanel = () => {
                          </Badge>
                     </div>
 
-                    <div style={{ overflowX: 'auto', minHeight: '400px' }}>
+                    <div className="table-wrapper" style={{ minHeight: '400px' }}>
                         {activeTab === 'usuarios' ? (
                             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                 <thead style={{ background: 'var(--bg-secondary)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>

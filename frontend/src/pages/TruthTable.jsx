@@ -113,7 +113,7 @@ const TruthTable = () => {
                     </div>
                 </div>
 
-                <div style={{ overflowX: 'auto', marginBottom: '2.5rem' }}>
+                <div className="table-wrapper">
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center' }}>
                         <thead style={{ background: 'var(--bg-secondary)', fontSize: '0.85rem' }}>
                             <tr>

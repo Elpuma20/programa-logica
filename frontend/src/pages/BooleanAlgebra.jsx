@@ -26,7 +26,7 @@ const BooleanAlgebra = () => {
 
     return (
         <div className="container fade-in" style={{ maxWidth: '1000px' }}>
-            <header className="mb-4" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <header className="mb-4" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                 <div>
                      <h1 className="mb-2">Unidad 5: <span className="text-gradient">Arquitectura Lógica</span></h1>
                      <p style={{ color: 'var(--text-secondary)' }}>Del pensamiento binario al hardware: Álgebra de Boole y Circuitos.</p>
@@ -36,9 +36,8 @@ const BooleanAlgebra = () => {
                 </Link>
             </header>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1fr)', gap: '2rem' }}>
-                {/* Circuit Simulator */}
-                <Card style={{ borderTop: '4px solid #10b981', padding: '2rem' }}>
+            <div className="two-column-grid">
+                <Card className="glass-card" style={{ borderTop: '4px solid #10b981', padding: '2rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
                         <div style={{ padding: '0.75rem', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px', color: '#10b981' }}>
                             <Cpu size={24} />
