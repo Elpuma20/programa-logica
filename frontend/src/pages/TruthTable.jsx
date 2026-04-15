@@ -1,3 +1,4 @@
+// src/pages/TruthTable.jsx
 import { useState, useCallback } from 'react';
 import api from '../api';
 import { Link } from 'react-router-dom';
@@ -47,9 +48,6 @@ const TruthTable = () => {
         setLoading(true);
         setLocalError(null);
         try {
-            // Mapping UI symbols back to API expected format if necessary
-            // Current API expects symbols or text? Previous code sent "p and q"
-            // I'll send the proposition as defined in EJERCICIOS
             const res = await api.post('/logica/verificar/', {
                 proposition: ejercicioActual.proposition.replace('∧', 'and').replace('∨', 'or').replace('¬', 'not'),
                 rows
@@ -85,53 +83,59 @@ const TruthTable = () => {
     const progress = ((indexEjercicio + 1) / EJERCICIOS.length) * 100;
 
     return (
-        <div className="container fade-in" style={{ maxWidth: '900px' }}>
-            <header className="mb-4" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Link to="/dashboard" style={{ textDecoration: 'none' }}>
+        <div className="truthtable-page-container fade-in">
+            {/* Header */}
+            <header className="truthtable-page-header">
+                <Link to="/dashboard" className="truthtable-back-link">
                     <Button variant="secondary"><ArrowLeft size={16} /> Volver</Button>
                 </Link>
                 <Badge variant="primary">Ejercicio {indexEjercicio + 1} de {EJERCICIOS.length}</Badge>
             </header>
 
-            <Card style={{ borderTop: '4px solid var(--brand-primary)' }}>
-                <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-                    <h2 className="mb-4">Validación de <span className="text-gradient">Tablas de Verdad</span></h2>
-                    <div style={{ height: '4px', background: 'var(--bg-secondary)', borderRadius: '2px', overflow: 'hidden', marginBottom: '2rem' }}>
-                        <div style={{ width: `${progress}%`, height: '100%', background: 'var(--brand-primary)', transition: 'width 0.5s ease' }}></div>
+            {/* Card principal */}
+            <Card className="truthtable-main-card" style={{ borderTop: '4px solid var(--brand-primary)' }}>
+                
+                {/* Encabezado con proposición */}
+                <div className="truthtable-header-section">
+                    <h2 className="truthtable-title">Validación de <span className="text-gradient">Tablas de Verdad</span></h2>
+                    
+                    {/* Barra de progreso */}
+                    <div className="truthtable-progress-bar">
+                        <div className="truthtable-progress-fill" style={{ width: `${progress}%` }}></div>
                     </div>
                     
-                    <div style={{ 
-                        background: 'var(--bg-secondary)', 
-                        padding: '2rem', 
-                        borderRadius: '16px', 
-                        display: 'inline-block',
-                        minWidth: '300px',
-                        border: '1px solid var(--border-default)'
-                    }}>
-                        <p style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '0.5rem' }}>PROPOSICIÓN A EVALUAR</p>
-                        <code style={{ fontSize: '2rem', color: 'var(--brand-primary)', fontWeight: 900 }}>{ejercicioActual.proposition}</code>
+                    {/* Proposición */}
+                    <div className="truthtable-proposition-box">
+                        <p className="truthtable-proposition-label">PROPOSICIÓN A EVALUAR</p>
+                        <code className="truthtable-proposition-code">{ejercicioActual.proposition}</code>
                     </div>
                 </div>
 
-                <div className="table-wrapper">
-                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center' }}>
-                        <thead style={{ background: 'var(--bg-secondary)', fontSize: '0.85rem' }}>
+                {/* Tabla de verdad - RESPONSIVE con scroll */}
+                <div className="truthtable-table-wrapper">
+                    <table className="truthtable-table">
+                        <thead>
                             <tr>
-                                <th style={{ padding: '1.25rem' }}>P</th>
-                                {ejercicioActual.rows[0].q !== undefined && <th style={{ padding: '1.25rem' }}>Q</th>}
-                                <th style={{ padding: '1.25rem' }}>Resultado (F/V)</th>
-                                {feedback && <th style={{ padding: '1.25rem' }}>Status</th>}
+                                <th>P</th>
+                                {ejercicioActual.rows[0].q !== undefined && <th>Q</th>}
+                                <th>Resultado (F/V)</th>
+                                {feedback && <th>Status</th>}
                             </tr>
                         </thead>
                         <tbody>
                             {rows.map((row, i) => (
-                                <tr key={i} style={{ borderTop: '1px solid var(--border-default)' }}>
-                                    <td style={{ padding: '1.25rem', fontWeight: 800, color: row.p ? '#10b981' : '#ef4444' }}>{row.p ? 'V' : 'F'}</td>
-                                    {row.q !== undefined && <td style={{ padding: '1.25rem', fontWeight: 800, color: row.q ? '#10b981' : '#ef4444' }}>{row.q ? 'V' : 'F'}</td>}
-                                    <td style={{ padding: '1.25rem' }}>
+                                <tr key={i}>
+                                    <td className={`truthtable-value ${row.p ? 'true' : 'false'}`}>
+                                        {row.p ? 'V' : 'F'}
+                                    </td>
+                                    {row.q !== undefined && (
+                                        <td className={`truthtable-value ${row.q ? 'true' : 'false'}`}>
+                                            {row.q ? 'V' : 'F'}
+                                        </td>
+                                    )}
+                                    <td>
                                         <select 
-                                            className="input-field" 
-                                            style={{ maxWidth: '140px', textAlign: 'center', fontWeight: 700 }}
+                                            className="truthtable-select"
                                             value={row.res === null ? '' : row.res}
                                             onChange={(e) => handleValueChange(i, e.target.value === 'true')}
                                         >
@@ -141,7 +145,7 @@ const TruthTable = () => {
                                         </select>
                                     </td>
                                     {feedback && (
-                                        <td style={{ padding: '1.25rem' }}>
+                                        <td className="truthtable-status">
                                             {feedback.results[i].is_correct ? 
                                                 <CheckCircle color="#10b981" size={24} /> : 
                                                 <XCircle color="#ef4444" size={24} />
@@ -154,29 +158,19 @@ const TruthTable = () => {
                     </table>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                    <Button onClick={verify} disabled={loading}>
+                {/* Botones */}
+                <div className="truthtable-buttons">
+                    <Button onClick={verify} disabled={loading} className="truthtable-verify-btn">
                         {loading ? <RefreshCw className="spin" size={18} /> : <Send size={18} />} Verificar Tabla
                     </Button>
-                    <Button variant="secondary" onClick={siguienteEjercicio}>
+                    <Button variant="secondary" onClick={siguienteEjercicio} className="truthtable-next-btn">
                         Siguiente Nivel <ChevronRight size={18} />
                     </Button>
                 </div>
 
+                {/* Mensaje de error */}
                 {localError && (
-                    <div className="fade-in" style={{ 
-                        marginTop: '1.5rem', 
-                        padding: '1rem', 
-                        background: 'rgba(239, 68, 68, 0.05)', 
-                        color: '#ef4444', 
-                        borderRadius: '12px',
-                        border: '1px solid rgba(239, 68, 68, 0.2)',
-                        display: 'flex',
-                        gap: '0.75rem',
-                        alignItems: 'center',
-                        fontSize: '0.9rem',
-                        fontWeight: 600
-                    }}>
+                    <div className="truthtable-error-message">
                         <AlertCircle size={20} /> {localError}
                     </div>
                 )}

@@ -1,3 +1,4 @@
+// src/pages/BooleanAlgebra.jsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
@@ -25,62 +26,47 @@ const BooleanAlgebra = () => {
     };
 
     return (
-        <div className="container fade-in" style={{ maxWidth: '1000px' }}>
-            <header className="mb-4" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-                <div>
-                     <h1 className="mb-2">Unidad 5: <span className="text-gradient">Arquitectura Lógica</span></h1>
-                     <p style={{ color: 'var(--text-secondary)' }}>Del pensamiento binario al hardware: Álgebra de Boole y Circuitos.</p>
+        <div className="boolean-container fade-in">
+            {/* Header */}
+            <header className="boolean-header">
+                <div className="boolean-header-left">
+                    <h1 className="boolean-title">
+                        Unidad 5: <span className="text-gradient">Arquitectura Lógica</span>
+                    </h1>
+                    <p className="boolean-subtitle">
+                        Del pensamiento binario al hardware: Álgebra de Boole y Circuitos.
+                    </p>
                 </div>
-                <Link to="/dashboard" style={{ textDecoration: 'none' }}>
+                <Link to="/dashboard" className="boolean-back-link">
                     <Button variant="secondary"><ArrowLeft size={16} /> Volver</Button>
                 </Link>
             </header>
 
-            <div className="two-column-grid">
-                <Card className="glass-card" style={{ borderTop: '4px solid #10b981', padding: '2rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-                        <div style={{ padding: '0.75rem', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px', color: '#10b981' }}>
+            {/* Grid principal de 2 columnas - RESPONSIVE */}
+            <div className="boolean-two-column-grid">
+                {/* Simulador */}
+                <Card className="boolean-simulator-card glass-card" style={{ borderTop: '4px solid #10b981', padding: '2rem' }}>
+                    <div className="boolean-simulator-header">
+                        <div className="boolean-simulator-icon">
                             <Cpu size={24} />
                         </div>
                         <h3>Simulador de Compuertas</h3>
                     </div>
 
-                    <div style={{ 
-                        background: 'var(--bg-secondary)', 
-                        padding: '3rem', 
-                        borderRadius: '24px', 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'center',
-                        gap: '2rem',
-                        marginBottom: '2rem',
-                        position: 'relative',
-                        border: '1px solid var(--border-default)'
-                    }}>
+                    {/* Área de simulación - RESPONSIVE */}
+                    <div className="boolean-simulator-area">
                         {/* Inputs */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                        <div className="boolean-inputs">
                             <div 
                                 onClick={() => setInputs({...inputs, A: !inputs.A})}
-                                style={{ 
-                                    width: '40px', height: '40px', borderRadius: '50%', 
-                                    background: inputs.A ? '#10b981' : 'var(--bg-surface)',
-                                    border: '2px solid var(--border-default)', cursor: 'pointer',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    fontWeight: 900, boxShadow: inputs.A ? '0 0 15px #10b98166' : 'none'
-                                }}
+                                className={`boolean-input-btn ${inputs.A ? 'active' : ''}`}
                             >
                                 {inputs.A ? '1' : '0'}
                             </div>
                             {activeGate !== 'NOT' && (
                                 <div 
                                     onClick={() => setInputs({...inputs, B: !inputs.B})}
-                                    style={{ 
-                                        width: '40px', height: '40px', borderRadius: '50%', 
-                                        background: inputs.B ? '#10b981' : 'var(--bg-surface)',
-                                        border: '2px solid var(--border-default)', cursor: 'pointer',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        fontWeight: 900, boxShadow: inputs.B ? '0 0 15px #10b98166' : 'none'
-                                    }}
+                                    className={`boolean-input-btn ${inputs.B ? 'active' : ''}`}
                                 >
                                     {inputs.B ? '1' : '0'}
                                 </div>
@@ -88,43 +74,33 @@ const BooleanAlgebra = () => {
                         </div>
 
                         {/* Gate Icon */}
-                        <div style={{ 
-                            padding: '2rem', background: 'var(--brand-primary)', borderRadius: '16px', color: 'white',
-                            fontSize: '1.5rem', fontWeight: 900, minWidth: '100px', textAlign: 'center'
-                        }}>
+                        <div className="boolean-gate-icon">
                             {activeGate}
                         </div>
 
                         {/* Output */}
-                        <div style={{ 
-                            width: '60px', height: '60px', borderRadius: '12px',
-                            background: getResult() ? '#10b981' : 'var(--bg-surface)',
-                            border: '2px solid var(--border-default)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: '1.5rem', fontWeight: 900, color: getResult() ? 'white' : 'var(--text-muted)',
-                            boxShadow: getResult() ? '0 0 30px #10b98144' : 'none',
-                            transition: 'all 0.3s'
-                        }}>
+                        <div className={`boolean-output ${getResult() ? 'active' : ''}`}>
                             {getResult() ? '1' : '0'}
                         </div>
                     </div>
 
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textAlign: 'center' }}>
+                    <p className="boolean-simulator-hint">
                         Interactúa con los interruptores de entrada (0/1) para ver cómo la compuerta <strong>{activeGate}</strong> procesa la señal.
                     </p>
                 </Card>
 
                 {/* Theory & Controls */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                    <Card style={{ borderTop: '4px solid var(--brand-secondary)' }}>
-                        <h4 className="mb-4">Seleccionar Compuerta</h4>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                <div className="boolean-controls-side">
+                    {/* Selector de compuertas */}
+                    <Card className="boolean-gates-card" style={{ borderTop: '4px solid var(--brand-secondary)' }}>
+                        <h4 className="boolean-section-title">Seleccionar Compuerta</h4>
+                        <div className="boolean-gates-grid">
                             {['AND', 'OR', 'NOT', 'XOR'].map(gate => (
                                 <Button 
                                     key={gate}
                                     variant={activeGate === gate ? 'primary' : 'secondary'}
                                     onClick={() => setActiveGate(gate)}
-                                    style={{ padding: '1rem' }}
+                                    className="boolean-gate-btn"
                                 >
                                     Logica {gate}
                                 </Button>
@@ -132,12 +108,13 @@ const BooleanAlgebra = () => {
                         </div>
                     </Card>
 
-                    <Card style={{ background: 'var(--bg-secondary)', borderLeft: '4px solid #10b981' }}>
-                        <h4 className="mb-2">Optimización: Mapas de Karnaugh</h4>
-                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                    {/* Info Karnaugh */}
+                    <Card className="boolean-karnaugh-card" style={{ background: 'var(--bg-secondary)', borderLeft: '4px solid #10b981' }}>
+                        <h4 className="boolean-karnaugh-title">Optimización: Mapas de Karnaugh</h4>
+                        <p className="boolean-karnaugh-description">
                             Los Mapas de Karnaugh son una herramienta gráfica utilizada para simplificar funciones booleanas, reduciendo la cantidad de compuertas necesarias en un circuito físico.
                         </p>
-                        <ul style={{ fontSize: '0.75rem', marginTop: '1rem', paddingLeft: '1.2rem', color: 'var(--text-muted)' }}>
+                        <ul className="boolean-karnaugh-list">
                             <li>Agrupación de unos en potencias de 2.</li>
                             <li>Eliminación de variables que cambian.</li>
                             <li>Minimización de hardware.</li>
@@ -146,17 +123,18 @@ const BooleanAlgebra = () => {
                 </div>
             </div>
 
-            <div style={{ marginTop: '2rem' }}>
+            {/* Enlace a práctica adicional */}
+            <div className="boolean-practice-link">
                 <Link to="/logica" style={{ textDecoration: 'none' }}>
-                    <Card style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', border: '1px solid var(--brand-primary)' }}>
-                        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                             <Activity size={24} color="var(--brand-primary)" />
-                             <div>
-                                 <h4 style={{ margin: 0 }}>Practicar con Tablas de Verdad Completas</h4>
-                                 <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Usa el evaluador algorítmico para verificar funciones complejas.</p>
-                             </div>
+                    <Card className="boolean-practice-card" style={{ border: '1px solid var(--brand-primary)' }}>
+                        <div className="boolean-practice-content">
+                            <Activity size={24} color="var(--brand-primary)" />
+                            <div>
+                                <h4 className="boolean-practice-title">Practicar con Tablas de Verdad Completas</h4>
+                                <p className="boolean-practice-desc">Usa el evaluador algorítmico para verificar funciones complejas.</p>
+                            </div>
                         </div>
-                        <ChevronRight size={20} color="var(--brand-primary)" />
+                        <ChevronRight size={20} color="var(--brand-primary)" className="boolean-practice-arrow" />
                     </Card>
                 </Link>
             </div>

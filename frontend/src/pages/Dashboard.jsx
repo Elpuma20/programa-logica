@@ -1,3 +1,4 @@
+// src/pages/Dashboard.jsx
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
@@ -18,7 +19,7 @@ const MODULES = [
         desc: 'Domina las tablas de verdad, conectivos lógicos y leyes del razonamiento formal.',
         icon: Table2,
         path: '/leccion',
-        color: '#2563eb', // Blue
+        color: '#2563eb',
         type: 'TEORÍA',
         action: 'Comenzar Sesión'
     },
@@ -29,7 +30,7 @@ const MODULES = [
         desc: 'Aplica reglas de inferencia y métodos de demostración para validar razonamientos.',
         icon: Brain,
         path: '/inferencia',
-        color: '#8b5cf6', // Purple
+        color: '#8b5cf6',
         type: 'DEMOSTRACIÓN',
         action: 'Ver Reglas'
     },
@@ -40,7 +41,7 @@ const MODULES = [
         desc: 'Pon a prueba tu agilidad mental con trivias, acertijos y paradojas interactivas.',
         icon: Target,
         path: '/juegos',
-        color: '#06b6d4', // Cyan
+        color: '#06b6d4',
         type: 'PRÁCTICA',
         action: 'Entrar al Lab'
     },
@@ -51,7 +52,7 @@ const MODULES = [
         desc: 'Explora el análisis profundo de sujetos y propiedades con cuantificadores universales.',
         icon: GitBranch,
         path: '/predicados',
-        color: '#f43f5e', // Rose
+        color: '#f43f5e',
         type: 'TEORÍA',
         action: 'Cerrar Brecha'
     },
@@ -62,7 +63,7 @@ const MODULES = [
         desc: 'Fundamentos de agrupación de datos, diagramas de Venn y relaciones lógicas.',
         icon: Layers,
         path: '/conjuntos',
-        color: '#f59e0b', // Amber
+        color: '#f59e0b',
         type: 'TEORÍA',
         action: 'Explorar'
     },
@@ -73,7 +74,7 @@ const MODULES = [
         desc: 'Simplificación de funciones, compuertas lógicas y optimización de circuitos binarios.',
         icon: Binary,
         path: '/boole',
-        color: '#10b981', // Green
+        color: '#10b981',
         type: 'SIMULADOR',
         action: 'Abrir Simulador'
     }
@@ -83,122 +84,69 @@ const Dashboard = () => {
     const { user } = useAuth();
 
     return (
-        <div className="container fade-in">
-            <header style={{ marginBottom: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-                    <div style={{
-                        width: 42,
-                        height: 42,
-                        borderRadius: '12px',
-                        background: 'linear-gradient(135deg, var(--brand-primary), var(--brand-secondary))',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white',
-                        boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)'
-                    }}>
+        <div className="dashboard-container container fade-in">
+            {/* Header del Dashboard - RESPONSIVE */}
+            <header className="dashboard-header">
+                <div className="dashboard-header-left">
+                    <div className="dashboard-icon">
                         <BrainCircuit size={24} />
                     </div>
                     <div>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', margin: 0 }}>
-                            Bienvenido, <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{user?.nombres || 'Agente'}</span>.
+                        <p className="dashboard-welcome">
+                            Bienvenido, <span className="dashboard-user">{user?.nombres || 'Agente'}</span>.
                         </p>
                     </div>
                 </div>
-                <div style={{ display: 'flex', gap: '1rem' }}>
-                     <Badge variant="success" style={{ padding: '0.5rem 1rem' }}>Estudiante Activo</Badge>
+                <div className="dashboard-header-right">
+                    <Badge variant="success" className="dashboard-badge">Estudiante Activo</Badge>
                 </div>
             </header>
 
-            <div style={{ marginBottom: '3rem' }}>
-                <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    Módulos de <span style={{ color: 'var(--brand-secondary)' }}>Entrenamiento</span>
+            {/* Sección de Módulos */}
+            <div className="modules-section">
+                <h2 className="modules-title">
+                    Módulos de <span className="modules-highlight">Entrenamiento</span>
                 </h2>
 
-                <div className="feature-grid">
+                <div className="modules-grid">
                     {MODULES.map((module, index) => (
                         <Link 
                             key={module.id} 
                             to={module.path} 
-                            className="staggered-item"
-                            style={{ 
-                                textDecoration: 'none', 
-                                color: 'inherit',
-                                '--delay': `${index * 0.1}s`
-                            }}
+                            className="module-card-link staggered-item"
+                            style={{ '--delay': `${index * 0.1}s` }}
                         >
-                            <Card className="glass-card" style={{ 
-                                height: '100%', 
-                                padding: '2rem', 
-                                display: 'flex', 
-                                flexDirection: 'column',
-                                position: 'relative',
-                                overflow: 'hidden'
-                            }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
-                                    <div style={{ 
-                                        width: 48, 
-                                        height: 48, 
-                                        borderRadius: '12px', 
-                                        background: `${module.color}15`, 
-                                        color: module.color,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center'
-                                    }}>
+                            <Card className="module-card glass-card">
+                                {/* Header de la tarjeta */}
+                                <div className="module-card-header">
+                                    <div className="module-icon" style={{ background: `${module.color}15`, color: module.color }}>
                                         <module.icon size={24} />
                                     </div>
-                                    <div style={{ 
-                                        padding: '0.4rem 0.8rem', 
-                                        borderRadius: '20px', 
-                                        background: `${module.color}08`, 
-                                        color: module.color,
-                                        fontSize: '0.65rem',
-                                        fontWeight: 900,
-                                        letterSpacing: '0.05em',
-                                        border: `1px solid ${module.color}20`
-                                    }}>
+                                    <div className="module-type" style={{ background: `${module.color}08`, color: module.color, border: `1px solid ${module.color}20` }}>
                                         {module.type}
                                     </div>
                                 </div>
 
-                                <div style={{ flex: 1 }}>
-                                    <h3 style={{ fontSize: '1.25rem', marginBottom: '0.75rem', fontWeight: 800 }}>{module.title}</h3>
-                                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5, marginBottom: '2rem' }}>
-                                        {module.desc}
-                                    </p>
+                                {/* Contenido */}
+                                <div className="module-card-body">
+                                    <h3 className="module-title">{module.title}</h3>
+                                    <p className="module-description">{module.desc}</p>
                                 </div>
 
-                                <div style={{ 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
-                                    gap: '0.5rem', 
-                                    color: module.color,
-                                    fontWeight: 800,
-                                    fontSize: '0.9rem'
-                                }}>
+                                {/* Botón acción */}
+                                <div className="module-action" style={{ color: module.color }}>
                                     {module.action} <ChevronRight size={16} />
                                 </div>
 
-                                <div style={{
-                                    position: 'absolute',
-                                    top: '-20px',
-                                    right: '-20px',
-                                    width: 100,
-                                    height: 100,
-                                    background: `${module.color}05`,
-                                    borderRadius: '50%',
-                                    zIndex: 0
-                                }}></div>
+                                {/* Decoración de fondo */}
+                                <div className="module-decoration" style={{ background: `${module.color}05` }}></div>
                             </Card>
                         </Link>
                     ))}
                 </div>
             </div>
-
         </div>
     );
 };
 
 export default Dashboard;
-

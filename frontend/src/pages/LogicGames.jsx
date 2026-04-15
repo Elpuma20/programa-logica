@@ -1,3 +1,4 @@
+// src/pages/LogicGames.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
@@ -65,31 +66,27 @@ const SymbolMatch = () => {
     };
 
     return (
-        <Card className="fade-in" style={{ borderTop: '4px solid var(--brand-primary)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <Card className="symbol-match-card fade-in">
+            <div className="symbol-match-header">
+                <h3 className="symbol-match-title">
                     <Target size={24} color="var(--brand-primary)" /> Emparejamiento Lógico
                 </h3>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)' }}>MOVIMIENTOS</div>
-                        <div style={{ fontSize: '1rem', fontWeight: 900, color: 'var(--brand-primary)' }}>{moves}</div>
+                <div className="symbol-match-stats">
+                    <div className="symbol-match-moves">
+                        <div className="symbol-match-moves-label">MOVIMIENTOS</div>
+                        <div className="symbol-match-moves-value">{moves}</div>
                     </div>
-                    <Button variant="secondary" onClick={initializeGame} style={{ padding: '0.5rem' }}>
+                    <Button variant="secondary" onClick={initializeGame} className="symbol-match-reset">
                         <RotateCcw size={16} />
                     </Button>
                 </div>
             </div>
 
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', fontSize: '0.9rem' }}>
+            <p className="symbol-match-desc">
                 Relaciona los símbolos proposicionales con sus definiciones técnicas.
             </p>
 
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))',
-                gap: '1rem'
-            }}>
+            <div className="symbol-match-grid">
                 {cards.map((card, index) => {
                     const isFlipped = flipped.includes(index);
                     const isSolved = solved.includes(card.name);
@@ -98,32 +95,18 @@ const SymbolMatch = () => {
                         <div
                             key={index}
                             onClick={() => handleClick(index)}
-                            style={{
-                                height: '90px',
-                                background: isSolved ? 'rgba(16, 185, 129, 0.1)' : (isFlipped ? 'var(--bg-secondary)' : 'var(--bg-surface)'),
-                                border: `2px solid ${isSolved ? '#10b981' : (isFlipped ? 'var(--brand-primary)' : 'var(--border-default)')}`,
-                                borderRadius: 'var(--radius-md)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                cursor: 'pointer',
-                                transition: 'all var(--transition-base)',
-                                fontSize: card.symbol ? '1.5rem' : '0.75rem',
-                                padding: '0.5rem',
-                                textAlign: 'center',
-                                fontWeight: 700,
-                                color: isSolved ? '#10b981' : 'var(--text-primary)',
-                            }}
+                            className={`symbol-match-card-item ${isSolved ? 'solved' : ''} ${isFlipped ? 'flipped' : ''}`}
                         >
                             {(isFlipped || isSolved) ? (card.symbol || card.name) : <Brain size={20} style={{ opacity: 0.1 }} />}
                         </div>
                     );
                 })}
             </div>
+            
             {solved.length === symbols.length / 2 && (
-                <div className="fade-in" style={{ marginTop: '2rem', textAlign: 'center', background: 'var(--bg-secondary)', padding: '1.5rem', borderRadius: '16px' }}>
+                <div className="symbol-match-complete fade-in">
                     <CheckCircle2 size={32} color="#10b981" />
-                    <h4 style={{ color: '#10b981', mt: '0.5rem' }}>¡Transmisión Completa!</h4>
+                    <h4>¡Transmisión Completa!</h4>
                 </div>
             )}
         </Card>
@@ -189,51 +172,43 @@ const TruthQuest = () => {
     const q = questions[current];
 
     return (
-        <Card className="fade-in" style={{ borderTop: '4px solid #f59e0b', height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <Card className="truth-quest-card fade-in">
+            <div className="truth-quest-header">
+                <h3 className="truth-quest-title">
                     <Zap size={24} color="#f59e0b" /> Desafío Binario
                 </h3>
-                <div style={{ display: 'flex', gap: '1rem' }}>
-                    <Badge variant="secondary"><Timer size={14} style={{ verticalAlign: 'middle', mr: 4 }} /> {timeLeft}s</Badge>
+                <div className="truth-quest-badges">
+                    <Badge variant="secondary"><Timer size={14} /> {timeLeft}s</Badge>
                     <Badge variant="primary">PT: {score}</Badge>
                 </div>
             </div>
 
             {gameState === 'start' && (
-                <div style={{ textAlign: 'center', margin: 'auto' }}>
-                    <Award size={40} color="#f59e0b" style={{ mb: '1rem' }} />
-                    <h3 className="mb-4">Deducción Veloz</h3>
+                <div className="truth-quest-start">
+                    <Award size={40} color="#f59e0b" />
+                    <h3>Deducción Veloz</h3>
                     <Button onClick={startGame}>Iniciar Secuencia</Button>
                 </div>
             )}
 
             {gameState === 'playing' && (
-                <div style={{ textAlign: 'center', margin: 'auto', width: '100%' }}>
-                    <div style={{ 
-                        fontSize: '2.5rem', 
-                        padding: '2rem', 
-                        background: 'var(--bg-secondary)', 
-                        borderRadius: '20px', 
-                        fontFamily: 'monospace',
-                        marginBottom: '2rem',
-                        border: feedback === 'correct' ? '2px solid #10b981' : (feedback === 'wrong' ? '2px solid #ef4444' : '1px solid var(--border-default)')
-                    }}>
-                        <span style={{ color: q.p ? '#10b981' : '#ef4444' }}>{q.p ? 'V' : 'F'}</span>
-                        <span style={{ margin: '0 1rem', opacity: 0.3 }}>{q.op}</span>
-                        <span style={{ color: q.q ? '#10b981' : '#ef4444' }}>{q.q ? 'V' : 'F'}</span>
+                <div className="truth-quest-playing">
+                    <div className={`truth-quest-expression ${feedback === 'correct' ? 'correct' : feedback === 'wrong' ? 'wrong' : ''}`}>
+                        <span className="truth-value-true">{q.p ? 'V' : 'F'}</span>
+                        <span className="truth-operator">{q.op}</span>
+                        <span className={q.q ? 'truth-value-true' : 'truth-value-false'}>{q.q ? 'V' : 'F'}</span>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                        <Button style={{ background: '#10b981' }} onClick={() => handleAnswer(true)}>V</Button>
-                        <Button style={{ background: '#ef4444' }} onClick={() => handleAnswer(false)}>F</Button>
+                    <div className="truth-quest-actions">
+                        <Button className="truth-btn-true" onClick={() => handleAnswer(true)}>V</Button>
+                        <Button className="truth-btn-false" onClick={() => handleAnswer(false)}>F</Button>
                     </div>
                 </div>
             )}
 
             {gameState === 'end' && (
-                <div style={{ textAlign: 'center', margin: 'auto' }}>
-                    <h2 className="text-gradient mb-2">{score} PUNTOS</h2>
-                    <p className="mb-4">Rendimiento cognoscitivo procesado.</p>
+                <div className="truth-quest-end">
+                    <h2 className="text-gradient">{score} PUNTOS</h2>
+                    <p>Rendimiento cognoscitivo procesado.</p>
                     <Button onClick={startGame}>Reiniciar</Button>
                 </div>
             )}
@@ -259,7 +234,7 @@ const DynamicGameModule = ({ type, icon: Icon, color }) => {
         } catch (err) { console.error(err); } finally { setLoading(false); }
     };
 
-    if (loading) return <Card style={{ textAlign: 'center' }}>Cargando desafíos...</Card>;
+    if (loading) return <Card className="game-module-loading">Cargando desafíos...</Card>;
     if (contents.length === 0) return null;
 
     const current = contents[currentIndex];
@@ -276,40 +251,29 @@ const DynamicGameModule = ({ type, icon: Icon, color }) => {
     };
 
     return (
-        <Card className="fade-in" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textTransform: 'capitalize' }}>
+        <Card className="game-module-card">
+            <div className="game-module-header">
+                <h3 className="game-module-title">
                     <Icon size={20} color={color} /> {type}s
                 </h3>
                 <Badge variant={current.dificultad === 'facil' ? 'success' : 'primary'}>{current.dificultad}</Badge>
             </div>
 
-            <div style={{ flex: 1 }}>
-                <h4 className="mb-4">{current.titulo}</h4>
-                <div style={{ 
-                    padding: '1.5rem', 
-                    background: 'var(--bg-secondary)', 
-                    borderRadius: '12px', 
-                    textAlign: 'center',
-                    marginBottom: '1.5rem',
-                    minHeight: '80px'
-                }}>
+            <div className="game-module-body">
+                <h4 className="game-module-question">{current.titulo}</h4>
+                <div className="game-module-description">
                     {current.descripcion}
                 </div>
 
                 {type === 'trivia' && current.opciones && (
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                    <div className="game-module-options">
                         {current.opciones.map((opt, i) => (
                             <Button 
                                 key={i}
                                 variant="secondary"
                                 onClick={() => !showAnswer && checkTriviaAnswer(opt)}
                                 disabled={showAnswer}
-                                style={{ 
-                                    background: showAnswer && opt === current.respuesta ? 'rgba(16, 185, 129, 0.1)' : 'transparent',
-                                    color: showAnswer && opt === current.respuesta ? '#10b981' : 'inherit',
-                                    borderColor: showAnswer && opt === current.respuesta ? '#10b981' : 'var(--border-default)'
-                                }}
+                                className={`game-module-option ${showAnswer && opt === current.respuesta ? 'correct-answer' : ''}`}
                             >
                                 {opt}
                             </Button>
@@ -318,18 +282,22 @@ const DynamicGameModule = ({ type, icon: Icon, color }) => {
                 )}
             </div>
 
-            <div style={{ marginTop: 'auto' }}>
+            <div className="game-module-footer">
                 {(showAnswer || ['paradoja', 'adivinanza', 'rompecabezas'].includes(type)) && (
-                    <div style={{ padding: '1rem', background: 'var(--bg-secondary)', borderRadius: '8px', borderLeft: `4px solid ${color}`, marginBottom: '1rem' }}>
-                         <small style={{ fontWeight: 800, opacity: 0.5, display: 'block' }}>REVELACIÓN:</small>
-                         <p style={{ fontWeight: 700 }}>{current.respuesta}</p>
+                    <div className="game-module-answer" style={{ borderLeftColor: color }}>
+                        <small>REVELACIÓN:</small>
+                        <p>{current.respuesta}</p>
                     </div>
                 )}
-                <div style={{ display: 'flex', gap: '1rem' }}>
+                <div className="game-module-actions">
                     {!showAnswer && ['adivinanza', 'rompecabezas'].includes(type) && (
-                        <Button variant="secondary" onClick={() => setShowAnswer(true)} style={{ flex: 1 }}><Eye size={16} /> Resolver</Button>
+                        <Button variant="secondary" onClick={() => setShowAnswer(true)} className="game-module-solve">
+                            <Eye size={16} /> Resolver
+                        </Button>
                     )}
-                    <Button onClick={handleNext} style={{ flex: 1 }}>Siguiente <ChevronRight size={16} /></Button>
+                    <Button onClick={handleNext} className="game-module-next">
+                        Siguiente <ChevronRight size={16} />
+                    </Button>
                 </div>
             </div>
         </Card>
@@ -338,18 +306,22 @@ const DynamicGameModule = ({ type, icon: Icon, color }) => {
 
 const LogicGames = () => {
     return (
-        <div className="container fade-in">
-            <header className="mb-4" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                     <h1 className="mb-2"><span className="text-gradient">Laboratorio</span> de Juegos</h1>
-                     <p style={{ color: 'var(--text-secondary)' }}>Retos interactivos para expandir tu capacidad de razonamiento.</p>
+        <div className="logic-games-container fade-in">
+            <header className="logic-games-header">
+                <div className="logic-games-header-left">
+                    <h1 className="logic-games-title">
+                        <span className="text-gradient">Laboratorio</span> de Juegos
+                    </h1>
+                    <p className="logic-games-subtitle">
+                        Retos interactivos para expandir tu capacidad de razonamiento.
+                    </p>
                 </div>
-                <Link to="/dashboard" style={{ textDecoration: 'none' }}>
+                <Link to="/dashboard" className="logic-games-back">
                     <Button variant="secondary"><ArrowLeft size={16} /> Panel</Button>
                 </Link>
             </header>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
+            <div className="logic-games-grid">
                 <SymbolMatch />
                 <TruthQuest />
                 <DynamicGameModule type="trivia" icon={HelpCircle} color="var(--brand-primary)" />

@@ -1,3 +1,4 @@
+// src/pages/SetTheory.jsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Layers, Info, CheckCircle2, RotateCcw } from 'lucide-react';
@@ -38,103 +39,66 @@ const SetTheoryLab = () => {
     const isHighlighted = (part) => operations[operation].highlight.includes(part);
 
     return (
-        <div className="container fade-in" style={{ maxWidth: '1000px' }}>
-            <header className="mb-4" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                     <h1 className="mb-2">Unidad 4: <span className="text-gradient">Teoría</span> de Conjuntos</h1>
-                     <p style={{ color: 'var(--text-secondary)' }}>Explora el universo de los grupos lógicos y sus interacciones.</p>
+        <div className="settheory-container fade-in">
+            {/* Header */}
+            <header className="settheory-header">
+                <div className="settheory-header-left">
+                    <h1 className="settheory-title">
+                        Unidad 4: <span className="text-gradient">Teoría</span> de Conjuntos
+                    </h1>
+                    <p className="settheory-subtitle">
+                        Explora el universo de los grupos lógicos y sus interacciones.
+                    </p>
                 </div>
-                <Link to="/dashboard" style={{ textDecoration: 'none' }}>
+                <Link to="/dashboard" className="settheory-back-link">
                     <Button variant="secondary"><ArrowLeft size={16} /> Volver</Button>
                 </Link>
             </header>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1fr)', gap: '2rem' }}>
-                {/* Visualizer card */}
-                <Card style={{ padding: '2rem', borderTop: '4px solid #8b5cf6', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <h3 className="mb-4" style={{ color: '#8b5cf6' }}>Visualizador de Venn</h3>
+            {/* Grid principal - 2 columnas responsivo */}
+            <div className="settheory-two-column-grid">
+                {/* Visualizador de Venn */}
+                <Card className="settheory-venn-card" style={{ padding: '2rem', borderTop: '4px solid #8b5cf6', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <h3 className="settheory-venn-title" style={{ color: '#8b5cf6' }}>Visualizador de Venn</h3>
                     
-                    <div style={{ 
-                        position: 'relative', 
-                        width: '400px', 
-                        height: '280px', 
-                        margin: '2rem 0',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                    }}>
+                    {/* Diagrama de Venn - RESPONSIVE */}
+                    <div className="settheory-venn-diagram">
                         {/* Circle A */}
-                        <div style={{ 
-                            width: '200px', 
-                            height: '200px', 
-                            borderRadius: '50%', 
-                            border: '2px solid var(--text-primary)',
-                            position: 'relative',
-                            zIndex: 1,
-                            background: isHighlighted('left') ? 'rgba(139, 92, 246, 0.4)' : 'transparent',
-                            transition: 'all 0.3s ease'
-                        }}>
-                             <span style={{ position: 'absolute', top: -30, left: 10, fontWeight: 900 }}>Conjunto A</span>
+                        <div className={`settheory-circle-a ${isHighlighted('left') ? 'highlighted' : ''}`}>
+                            <span className="settheory-circle-label-a">Conjunto A</span>
                         </div>
 
-                        {/* Intersection Area (The overlap is a bit tricky with pure CSS backgrounds, so we use a middle overlay) */}
-                        <div style={{
-                            width: '100px',
-                            height: '160px',
-                            background: isHighlighted('center') ? 'rgba(139, 92, 246, 0.4)' : 'transparent',
-                            position: 'absolute',
-                            zIndex: 3,
-                            borderRadius: '50% 50% 50% 50%',
-                            left: '150px',
-                            transition: 'all 0.3s ease'
-                        }}></div>
+                        {/* Intersection Area */}
+                        <div className={`settheory-intersection ${isHighlighted('center') ? 'highlighted' : ''}`}></div>
 
                         {/* Circle B */}
-                        <div style={{ 
-                            width: '200px', 
-                            height: '200px', 
-                            borderRadius: '50%', 
-                            border: '2px solid var(--text-primary)',
-                            marginLeft: '-100px',
-                            zIndex: 2,
-                            background: isHighlighted('right') ? 'rgba(139, 92, 246, 0.4)' : 'transparent',
-                            transition: 'all 0.3s ease'
-                        }}>
-                            <span style={{ position: 'absolute', top: -30, right: 10, fontWeight: 900 }}>Conjunto B</span>
+                        <div className={`settheory-circle-b ${isHighlighted('right') ? 'highlighted' : ''}`}>
+                            <span className="settheory-circle-label-b">Conjunto B</span>
                         </div>
                     </div>
 
-                    <div style={{ textAlign: 'center', background: 'var(--bg-secondary)', padding: '1.5rem', borderRadius: '16px', width: '100%' }}>
-                        <h4 className="mb-2" style={{ color: '#8b5cf6' }}>{operations[operation].title}</h4>
-                        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>{operations[operation].desc}</p>
+                    {/* Información de la operación */}
+                    <div className="settheory-operation-info">
+                        <h4 className="settheory-operation-title" style={{ color: '#8b5cf6' }}>{operations[operation].title}</h4>
+                        <p className="settheory-operation-desc">{operations[operation].desc}</p>
                     </div>
                 </Card>
 
-                {/* Operations Explorer */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                    <Card style={{ borderTop: '4px solid var(--brand-secondary)' }}>
-                        <h4 className="mb-4">Operaciones Disponibles</h4>
-                        <div style={{ display: 'grid', gap: '1rem' }}>
+                {/* Operaciones y datos curiosos */}
+                <div className="settheory-sidebar">
+                    {/* Operaciones */}
+                    <Card className="settheory-operations-card" style={{ borderTop: '4px solid var(--brand-secondary)' }}>
+                        <h4 className="settheory-operations-title">Operaciones Disponibles</h4>
+                        <div className="settheory-operations-list">
                             {Object.entries(operations).map(([key, op]) => (
                                 <button
                                     key={key}
                                     onClick={() => setOperation(key)}
-                                    style={{
-                                        padding: '1.25rem',
-                                        textAlign: 'left',
-                                        borderRadius: '12px',
-                                        background: operation === key ? 'rgba(139, 92, 246, 0.1)' : 'var(--bg-secondary)',
-                                        border: `2px solid ${operation === key ? '#8b5cf6' : 'var(--border-default)'}`,
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s',
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        alignItems: 'center'
-                                    }}
+                                    className={`settheory-operation-btn ${operation === key ? 'active' : ''}`}
                                 >
                                     <div>
-                                        <div style={{ fontWeight: 800, fontSize: '0.9rem' }}>{op.title}</div>
-                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{op.symbol}</div>
+                                        <div className="settheory-operation-name">{op.title}</div>
+                                        <div className="settheory-operation-symbol">{op.symbol}</div>
                                     </div>
                                     {operation === key && <CheckCircle2 size={18} color="#8b5cf6" />}
                                 </button>
@@ -142,12 +106,13 @@ const SetTheoryLab = () => {
                         </div>
                     </Card>
 
-                    <Card style={{ background: 'var(--bg-surface)', borderLeft: '4px solid #10b981' }}>
-                        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    {/* Dato curioso */}
+                    <Card className="settheory-fact-card" style={{ background: 'var(--bg-surface)', borderLeft: '4px solid #10b981' }}>
+                        <div className="settheory-fact-header">
                             <Info size={20} color="#10b981" />
-                            <div style={{ fontWeight: 800, fontSize: '0.85rem' }}>Dato Curioso</div>
+                            <div className="settheory-fact-title">Dato Curioso</div>
                         </div>
-                        <p style={{ fontSize: '0.8rem', marginTop: '0.5rem', color: 'var(--text-secondary)' }}>
+                        <p className="settheory-fact-text">
                             La Teoría de Conjuntos fue desarrollada por Georg Cantor a finales del siglo XIX y es la base de casi toda la matemática moderna.
                         </p>
                     </Card>
