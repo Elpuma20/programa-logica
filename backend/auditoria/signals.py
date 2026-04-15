@@ -13,6 +13,7 @@ def log_contenido_save(sender, instance, created, **kwargs):
         Bitacora.objects.create(
             usuario=user,
             accion=accion,
+            nivel='INFO',
             modelo='Contenido Lógico',
             objeto_id=str(instance.id),
             detalle=f"{accion} de {instance.tipo}: {instance.titulo}"
@@ -25,6 +26,7 @@ def log_contenido_delete(sender, instance, **kwargs):
         Bitacora.objects.create(
             usuario=user,
             accion='ELIMINAR',
+            nivel='WARNING',
             modelo='Contenido Lógico',
             objeto_id=str(instance.id),
             detalle=f"ELIMINAR de {instance.tipo}: {instance.titulo}"
@@ -33,12 +35,12 @@ def log_contenido_delete(sender, instance, **kwargs):
 @receiver(post_save, sender=Usuario)
 def log_usuario_save(sender, instance, created, **kwargs):
     user = get_current_user()
-    # Log creation of new users or updates (excluding initial creation without current user like register)
     if user and user.is_authenticated:
         accion = 'CREAR' if created else 'EDITAR'
         Bitacora.objects.create(
             usuario=user,
             accion=accion,
+            nivel='WARNING' if accion == 'EDITAR' else 'INFO',
             modelo='Usuario',
             objeto_id=str(instance.id),
             detalle=f"{accion} de perfil: {instance.correo}"

@@ -352,7 +352,7 @@ const LogicLesson = () => {
         <div className="container fade-in" style={{ maxWidth: '900px' }}>
             <header className="mb-4" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                 <Link to="/dashboard" style={{ textDecoration: 'none' }}>
-                    <Button variant="secondary"><ArrowLeft size={16} /> Panel</Button>
+                    <Button variant="secondary"><ArrowLeft size={16} /> Volver</Button>
                 </Link>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                     {LESSON_DATA.map((_, i) => (
@@ -368,7 +368,7 @@ const LogicLesson = () => {
                             <step.icon size={28} />
                         </div>
                         <div>
-                            <p style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>UNIDAD 1: {step.title}</p>
+                            <p style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>{step.title}</p>
                             <h2 className="text-gradient">Lógica Proposicional</h2>
                         </div>
                     </div>

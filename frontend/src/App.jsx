@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Header from './components/Header';
+import FloatingConsole from './components/FloatingConsole';
 import Footer from './components/Footer';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -86,6 +87,7 @@ const AppContent = () => {
             <Route path="/admin" element={<PrivateRoute><AdminPanel /></PrivateRoute>} />
           </Routes>
         </main>
+        <FloatingConsole />
         <Footer />
       </div>
     </Router>

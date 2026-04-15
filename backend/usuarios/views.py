@@ -4,6 +4,15 @@ from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from .serializers import RegistroSerializer, LoginSerializer, UsuarioSerializer
 from .models import Usuario
+from auditoria.models import Bitacora
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
 
 class RegistroView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -24,13 +33,37 @@ class LoginView(APIView):
     
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
+        ip = get_client_ip(request)
+        
         if serializer.is_valid():
             user = serializer.validated_data
             token, created = Token.objects.get_or_create(user=user)
+            
+            # Log Successful Login
+            Bitacora.objects.create(
+                usuario=user,
+                accion='LOGIN',
+                nivel='INFO',
+                modelo='Seguridad',
+                detalle=f"Acceso exitoso al sistema: {user.correo}",
+                ip_address=ip
+            )
+            
             return Response({
                 'token': token.key,
                 'user': UsuarioSerializer(user).data
             }, status=status.HTTP_200_OK)
+        
+        # Log Failed Login
+        correo = request.data.get('correo', 'Desconocido')
+        Bitacora.objects.create(
+            usuario=None,
+            accion='LOGIN_ERROR',
+            nivel='CRITICAL',
+            modelo='Seguridad',
+            detalle=f"Fallo de atenticación para: {correo}",
+            ip_address=ip
+        )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UsuarioDetalleView(APIView):

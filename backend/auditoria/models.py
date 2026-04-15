@@ -8,6 +8,13 @@ class Bitacora(models.Model):
         ('ELIMINAR', 'Eliminación'),
         ('LOGIN', 'Inicio de Sesión'),
         ('LOGOUT', 'Cierre de Sesión'),
+        ('LOGIN_ERROR', 'Error de Acceso'),
+    ]
+
+    NIVELES = [
+        ('INFO', 'Información'),
+        ('WARNING', 'Advertencia'),
+        ('CRITICAL', 'Crítico'),
     ]
 
     usuario = models.ForeignKey(
@@ -18,6 +25,7 @@ class Bitacora(models.Model):
         related_name='logs'
     )
     accion = models.CharField(max_length=20, choices=ACCIONES)
+    nivel = models.CharField(max_length=10, choices=NIVELES, default='INFO')
     modelo = models.CharField(max_length=100, null=True, blank=True)
     objeto_id = models.CharField(max_length=100, null=True, blank=True)
     detalle = models.TextField()

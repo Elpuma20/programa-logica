@@ -31,7 +31,7 @@ const BooleanAlgebra = () => {
             <header className="boolean-header">
                 <div className="boolean-header-left">
                     <h1 className="boolean-title">
-                        Unidad 5: <span className="text-gradient">Arquitectura Lógica</span>
+                        <span className="text-gradient">Arquitectura Lógica</span>
                     </h1>
                     <p className="boolean-subtitle">
                         Del pensamiento binario al hardware: Álgebra de Boole y Circuitos.

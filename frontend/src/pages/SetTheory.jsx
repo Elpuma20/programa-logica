@@ -44,7 +44,7 @@ const SetTheoryLab = () => {
             <header className="settheory-header">
                 <div className="settheory-header-left">
                     <h1 className="settheory-title">
-                        Unidad 4: <span className="text-gradient">Teoría</span> de Conjuntos
+                        <span className="text-gradient">Teoría</span> de Conjuntos
                     </h1>
                     <p className="settheory-subtitle">
                         Explora el universo de los grupos lógicos y sus interacciones.

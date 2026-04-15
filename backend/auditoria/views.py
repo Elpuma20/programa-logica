@@ -11,10 +11,13 @@ class BitacoraViewSet(viewsets.ReadOnlyModelViewSet):
         queryset = Bitacora.objects.all().select_related('usuario')
         usuario_id = self.request.query_params.get('usuario', None)
         accion = self.request.query_params.get('accion', None)
+        nivel = self.request.query_params.get('nivel', None)
         
         if usuario_id:
             queryset = queryset.filter(usuario_id=usuario_id)
         if accion:
             queryset = queryset.filter(accion=accion)
+        if nivel:
+            queryset = queryset.filter(nivel=nivel)
             
         return queryset

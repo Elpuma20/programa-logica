@@ -30,6 +30,13 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=False)
     
+    ROLES = [
+        ('ESTUDIANTE', 'Estudiante'),
+        ('DOCENTE', 'Docente'),
+        ('ADMIN', 'Administrador'),
+    ]
+    rol = models.CharField(max_length=20, choices=ROLES, default='ESTUDIANTE')
+    
     objects = UsuarioManager()
     
     USERNAME_FIELD = 'correo'

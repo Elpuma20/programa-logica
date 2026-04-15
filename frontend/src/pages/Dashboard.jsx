@@ -14,7 +14,6 @@ import Button from '../components/ui/Button';
 const MODULES = [
     {
         id: 'u1',
-        unit: 'Unidad 1',
         title: 'Lógica Proposicional',
         desc: 'Domina las tablas de verdad, conectivos lógicos y leyes del razonamiento formal.',
         icon: Table2,
@@ -25,7 +24,6 @@ const MODULES = [
     },
     {
         id: 'u2',
-        unit: 'Unidad 2',
         title: 'Inferencia y Demostración',
         desc: 'Aplica reglas de inferencia y métodos de demostración para validar razonamientos.',
         icon: Brain,
@@ -36,7 +34,6 @@ const MODULES = [
     },
     {
         id: 'lab',
-        unit: 'Práctica',
         title: 'Laboratorio de Retos',
         desc: 'Pon a prueba tu agilidad mental con trivias, acertijos y paradojas interactivas.',
         icon: Target,
@@ -47,7 +44,6 @@ const MODULES = [
     },
     {
         id: 'u3',
-        unit: 'Unidad 3',
         title: 'Lógica de Predicados',
         desc: 'Explora el análisis profundo de sujetos y propiedades con cuantificadores universales.',
         icon: GitBranch,
@@ -58,7 +54,6 @@ const MODULES = [
     },
     {
         id: 'u4',
-        unit: 'Unidad 4',
         title: 'Teoría de Conjuntos',
         desc: 'Fundamentos de agrupación de datos, diagramas de Venn y relaciones lógicas.',
         icon: Layers,
@@ -69,7 +64,6 @@ const MODULES = [
     },
     {
         id: 'u5',
-        unit: 'Unidad 5',
         title: 'Álgebra de Boole',
         desc: 'Simplificación de funciones, compuertas lógicas y optimización de circuitos binarios.',
         icon: Binary,
@@ -87,18 +81,21 @@ const Dashboard = () => {
         <div className="dashboard-container container fade-in">
             {/* Header del Dashboard - RESPONSIVE */}
             <header className="dashboard-header">
-                <div className="dashboard-header-left">
-                    <div className="dashboard-icon">
-                        <BrainCircuit size={24} />
+                <div className="dashboard-header-content">
+                    <div className="dashboard-welcome-group">
+                        <div className="dashboard-icon hide-mobile">
+                            <BrainCircuit size={24} />
+                        </div>
+                        <div>
+                            <p className="dashboard-welcome">
+                                Hola, <span className="dashboard-user">{user?.nombres?.split(' ')[0] || 'Agente'}</span>
+                            </p>
+                            <p className="dashboard-subtitle hide-mobile">Explora tus módulos de entrenamiento</p>
+                        </div>
                     </div>
-                    <div>
-                        <p className="dashboard-welcome">
-                            Bienvenido, <span className="dashboard-user">{user?.nombres || 'Agente'}</span>.
-                        </p>
-                    </div>
-                </div>
-                <div className="dashboard-header-right">
-                    <Badge variant="success" className="dashboard-badge">Estudiante Activo</Badge>
+                    <Badge variant={user?.rol === 'ADMIN' ? 'danger' : 'success'} className="dashboard-badge">
+                        {user?.rol === 'ADMIN' ? 'Operador Root' : 'Estudiante'}
+                    </Badge>
                 </div>
             </header>
 

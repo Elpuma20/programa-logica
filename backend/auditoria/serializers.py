@@ -13,6 +13,6 @@ class BitacoraSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bitacora
         fields = [
-            'id', 'usuario', 'usuario_detalle', 'accion', 
+            'id', 'usuario', 'usuario_detalle', 'accion', 'nivel',
             'modelo', 'objeto_id', 'detalle', 'ip_address', 'timestamp'
         ]

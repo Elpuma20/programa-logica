@@ -55,17 +55,7 @@ const Header = ({ theme, toggleTheme }) => {
                     </div>
                 </div>
 
-                <Button 
-                    className="hide-desktop show-mobile"
-                    variant="ghost" 
-                    onClick={toggleMenu}
-                    style={{ display: 'none', width: 42, height: 42, padding: 0, borderRadius: '12px' }}
-                    aria-label="Menú"
-                >
-                    {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
-                </Button>
-
-                <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center' }} className={isMenuOpen ? 'mobile-menu-open' : ''}>
+                <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center' }}>
                     <Button 
                         variant="ghost" 
                         onClick={toggleTheme}
@@ -77,10 +67,10 @@ const Header = ({ theme, toggleTheme }) => {
 
                     {token ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                            {user?.is_staff && (
+                            {(user?.is_staff || user?.rol === 'ADMIN' || user?.rol === 'DOCENTE') && (
                                 <Link to="/admin" style={{ textDecoration: 'none' }}>
                                     <Button variant="secondary" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', fontWeight: 800 }}>
-                                        <Shield size={16} /> ADMIN
+                                        <Shield size={16} /> PANEL {user?.rol === 'DOCENTE' ? 'DOCENTE' : 'ADMIN'}
                                     </Button>
                                 </Link>
                             )}
@@ -107,7 +97,9 @@ const Header = ({ theme, toggleTheme }) => {
                                     <span style={{ color: 'var(--text-primary)', fontWeight: '800', fontSize: '0.85rem' }}>
                                         {user?.nombres?.split(' ')[0] || 'Usuario'}
                                     </span>
-                                    <span style={{ color: 'var(--text-muted)', fontSize: '0.65rem', fontWeight: 600 }}>Estudiante</span>
+                                    <span style={{ color: 'var(--text-muted)', fontSize: '0.65rem', fontWeight: 600 }}>
+                                        {user?.rol === 'DOCENTE' ? 'Docente' : user?.rol === 'ADMIN' ? 'Administrador' : 'Estudiante'}
+                                    </span>
                                 </div>
                             </Link>
 
@@ -121,7 +113,7 @@ const Header = ({ theme, toggleTheme }) => {
                                 <Button variant="secondary" style={{ padding: '0.6rem 1.25rem' }}>Acceder</Button>
                             </Link>
                             <Link to="/register" style={{ textDecoration: 'none' }}>
-                                <Button variant="primary" style={{ padding: '0.6rem 1.5rem', boxShadow: '0 8px 20px -6px var(--brand-glow)' }}>Registro</Button>
+                                <Button variant="primary" style={{ padding: '0.6rem 1.5rem' }}>Registro</Button>
                             </Link>
                         </div>
                     )}

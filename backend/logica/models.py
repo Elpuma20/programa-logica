@@ -28,3 +28,18 @@ class ContenidoLogico(models.Model):
     class Meta:
         verbose_name = "Contenido Lógico"
         verbose_name_plural = "Contenidos Lógicos"
+
+class Resolucion(models.Model):
+    usuario = models.ForeignKey('usuarios.Usuario', on_delete=models.CASCADE, related_name='resoluciones')
+    contenido = models.ForeignKey(ContenidoLogico, on_delete=models.CASCADE, related_name='resoluciones')
+    fecha_completada = models.DateTimeField(auto_now_add=True)
+    completado = models.BooleanField(default=True)
+    comentario_docente = models.TextField(null=True, blank=True, help_text="Comentarios de retroalimentación del docente")
+
+    def __str__(self):
+        return f"{self.usuario.correo} - {self.contenido.titulo} ({self.fecha_completada.date()})"
+
+    class Meta:
+        verbose_name = "Resolución"
+        verbose_name_plural = "Resoluciones"
+        unique_together = ('usuario', 'contenido')

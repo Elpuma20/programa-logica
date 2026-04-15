@@ -81,7 +81,7 @@ const InferenceLogic = () => {
             <header className="inference-header">
                 <div className="inference-header-left">
                     <h1 className="inference-title">
-                        Unidad 2: <span className="text-gradient">Inferencia</span>
+                        <span className="text-gradient">Inferencia</span>
                     </h1>
                     <p className="inference-subtitle">
                         El arte de validar razonamientos y demostraciones lógicas.

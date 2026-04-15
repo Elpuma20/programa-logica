@@ -33,7 +33,7 @@ const PredicateLogicLesson = () => {
             <header className="predicate-header">
                 <div className="predicate-header-left">
                     <h1 className="predicate-title">
-                        Unidad 3: <span className="text-gradient">Lógica</span> de Predicados
+                        <span className="text-gradient">Lógica</span> de Predicados
                     </h1>
                     <p className="predicate-subtitle">
                         Más allá de las proposiciones simples: cuantificadores y variables.

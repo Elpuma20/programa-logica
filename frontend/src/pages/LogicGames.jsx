@@ -306,18 +306,18 @@ const DynamicGameModule = ({ type, icon: Icon, color }) => {
 
 const LogicGames = () => {
     return (
-        <div className="logic-games-container fade-in">
-            <header className="logic-games-header">
+        <div className="logic-games-container container fade-in">
+            <header className="logic-games-header" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                 <div className="logic-games-header-left">
-                    <h1 className="logic-games-title">
-                        <span className="text-gradient">Laboratorio</span> de Juegos
+                    <h1 className="logic-games-title" style={{ fontSize: '1.8rem', margin: 0 }}>
+                        <span className="text-gradient">Laboratorio</span>
                     </h1>
-                    <p className="logic-games-subtitle">
-                        Retos interactivos para expandir tu capacidad de razonamiento.
+                    <p className="logic-games-subtitle hide-mobile" style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                        Desafíos interactivos de razonamiento.
                     </p>
                 </div>
                 <Link to="/dashboard" className="logic-games-back">
-                    <Button variant="secondary"><ArrowLeft size={16} /> Panel</Button>
+                    <Button variant="secondary"><ArrowLeft size={16} /> Volver</Button>
                 </Link>
             </header>
 
