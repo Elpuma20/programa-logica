@@ -29,7 +29,7 @@ class LoginSerializer(serializers.Serializer):
         if user:
             if not user.is_active:
                 raise serializers.ValidationError("Esta cuenta ha sido desactivada.")
-            if not user.is_verified:
-                raise serializers.ValidationError("Tu cuenta no está verificada. Por favor completa el registro.")
+            # Se permite el ingreso aunque no esté verificada por solicitud del usuario
             return user
         raise serializers.ValidationError("Correo o contraseña incorrectos.")
+
