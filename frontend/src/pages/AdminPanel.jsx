@@ -816,7 +816,17 @@ const AdminPanel = () => {
                     <Link to="/dashboard" className="w-full-mobile" style={{ textDecoration: 'none' }}>
                         <Button variant="secondary" className="w-full-mobile"><ArrowLeft size={16} /> Volver</Button>
                     </Link>
-                    {(user?.rol === 'ADMIN' || user?.is_staff) && activeTab === 'usuarios' && <Button onClick={() => setIsUserModalOpen(true)} className="w-full-mobile"><Plus size={18} /> Reclutar</Button>}
+                    {(user?.rol === 'ADMIN' || user?.is_staff) && activeTab === 'usuarios' && (
+                        <Button onClick={() => setIsUserModalOpen(true)} className="w-full-mobile">
+                            <Plus size={18} /> Reclutar
+                        </Button>
+                    )}
+                    
+                    {['trivia', 'adivinanza', 'rompecabezas', 'paradoja'].includes(activeTab) && (
+                        <Button onClick={() => handleOpenModal()} className="w-full-mobile">
+                            <Plus size={18} /> Inyectar {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+                        </Button>
+                    )}
                 </div>
             </header>
 

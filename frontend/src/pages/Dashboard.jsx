@@ -5,8 +5,9 @@ import { Link } from 'react-router-dom';
 import { 
     Table2, Brain, ChevronRight, BookOpen, Target, 
     Binary, Layers, GitBranch, GraduationCap, Sparkles,
-    Play, Layout, Cpu, BrainCircuit
+    Play, Layout, Cpu, BrainCircuit, Activity
 } from 'lucide-react';
+
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
@@ -79,25 +80,35 @@ const Dashboard = () => {
 
     return (
         <div className="dashboard-container container fade-in">
-            {/* Header del Dashboard - RESPONSIVE */}
-            <header className="dashboard-header">
+            {/* Header del Dashboard - Cyber-Premium */}
+            <header className="dashboard-header-premium fade-in">
                 <div className="dashboard-header-content">
                     <div className="dashboard-welcome-group">
-                        <div className="dashboard-icon hide-mobile">
-                            <BrainCircuit size={24} />
+                        <div className="dashboard-icon-pulse">
+                            <BrainCircuit size={28} />
                         </div>
                         <div>
-                            <p className="dashboard-welcome">
-                                Hola, <span className="dashboard-user">{user?.nombres?.split(' ')[0] || 'Agente'}</span>
-                            </p>
-                            <p className="dashboard-subtitle hide-mobile">Explora tus módulos de entrenamiento</p>
+                            <p className="dashboard-welcome-label">CONSOLE_STATUS :: ONLINE</p>
+                            <h1 className="dashboard-title-main">
+                                Hola, <span className="text-gradient">{user?.nombres?.split(' ')[0] || 'Agente'}</span>
+                            </h1>
                         </div>
                     </div>
-        <Badge variant={user?.rol === 'ADMIN' ? 'danger' : 'success'} className="dashboard-badge technical-label">
-            {user?.rol === 'ADMIN' ? 'SYSTEM OPERATOR :: ROOT' : 'STUDENT :: ACTIVE'}
-        </Badge>
+                    
+                    <div className="dashboard-meta-badges">
+                        <Badge variant="outline" className="tech-badge hide-mobile">
+                            <Activity size={12} /> SYSTEM_STABLE
+                        </Badge>
+                        <Badge variant={user?.rol === 'ADMIN' ? 'danger' : 'primary'} className="tech-badge">
+                            {user?.rol === 'ADMIN' ? 'LEVEL_01 :: ROOT' : 'LEVEL_03 :: STUDENT'}
+                        </Badge>
+                    </div>
                 </div>
             </header>
+
+
+
+
 
             {/* Sección de Módulos */}
             <div className="modules-section">
@@ -105,7 +116,7 @@ const Dashboard = () => {
                     <h2 className="modules-title-enhanced">
                         Módulos de <span>Entrenamiento</span>
                     </h2>
-                    <p className="section-description">Selecciona una unidad para comenzar tu proceso de aprendizaje lógico profesional.</p>
+
                 </div>
 
                 <div className="modules-grid">

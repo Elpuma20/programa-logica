@@ -78,7 +78,8 @@ const AppContent = () => {
       <DynamicBackground />
       <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', position: 'relative' }}>
         <Header theme={theme} toggleTheme={toggleTheme} />
-        <main style={{ flex: 1, paddingBottom: '4rem' }}>
+        <main style={{ flex: 1, paddingTop: '80px', paddingBottom: '4rem' }}>
+
           <Routes>
             <Route path="/" element={token ? <Navigate to="/dashboard" /> : <Login />} />
             <Route path="/login" element={token ? <Navigate to="/dashboard" /> : <Login />} />

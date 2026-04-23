@@ -39,84 +39,59 @@ const Header = ({ theme, toggleTheme }) => {
 
     return (
         <>
-            <div className={`nav-container ${scrolled ? 'nav-scrolled' : ''} fade-in`}>
-                <header className="header glass-header">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                        {/* Logo */}
-                        <Link to={token ? "/dashboard" : "/"} className="logo-group">
-                            <div className="logo-icon">
-                                <BrainCircuit size={22} />
+            <div className="main-header-wrapper">
+                <header className="site-navbar">
+                    <div className="navbar-inner">
+                        <Link to={token ? "/dashboard" : "/"} className="brand-logo">
+                            <div className="logo-box">
+                                <BrainCircuit size={20} />
                             </div>
-                            <span className="logo-text">
-                                Edu<span className="text-gradient">Lógica</span>
-                            </span>
+                            <span className="logo-text">Edu<span className="text-gradient">Lógica</span></span>
                         </Link>
-                        
-                        {/* Redes - Ocultas en móvil */}
-                        <div className="social-links hide-mobile">
-                            <a href="#" className="social-icon"><Twitter size={18} /></a>
-                            <a href="#" className="social-icon"><Instagram size={18} /></a>
-                            <a href="#" className="social-icon"><Facebook size={18} /></a>
-                        </div>
-                    </div>
 
-                    {/* Desktop Menu & Controls */}
-                    <div className="header-actions">
-                        <Button 
-                            variant="ghost" 
-                            onClick={toggleTheme}
-                            className="theme-toggle-btn"
-                            aria-label="Cambiar tema"
-                        >
-                            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-                        </Button>
 
-                        {token ? (
-                            <div className="desktop-nav-group hide-mobile">
-                                {(user?.is_staff || user?.rol === 'ADMIN' || user?.rol === 'DOCENTE') && (
-                                    <Link to="/admin" style={{ textDecoration: 'none' }}>
-                                        <Button variant="secondary" className="admin-btn">
-                                            <Shield size={16} /> PANEL {user?.rol === 'DOCENTE' ? 'DOCENTE' : 'ADMIN'}
-                                        </Button>
+                        <div className="header-right-actions">
+                            <button className="icon-action-btn" onClick={toggleTheme} aria-label="Cambiar tema">
+                                {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+                            </button>
+
+                            {token ? (
+                                <div className="user-access-group">
+                                    {(user?.rol === 'ADMIN' || user?.rol === 'DOCENTE') && (
+                                        <Link to="/admin" className="admin-access-link">
+                                            <Shield size={14} /> PANEL {user?.rol === 'DOCENTE' ? 'DOCENTE' : 'ADMIN'}
+                                        </Link>
+                                    )}
+                                    
+                                    <Link to="/perfil" className="user-profile-summary">
+                                        <div className="user-avatar-mini">
+                                            <User size={14} />
+                                        </div>
+                                        <div className="user-info-text">
+                                            <span className="user-name-label">{user?.nombres?.split(' ')[0]}</span>
+                                            <span className="user-role-label">{user?.rol}</span>
+                                        </div>
                                     </Link>
-                                )}
-                                
-                                <Link to="/perfil" className="profile-pill glass-card">
-                                    <div className="profile-avatar">
-                                        <User size={16} />
-                                    </div>
-                                    <div className="profile-info">
-                                        <span className="profile-name">{user?.nombres?.split(' ')[0] || 'Usuario'}</span>
-                                        <span className="profile-role">{user?.rol || 'Estudiante'}</span>
-                                    </div>
-                                </Link>
 
-                                <Button variant="ghost" onClick={logout} className="logout-btn">
-                                    <LogOut size={20} />
-                                </Button>
-                            </div>
-                        ) : (
-                            <div className="desktop-auth-group hide-mobile">
-                                <Link to="/login" style={{ textDecoration: 'none' }}>
-                                    <Button variant="secondary">Acceder</Button>
-                                </Link>
-                                <Link to="/register" style={{ textDecoration: 'none' }}>
-                                    <Button variant="primary">Registro</Button>
-                                </Link>
-                            </div>
-                        )}
+                                    <button onClick={logout} className="logout-direct-btn" title="Cerrar Sesión">
+                                        <LogOut size={18} />
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="guest-access-group">
+                                    <Link to="/login" className="login-link-btn">Ingresar</Link>
+                                    <Link to="/register" className="register-link-btn">Registrarse</Link>
+                                </div>
+                            )}
 
-                        {/* Mobile Menu Button */}
-                        <Button 
-                            variant="ghost" 
-                            onClick={toggleMenu} 
-                            className="mobile-menu-trigger show-mobile"
-                        >
-                            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                        </Button>
+                            <button className="mobile-toggle" onClick={toggleMenu}>
+                                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                            </button>
+                        </div>
                     </div>
                 </header>
             </div>
+
 
             {/* Mobile Drawer Overlay */}
             <div className={`mobile-drawer-overlay ${isMenuOpen ? 'open' : ''}`} onClick={toggleMenu} />
