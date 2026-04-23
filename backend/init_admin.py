@@ -20,8 +20,11 @@ def create_admin():
             semestre='N/A',
             area_estudios='Administración',
             telefono='0000000000',
-            direccion='Admin HQ'
+            direccion='Admin HQ',
+            rol='ADMIN',
+            is_verified=True
         )
+
         print(f"Superusuario {email} creado exitosamente.")
     else:
         print(f"El usuario {email} ya existe.")
