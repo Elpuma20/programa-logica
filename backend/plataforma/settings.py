@@ -87,6 +87,13 @@ DATABASES = {
     )
 }
 
+# Verificador de base de datos para logs
+if 'postgresql' in DATABASES['default']['ENGINE']:
+    print("✅ MODO: CONECTADO A POSTGRESQL (DATOS SEGUROS)")
+else:
+    print("⚠️ MODO: USANDO SQLITE (LOS DATOS SE BORRARÁN)")
+
+
 
 AUTH_USER_MODEL = 'usuarios.Usuario'
 
