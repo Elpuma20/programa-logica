@@ -29,6 +29,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=False)
+    verification_code = models.CharField(max_length=6, null=True, blank=True)
     
     ROLES = [
         ('ESTUDIANTE', 'Estudiante'),

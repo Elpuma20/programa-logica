@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import VerificarTablaView, ContenidoLogicoViewSet, RegistrarResolucionView, ProgresoEstudiantesView, ResponderResolucionView, HistorialResolucionesView
 
 router = DefaultRouter()
-router.register(r'contenido', ContenidoLogicoViewSet)
+router.register(r'contenido', ContenidoLogicoViewSet, basename='contenido')
 
 urlpatterns = [
     path('verificar/', VerificarTablaView.as_view(), name='verificar-tabla'),

@@ -10,11 +10,27 @@ const Input = ({ label, id, className = '', ...props }) => {
           {label}
         </label>
       )}
-      <input 
-        id={inputId}
-        className={`input-field ${className}`} 
-        {...props} 
-      />
+      <div style={{ position: 'relative' }}>
+        <input 
+          id={inputId}
+          className={`input-field ${className}`} 
+          style={{ paddingRight: props.type === 'password' || props.type === 'text' ? '3rem' : '' }}
+          {...props} 
+        />
+        {props.rightElement && (
+          <div style={{ 
+            position: 'absolute', 
+            right: '0.75rem', 
+            top: '50%', 
+            transform: 'translateY(-50%)', 
+            display: 'flex', 
+            alignItems: 'center',
+            zIndex: 10
+          }}>
+            {props.rightElement}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

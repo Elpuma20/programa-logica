@@ -10,6 +10,107 @@ import {
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
+import Input from '../components/ui/Input';
+
+const JigsawPiece = ({ image, size, x, y, dx, dy, onClick, isCorrect }) => (
+    <div 
+        onClick={onClick}
+        style={{
+            width: size,
+            height: size,
+            backgroundImage: `url(${image})`,
+            backgroundSize: `${size * 3}px ${size * 3}px`,
+            backgroundPosition: `-${dx * size}px -${dy * size}px`,
+            border: isCorrect ? '2px solid #10b981' : '2px solid rgba(255,255,255,0.4)',
+            cursor: 'pointer',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            borderRadius: '4px',
+            boxShadow: isCorrect ? 'none' : '0 4px 12px rgba(0,0,0,0.15)',
+            opacity: isCorrect ? 1 : 0.9,
+            transform: isCorrect ? 'scale(1)' : 'scale(0.98)',
+        }}
+    />
+);
+
+const ImagePuzzle = ({ image, onComplete }) => {
+    const [pieces, setPieces] = useState([]);
+    const [selected, setSelected] = useState(null);
+    const [pieceSize, setPieceSize] = useState(100);
+
+    useEffect(() => {
+        const updateSize = () => {
+            const width = window.innerWidth;
+            if (width < 400) setPieceSize(80);
+            else if (width < 500) setPieceSize(90);
+            else setPieceSize(100);
+        };
+        updateSize();
+        window.addEventListener('resize', updateSize);
+        return () => window.removeEventListener('resize', updateSize);
+    }, []);
+
+    useEffect(() => {
+        const initialPieces = [];
+        for (let y = 0; y < 3; y++) {
+            for (let x = 0; x < 3; x++) {
+                initialPieces.push({ id: y * 3 + x, x, y, dx: x, dy: y });
+            }
+        }
+        
+        let shuffled;
+        do {
+            shuffled = [...initialPieces].sort(() => Math.random() - 0.5);
+        } while (shuffled.every((p, i) => p.id === i));
+        
+        setPieces(shuffled);
+    }, [image]);
+
+    const handlePieceClick = (index) => {
+        if (selected === null) {
+            setSelected(index);
+        } else {
+            const newPieces = [...pieces];
+            const temp = newPieces[selected];
+            newPieces[selected] = newPieces[index];
+            newPieces[index] = temp;
+            setPieces(newPieces);
+            setSelected(null);
+
+            const isSolved = newPieces.every((p, i) => p.id === i);
+            if (isSolved) onComplete();
+        }
+    };
+
+    return (
+        <div style={{ padding: '0.5rem', display: 'inline-block', background: 'rgba(0,0,0,0.05)', borderRadius: '16px' }}>
+            <div className="image-puzzle-grid" style={{ 
+                display: 'grid', 
+                gridTemplateColumns: `repeat(3, ${pieceSize}px)`, 
+                gridTemplateRows: `repeat(3, ${pieceSize}px)`,
+                gap: '4px', 
+                margin: '0 auto',
+                background: 'rgba(0,0,0,0.05)',
+                padding: '4px',
+                borderRadius: '12px',
+                boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.05)'
+            }}>
+                {pieces.map((piece, i) => (
+                    <JigsawPiece 
+                        key={i}
+                        image={image}
+                        size={pieceSize}
+                        x={piece.x}
+                        y={piece.y}
+                        dx={piece.dx}
+                        dy={piece.dy}
+                        isCorrect={piece.id === i}
+                        onClick={() => handlePieceClick(i)}
+                    />
+                ))}
+            </div>
+        </div>
+    );
+};
 
 const SymbolMatch = () => {
     const symbols = [
@@ -222,6 +323,9 @@ const DynamicGameModule = ({ type, icon: Icon, color }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [showAnswer, setShowAnswer] = useState(false);
     const [userFeedback, setUserFeedback] = useState(null);
+    const [showError, setShowError] = useState(false);
+    const [shakeCard, setShakeCard] = useState(false);
+    const [userInput, setUserInput] = useState('');
 
     useEffect(() => {
         fetchData();
@@ -240,9 +344,17 @@ const DynamicGameModule = ({ type, icon: Icon, color }) => {
     const current = contents[currentIndex];
 
     const handleNext = () => {
+        if (!showAnswer && ['trivia', 'adivinanza', 'rompecabezas'].includes(type)) {
+            setShowError(true);
+            setShakeCard(true);
+            setTimeout(() => setShakeCard(false), 500);
+            return;
+        }
         setCurrentIndex((currentIndex + 1) % contents.length);
         setShowAnswer(false);
         setUserFeedback(null);
+        setShowError(false);
+        setUserInput('');
     };
 
     const checkTriviaAnswer = (option) => {
@@ -250,8 +362,29 @@ const DynamicGameModule = ({ type, icon: Icon, color }) => {
         setShowAnswer(true);
     };
 
+    const checkTypedAnswer = () => {
+        if (!userInput.trim()) {
+            setShakeCard(true);
+            setTimeout(() => setShakeCard(false), 500);
+            return;
+        }
+        
+        const cleanUser = userInput.trim().toLowerCase();
+        const cleanCorrect = current.respuesta.trim().toLowerCase();
+        
+        if (cleanUser === cleanCorrect) {
+            setUserFeedback('correct');
+            setShowAnswer(true);
+            setShowError(false);
+        } else {
+            setUserFeedback('wrong');
+            setShakeCard(true);
+            setTimeout(() => setShakeCard(false), 500);
+        }
+    };
+
     return (
-        <Card className="game-module-card">
+        <Card className={`game-module-card ${shakeCard ? 'shake' : ''}`} style={{ border: showError ? '2px solid #ef4444' : 'none' }}>
             <div className="game-module-header">
                 <h3 className="game-module-title">
                     <Icon size={20} color={color} /> {type}s
@@ -265,7 +398,7 @@ const DynamicGameModule = ({ type, icon: Icon, color }) => {
                     {current.descripcion}
                 </div>
 
-                {type === 'trivia' && current.opciones && (
+                {type === 'trivia' && current.opciones && !showAnswer && (
                     <div className="game-module-options">
                         {current.opciones.map((opt, i) => (
                             <Button 
@@ -280,25 +413,124 @@ const DynamicGameModule = ({ type, icon: Icon, color }) => {
                         ))}
                     </div>
                 )}
+
+                {type === 'rompecabezas' && current.imagen && !showAnswer && (
+                    <div className="image-puzzle-section" style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
+                            Intercambia las piezas para reconstruir la imagen lógica.
+                        </p>
+                        <ImagePuzzle 
+                            image={(() => {
+                                if (current.imagen.startsWith('http')) return current.imagen;
+                                const base = import.meta.env.PROD 
+                                    ? 'https://edulogica.onrender.com' 
+                                    : 'http://localhost:8000';
+                                return `${base}${current.imagen}`;
+                            })()} 
+                            onComplete={() => {
+                                setUserFeedback('correct');
+                                setShowAnswer(true);
+                            }}
+                        />
+                    </div>
+                )}
+
+                {type === 'rompecabezas' && !current.imagen && !showAnswer && (
+                    <div className="puzzle-assembly-area" style={{ marginTop: '1.5rem', padding: '1.5rem', background: 'rgba(0,0,0,0.02)', borderRadius: '16px', border: '2px dashed var(--border-default)' }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', justifyContent: 'center' }}>
+                            {/* Generamos "piezas" falsas basadas en la respuesta (si es número) */}
+                            {[
+                                parseInt(current.respuesta) - 2, 
+                                parseInt(current.respuesta) + 10, 
+                                current.respuesta, 
+                                parseInt(current.respuesta) * 2
+                            ].sort(() => Math.random() - 0.5).map((val, i) => (
+                                <div 
+                                    key={i}
+                                    onClick={() => {
+                                        setUserInput(val.toString());
+                                        if (val.toString().toLowerCase() === current.respuesta.toLowerCase()) {
+                                            setUserFeedback('correct');
+                                            setShowAnswer(true);
+                                        } else {
+                                            setUserFeedback('wrong');
+                                            setTimeout(() => setUserFeedback('idle'), 1000);
+                                        }
+                                    }}
+                                    style={{
+                                        padding: '1rem 1.5rem',
+                                        background: userInput === val.toString() ? 'var(--brand-primary)' : 'white',
+                                        color: userInput === val.toString() ? 'white' : 'var(--text-primary)',
+                                        borderRadius: '12px',
+                                        cursor: 'pointer',
+                                        boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
+                                        border: '2px solid var(--border-default)',
+                                        fontWeight: 800,
+                                        transition: 'all 0.2s',
+                                        transform: userInput === val.toString() ? 'scale(1.1)' : 'scale(1)',
+                                        clipPath: 'polygon(0% 15%, 15% 15%, 15% 0%, 85% 0%, 85% 15%, 100% 15%, 100% 85%, 85% 85%, 85% 100%, 15% 100%, 15% 85%, 0% 85%)'
+                                    }}
+                                >
+                                    {val}
+                                </div>
+                            ))}
+                        </div>
+                        <p style={{ textAlign: 'center', fontSize: '0.75rem', marginTop: '1rem', color: 'var(--text-muted)' }}>
+                            Selecciona la pieza que completa la secuencia lógica
+                        </p>
+                    </div>
+                )}
+
+                {type !== 'rompecabezas' && !showAnswer && (
+                    <div className="game-module-input-section" style={{ marginTop: '1.5rem' }}>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
+                            {type === 'trivia' ? 'O elige una opción arriba, o escribe aquí:' : 'Escribe tu deducción:'}
+                        </div>
+                        <Input 
+                            placeholder="Escribe tu respuesta aquí..."
+                            value={userInput}
+                            onChange={(e) => setUserInput(e.target.value)}
+                            disabled={showAnswer}
+                            style={{ 
+                                borderColor: userFeedback === 'correct' ? '#10b981' : userFeedback === 'wrong' ? '#ef4444' : '',
+                                background: userFeedback === 'correct' ? 'rgba(16, 185, 129, 0.05)' : userFeedback === 'wrong' ? 'rgba(239, 68, 68, 0.05)' : ''
+                            }}
+                        />
+                        <Button 
+                            onClick={checkTypedAnswer} 
+                            style={{ marginTop: '0.75rem', width: '100%', background: 'var(--brand-primary)' }}
+                        >
+                            Verificar Respuesta
+                        </Button>
+                    </div>
+                )}
             </div>
 
             <div className="game-module-footer">
-                {(showAnswer || ['paradoja', 'adivinanza', 'rompecabezas'].includes(type)) && (
-                    <div className="game-module-answer" style={{ borderLeftColor: color }}>
-                        <small>REVELACIÓN:</small>
-                        <p>{current.respuesta}</p>
+                {showAnswer && type !== 'rompecabezas' && (
+                    <div className="game-module-answer fade-in" style={{ borderLeftColor: color, background: userFeedback === 'correct' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                            {userFeedback === 'correct' ? <CheckCircle2 size={16} color="#10b981" /> : <XCircle size={16} color="#ef4444" />}
+                            <small style={{ fontWeight: 800 }}>{userFeedback === 'correct' ? '¡CORRECTO!' : 'RESPUESTA CORRECTA:'}</small>
+                        </div>
+                        <p style={{ fontWeight: 700 }}>{current.respuesta}</p>
                     </div>
                 )}
                 <div className="game-module-actions">
-                    {!showAnswer && ['adivinanza', 'rompecabezas'].includes(type) && (
-                        <Button variant="secondary" onClick={() => setShowAnswer(true)} className="game-module-solve">
-                            <Eye size={16} /> Resolver
+                    {!showAnswer && ['adivinanza', 'paradoja'].includes(type) && (
+                        <Button variant="ghost" onClick={() => setShowAnswer(true)} className="game-module-solve" style={{ opacity: 0.6 }}>
+                            <Eye size={14} /> Ver respuesta
                         </Button>
                     )}
-                    <Button onClick={handleNext} className="game-module-next">
+                    <Button onClick={handleNext} className="game-module-next" variant={showAnswer ? 'primary' : 'secondary'}>
                         Siguiente <ChevronRight size={16} />
                     </Button>
                 </div>
+                {showError && (
+                    <div className="error-message-pop" style={{ marginTop: '1rem', width: '100%', justifyContent: 'center' }}>
+                        Debes resolver este desafío antes de continuar
+                    </div>
+                )}
             </div>
         </Card>
     );
@@ -322,8 +554,8 @@ const LogicGames = () => {
             </header>
 
             <div className="logic-games-grid">
-                <SymbolMatch />
-                <TruthQuest />
+                {/* <SymbolMatch /> */}
+                {/* <TruthQuest /> */}
                 <DynamicGameModule type="trivia" icon={HelpCircle} color="var(--brand-primary)" />
                 <DynamicGameModule type="adivinanza" icon={Brain} color="#8b5cf6" />
                 <DynamicGameModule type="rompecabezas" icon={Puzzle} color="#ec4899" />

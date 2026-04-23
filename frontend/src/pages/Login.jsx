@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import { useAuth } from '../context/AuthContext';
-import { LogIn, AlertCircle, Mail, Lock, ShieldCheck, ChevronRight, BrainCircuit } from 'lucide-react';
+import { LogIn, AlertCircle, Mail, Lock, ShieldCheck, ChevronRight, BrainCircuit, Eye, EyeOff } from 'lucide-react';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
@@ -10,6 +10,7 @@ import Button from '../components/ui/Button';
 const Login = () => {
     const [correo, setCorreo] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const { login, loading } = useAuth();
     const navigate = useNavigate();
@@ -58,11 +59,28 @@ const Login = () => {
 
                     <Input 
                         label="Contraseña"
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
+                        rightElement={
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    color: 'var(--text-muted)',
+                                    padding: '4px'
+                                }}
+                            >
+                                {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
+                            </button>
+                        }
                     />
 
                     {error && (

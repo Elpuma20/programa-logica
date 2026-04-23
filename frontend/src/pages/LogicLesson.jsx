@@ -336,14 +336,24 @@ const StepQuiz = ({ exercises, onComplete }) => {
 const LogicLesson = () => {
     const [currentStep, setCurrentStep] = useState(0);
     const [isQuizPassed, setIsQuizPassed] = useState(false);
+    const [showBlockError, setShowBlockError] = useState(false);
+    const [shakeQuiz, setShakeQuiz] = useState(false);
     const step = LESSON_DATA[currentStep];
     const progress = ((currentStep + 1) / LESSON_DATA.length) * 100;
 
     const handleStepChange = (dir) => {
+        if (dir > 0 && !isQuizPassed) {
+            setShowBlockError(true);
+            setShakeQuiz(true);
+            setTimeout(() => setShakeQuiz(false), 500);
+            return;
+        }
+
         const next = currentStep + dir;
         if (next >= 0 && next < LESSON_DATA.length) {
             setCurrentStep(next);
             setIsQuizPassed(false);
+            setShowBlockError(false);
             window.scrollTo(0, 0);
         }
     };
@@ -380,16 +390,28 @@ const LogicLesson = () => {
                     <div style={{ marginTop: '2.5rem', paddingTop: '2rem', borderTop: '1px solid var(--border-default)', display: 'flex', justifyContent: 'space-between' }}>
                         <Button variant="secondary" disabled={currentStep === 0} onClick={() => handleStepChange(-1)}>Anterior</Button>
                         {currentStep < LESSON_DATA.length - 1 ? (
-                            <Button disabled={!isQuizPassed} onClick={() => handleStepChange(1)}>Continuar <ArrowRight size={18} /></Button>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
+                                <Button onClick={() => handleStepChange(1)}>Continuar <ArrowRight size={18} /></Button>
+                                {showBlockError && (
+                                    <span className="fade-in" style={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: 700 }}>
+                                        Completa el desafío para avanzar
+                                    </span>
+                                )}
+                            </div>
                         ) : (
                             <Link to="/logica" style={{ textDecoration: 'none' }}>
-                                <Button style={{ background: '#10b981' }} disabled={!isQuizPassed}><CheckCircle2 size={18} /> Certificar</Button>
+                                <Button style={{ background: '#10b981' }} onClick={(e) => {
+                                    if (!isQuizPassed) {
+                                        e.preventDefault();
+                                        handleStepChange(1);
+                                    }
+                                }}><CheckCircle2 size={18} /> Certificar</Button>
                             </Link>
                         )}
                     </div>
                 </Card>
 
-                <div className="glass-card" style={{ position: 'sticky', top: '100px' }}>
+                <div className={`glass-card ${shakeQuiz ? 'shake' : ''}`} style={{ position: 'sticky', top: '100px', border: showBlockError ? '2px solid #ef4444' : 'none' }}>
                     <Card style={{ borderTop: '4px solid var(--brand-secondary)' }}>
                         {!isQuizPassed ? (
                             <StepQuiz exercises={step.exercises} onComplete={() => setIsQuizPassed(true)} />

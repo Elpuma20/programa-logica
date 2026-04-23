@@ -23,7 +23,13 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField()
     
     def validate(self, data):
-        user = authenticate(username=data.get('correo'), password=data.get('password'))
-        if user and user.is_active:
+        correo = data.get('correo')
+        password = data.get('password')
+        user = authenticate(username=correo, password=password)
+        if user:
+            if not user.is_active:
+                raise serializers.ValidationError("Esta cuenta ha sido desactivada.")
+            if not user.is_verified:
+                raise serializers.ValidationError("Tu cuenta no está verificada. Por favor completa el registro.")
             return user
-        raise serializers.ValidationError("correo o contraseña incorrectos...")
+        raise serializers.ValidationError("Correo o contraseña incorrectos.")

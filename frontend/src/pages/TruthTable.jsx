@@ -29,6 +29,7 @@ const TruthTable = () => {
     const [localError, setLocalError] = useState(null);
     const [feedback, setFeedback] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [shakeCard, setShakeCard] = useState(false);
 
     const handleValueChange = useCallback((index, val) => {
         setRows(prev => {
@@ -55,6 +56,8 @@ const TruthTable = () => {
             setFeedback(res.data);
             if (!res.data.all_correct) {
                 setLocalError("Hay errores en tu tabla. Revisa los indicadores y corrige.");
+                setShakeCard(true);
+                setTimeout(() => setShakeCard(false), 500);
             }
         } catch (err) {
             setLocalError("Error de conexión con el servidor de validación.");
@@ -66,6 +69,8 @@ const TruthTable = () => {
     const siguienteEjercicio = useCallback(() => {
         if (!feedback?.all_correct) {
             setLocalError("Debes validar correctamente el ejercicio actual antes de avanzar.");
+            setShakeCard(true);
+            setTimeout(() => setShakeCard(false), 500);
             return;
         }
 
@@ -93,7 +98,7 @@ const TruthTable = () => {
             </header>
 
             {/* Card principal */}
-            <Card className="truthtable-main-card" style={{ borderTop: '4px solid var(--brand-primary)' }}>
+            <Card className={`truthtable-main-card ${shakeCard ? 'shake' : ''}`} style={{ borderTop: '4px solid var(--brand-primary)', border: localError ? '2px solid #ef4444' : '1px solid var(--border-default)' }}>
                 
                 {/* Encabezado con proposición */}
                 <div className="truthtable-header-section">
@@ -170,7 +175,7 @@ const TruthTable = () => {
 
                 {/* Mensaje de error */}
                 {localError && (
-                    <div className="truthtable-error-message">
+                    <div className="error-message-pop" style={{ justifyContent: 'center' }}>
                         <AlertCircle size={20} /> {localError}
                     </div>
                 )}

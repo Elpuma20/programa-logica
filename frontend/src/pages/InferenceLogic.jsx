@@ -12,6 +12,7 @@ import Badge from '../components/ui/Badge';
 const InferenceLogic = () => {
     const [step, setStep] = useState(1);
     const [quizAnswer, setQuizAnswer] = useState(null);
+    const [showError, setShowError] = useState(false);
 
     const theoryData = {
         1: {
@@ -81,7 +82,7 @@ const InferenceLogic = () => {
             <header className="inference-header">
                 <div className="inference-header-left">
                     <h1 className="inference-title">
-                        <span className="text-gradient">Inferencia</span>
+                        Inferencia
                     </h1>
                     <p className="inference-subtitle">
                         El arte de validar razonamientos y demostraciones lógicas.
@@ -132,25 +133,44 @@ const InferenceLogic = () => {
                         <Button 
                             variant="ghost" 
                             disabled={step === 1} 
-                            onClick={() => { setStep(s => s - 1); setQuizAnswer(null); }}
+                            onClick={() => { setStep(s => s - 1); setQuizAnswer(null); setShowError(false); }}
                             className="inference-nav-prev"
                         >
                             Anterior
                         </Button>
                         {step === 1 ? (
-                            <Button 
-                                disabled={quizAnswer !== currentData.correct} 
-                                onClick={() => { setStep(s => s + 1); setQuizAnswer(null); }}
-                                className="inference-nav-next"
-                            >
-                                Continuar <ChevronRight size={18} />
-                            </Button>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
+                                <Button 
+                                    onClick={() => { 
+                                        if (quizAnswer === currentData.correct) {
+                                            setStep(s => s + 1); 
+                                            setQuizAnswer(null);
+                                            setShowError(false);
+                                        } else {
+                                            setShowError(true);
+                                        }
+                                    }}
+                                    className="inference-nav-next"
+                                >
+                                    Continuar <ChevronRight size={18} />
+                                </Button>
+                                {showError && (
+                                    <span className="error-message-pop" style={{ marginTop: '0.25rem' }}>
+                                        Selecciona la respuesta correcta
+                                    </span>
+                                )}
+                            </div>
                         ) : (
                             <Link to="/dashboard" style={{ textDecoration: 'none' }}>
                                 <Button 
                                     className="inference-nav-finish" 
                                     style={{ background: '#10b981' }} 
-                                    disabled={quizAnswer !== currentData.correct}
+                                    onClick={(e) => {
+                                        if (quizAnswer !== currentData.correct) {
+                                            e.preventDefault();
+                                            setShowError(true);
+                                        }
+                                    }}
                                 >
                                     <CheckCircle2 size={18} /> Finalizar Unidad
                                 </Button>

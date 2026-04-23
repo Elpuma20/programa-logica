@@ -76,8 +76,14 @@ class VerificarTablaView(APIView):
         })
 
 class ContenidoLogicoViewSet(viewsets.ModelViewSet):
-    queryset = ContenidoLogico.objects.all().order_by('-fecha_creacion')
     serializer_class = ContenidoLogicoSerializer
+    
+    def get_queryset(self):
+        queryset = ContenidoLogico.objects.all().order_by('-fecha_creacion')
+        tipo = self.request.query_params.get('tipo')
+        if tipo:
+            queryset = queryset.filter(tipo=tipo)
+        return queryset
     
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:

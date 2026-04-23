@@ -93,17 +93,20 @@ const Dashboard = () => {
                             <p className="dashboard-subtitle hide-mobile">Explora tus módulos de entrenamiento</p>
                         </div>
                     </div>
-                    <Badge variant={user?.rol === 'ADMIN' ? 'danger' : 'success'} className="dashboard-badge">
-                        {user?.rol === 'ADMIN' ? 'Operador Root' : 'Estudiante'}
-                    </Badge>
+        <Badge variant={user?.rol === 'ADMIN' ? 'danger' : 'success'} className="dashboard-badge technical-label">
+            {user?.rol === 'ADMIN' ? 'SYSTEM OPERATOR :: ROOT' : 'STUDENT :: ACTIVE'}
+        </Badge>
                 </div>
             </header>
 
             {/* Sección de Módulos */}
             <div className="modules-section">
-                <h2 className="modules-title">
-                    Módulos de <span className="modules-highlight">Entrenamiento</span>
-                </h2>
+                <div className="section-header-main staggered-item">
+                    <h2 className="modules-title-enhanced">
+                        Módulos de <span>Entrenamiento</span>
+                    </h2>
+                    <p className="section-description">Selecciona una unidad para comenzar tu proceso de aprendizaje lógico profesional.</p>
+                </div>
 
                 <div className="modules-grid">
                     {MODULES.map((module, index) => (
@@ -119,19 +122,19 @@ const Dashboard = () => {
                                     <div className="module-icon" style={{ background: `${module.color}15`, color: module.color }}>
                                         <module.icon size={24} />
                                     </div>
-                                    <div className="module-type" style={{ background: `${module.color}08`, color: module.color, border: `1px solid ${module.color}20` }}>
+                                    <div className="module-type technical-label" style={{ background: `${module.color}08`, color: module.color, border: `1px solid ${module.color}20` }}>
                                         {module.type}
                                     </div>
                                 </div>
 
                                 {/* Contenido */}
                                 <div className="module-card-body">
-                                    <h3 className="module-title">{module.title}</h3>
-                                    <p className="module-description">{module.desc}</p>
+                                    <h3 className="module-title-premium">{module.title}</h3>
+                                    <p className="module-description-text">{module.desc}</p>
                                 </div>
 
                                 {/* Botón acción */}
-                                <div className="module-action" style={{ color: module.color }}>
+                                <div className="module-action technical-label" style={{ color: module.color }}>
                                     {module.action} <ChevronRight size={16} />
                                 </div>
 

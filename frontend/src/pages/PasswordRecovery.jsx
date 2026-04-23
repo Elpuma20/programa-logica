@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import { 
-    BrainCircuit, ArrowLeft, Mail, CreditCard, Lock, 
+    BrainCircuit, ArrowLeft, Mail, 
     CheckCircle, AlertCircle, RefreshCw 
 } from 'lucide-react';
 import Card from '../components/ui/Card';
@@ -10,43 +10,24 @@ import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 
 const PasswordRecovery = () => {
-    const [formData, setFormData] = useState({
-        correo: '',
-        cedula: '',
-        new_password: '',
-        confirm_password: ''
-    });
+    const [correo, setCorreo] = useState('');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState(null);
     const navigate = useNavigate();
 
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-        setMessage(null);
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setMessage(null);
-
-        if (formData.new_password !== formData.confirm_password) {
-            setMessage({ type: 'error', text: 'Las contraseñas no coinciden.' });
-            return;
-        }
-
         setLoading(true);
+        
         try {
-            const res = await api.post('/reset-password/', {
-                correo: formData.correo,
-                cedula: formData.cedula,
-                new_password: formData.new_password
-            });
-            setMessage({ type: 'success', text: res.data.success });
-            setTimeout(() => navigate('/login'), 3000);
+            const res = await api.post('/password-reset/', { correo });
+            setMessage({ type: 'success', text: res.data.message });
+            // No redirigimos inmediatamente para que el usuario lea el mensaje
         } catch (err) {
             setMessage({ 
                 type: 'error', 
-                text: err.response?.data?.error || 'No se pudo restablecer la contraseña. Verifica tus datos.' 
+                text: err.response?.data?.error || 'No se pudo procesar la solicitud. Verifica el correo e intenta de nuevo.' 
             });
         } finally {
             setLoading(false);
@@ -70,78 +51,73 @@ const PasswordRecovery = () => {
                         </div>
                     </div>
                     <h2 className="mb-2">Recuperar <span className="text-gradient">Acceso</span></h2>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Valida tu identidad para restablecer tu cuenta</p>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Ingresa tu correo para recibir un enlace de recuperación</p>
                 </div>
 
-                <form onSubmit={handleSubmit}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                        <Input 
-                            label="Correo Institucional"
-                            name="correo"
-                            type="email"
-                            placeholder="usuario@institucion.edu"
-                            value={formData.correo}
-                            onChange={handleChange}
-                            required
-                        />
+                {!message || message.type !== 'success' ? (
+                    <form onSubmit={handleSubmit}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                            <Input 
+                                label="Correo Institucional"
+                                name="correo"
+                                type="email"
+                                placeholder="usuario@institucion.edu"
+                                value={correo}
+                                onChange={(e) => setCorreo(e.target.value)}
+                                icon={<Mail size={18} />}
+                                required
+                            />
 
-                        <Input 
-                            label="Número de Identificación (Cédula)"
-                            name="cedula"
-                            placeholder="Ej. 12345678"
-                            value={formData.cedula}
-                            onChange={handleChange}
-                            required
-                        />
+                            {message && message.type === 'error' && (
+                                <div className="fade-in" style={{ 
+                                    padding: '1rem', 
+                                    background: 'rgba(239, 68, 68, 0.1)', 
+                                    color: '#ef4444', 
+                                    borderRadius: '12px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.75rem',
+                                    fontSize: '0.85rem',
+                                    fontWeight: 700,
+                                    border: '1px solid rgba(239, 68, 68, 0.2)'
+                                }}>
+                                    <AlertCircle size={18} />
+                                    {message.text}
+                                </div>
+                            )}
 
-                        <Input 
-                            label="Nueva Contraseña"
-                            name="new_password"
-                            type="password"
-                            placeholder="Mínimo 8 caracteres"
-                            value={formData.new_password}
-                            onChange={handleChange}
-                            required
-                        />
-
-                        <Input 
-                            label="Confirmar Nueva Contraseña"
-                            name="confirm_password"
-                            type="password"
-                            placeholder="Repite tu contraseña"
-                            value={formData.confirm_password}
-                            onChange={handleChange}
-                            required
-                        />
-
-                        {message && (
-                            <div className="fade-in" style={{ 
-                                padding: '1rem', 
-                                background: message.type === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', 
-                                color: message.type === 'success' ? '#10b981' : '#ef4444', 
-                                borderRadius: '12px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.75rem',
-                                fontSize: '0.85rem',
-                                fontWeight: 700,
-                                border: `1px solid ${message.type === 'success' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`
-                            }}>
-                                {message.type === 'success' ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
-                                {message.text}
-                            </div>
-                        )}
-
-                        <Button 
-                            type="submit" 
-                            className="w-full" 
-                            disabled={loading}
-                            style={{ height: '3.5rem' }}
-                        >
-                            {loading ? <RefreshCw className="spin" size={20} /> : 'Restablecer Contraseña'}
+                            <Button 
+                                type="submit" 
+                                className="w-full" 
+                                disabled={loading}
+                                style={{ height: '3.5rem' }}
+                            >
+                                {loading ? <RefreshCw className="spin" size={20} /> : 'Enviar Enlace de Recuperación'}
+                            </Button>
+                        </div>
+                    </form>
+                ) : (
+                    <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+                        <div style={{ 
+                            width: 60, height: 60, 
+                            background: 'rgba(16, 185, 129, 0.1)', 
+                            color: '#10b981',
+                            borderRadius: '50%',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            margin: '0 auto 1.5rem auto'
+                        }}>
+                            <CheckCircle size={32} />
+                        </div>
+                        <h3 className="mb-3">¡Correo Enviado!</h3>
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: 1.6 }}>
+                            Hemos enviado un enlace seguro a <strong>{correo}</strong>. 
+                            Revisa tu bandeja de entrada (y la carpeta de spam) para continuar.
+                        </p>
+                        <Button variant="outline" className="w-full" onClick={() => navigate('/login')}>
+                            Volver al Login
                         </Button>
                     </div>
-                </form>
+                )}
 
                 <div style={{ 
                     marginTop: '2rem', 

@@ -51,7 +51,7 @@ const getDataCount = (tab, data) => {
 const renderActiveTabContent = (tab, props) => {
     const { 
         usersList, logs, contents, adminStats, systemStatus, securityStatus, studentProgress, 
-        handleVerifyUser, handleOpenModal, handleDelete, loading,
+        handleVerifyUser, handleOpenModal, handleDelete, handleDeleteUser, loading,
         auditFilters, setAuditFilters
     } = props;
 
@@ -60,133 +60,137 @@ const renderActiveTabContent = (tab, props) => {
             const totalDesafios = studentProgress?.meta?.total_desafios || 1;
             return (
                 <div className="fade-in">
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                        <thead style={{ background: 'var(--bg-secondary)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                            <tr>
-                                <th style={{ padding: '1rem', textAlign: 'left' }}>ESTUDIANTE</th>
-                                <th style={{ padding: '1rem', textAlign: 'left' }}>ÁREA / MÓDULO</th>
-                                <th style={{ padding: '1rem', textAlign: 'left' }}>PROGRESO LOGRADO</th>
-                                <th style={{ padding: '1rem', textAlign: 'right' }}>ACCIONES</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {(studentProgress?.estudiantes || []).map(est => {
-                                const porcentaje = Math.round((est.total_resoluciones / totalDesafios) * 100);
-                                return (
-                                    <tr key={est.id} style={{ borderTop: '1px solid var(--border-default)' }}>
-                                        <td style={{ padding: '1rem' }}>
-                                            <div style={{ fontWeight: 800 }}>{est.nombres} {est.apellidos}</div>
-                                            <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>{est.correo}</div>
-                                            {(est.historial || []).length > 0 && (
-                                                <div style={{ marginTop: '0.75rem', fontSize: '0.65rem', color: 'var(--text-muted)' }}>
-                                                    <strong>MÓDULOS RECIENTES:</strong>
-                                                    <div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
-                                                        {est.historial.map(h => (
-                                                            <Badge key={h.id} variant="secondary" style={{ fontSize: '0.55rem', padding: '1px 6px' }}>
-                                                                {h.contenido_titulo?.split(' ')[0]}
-                                                            </Badge>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </td>
-                                        <td style={{ padding: '1rem' }}>
-                                            <Badge variant="outline">{est.area_estudios || 'LOGICA_INTRO'}</Badge>
-                                            {(est.historial || []).some(h => h.comentario_docente) && (
-                                                <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.65rem', color: '#10b981' }}>
-                                                    <MessageCircle size={10} /> Feedback Enviado
-                                                </div>
-                                            )}
-                                        </td>
-                                        <td style={{ padding: '1rem', width: '30%' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                                <div style={{ flex: 1, height: '8px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
-                                                    <div style={{ width: `${porcentaje}%`, height: '100%', background: 'linear-gradient(to right, var(--brand-primary), var(--brand-secondary))' }} />
-                                                </div>
-                                                <span style={{ fontSize: '0.8rem', fontWeight: 800, minWidth: '40px' }}>{porcentaje}%</span>
-                                            </div>
-                                            <div style={{ fontSize: '0.65rem', marginTop: '0.25rem', color: 'var(--text-muted)' }}>
-                                                {est.total_resoluciones} de {totalDesafios} desafíos completados
-                                            </div>
-                                        </td>
-                                        <td style={{ padding: '1rem', textAlign: 'right' }}>
-                                            <Button 
-                                                variant="ghost" 
-                                                style={{ color: 'var(--brand-primary)', position: 'relative' }}
-                                                onClick={() => setFeedbackModal({ open: true, student: est, text: '' })}
-                                            >
-                                                Orientación <Zap size={14} style={{ marginLeft: '4px' }} />
+                    <div className="responsive-table-container">
+                        <table className="responsive-table">
+                            <thead style={{ background: 'var(--bg-secondary)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                <tr>
+                                    <th style={{ padding: '1rem', textAlign: 'left' }}>ESTUDIANTE</th>
+                                    <th style={{ padding: '1rem', textAlign: 'left' }}>ÁREA / MÓDULO</th>
+                                    <th style={{ padding: '1rem', textAlign: 'left' }}>PROGRESO LOGRADO</th>
+                                    <th style={{ padding: '1rem', textAlign: 'right' }}>ACCIONES</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {(studentProgress?.estudiantes || []).map(est => {
+                                    const porcentaje = Math.round((est.total_resoluciones / totalDesafios) * 100);
+                                    return (
+                                        <tr key={est.id} style={{ borderTop: '1px solid var(--border-default)' }}>
+                                            <td style={{ padding: '1rem' }}>
+                                                <div style={{ fontWeight: 800 }}>{est.nombres} {est.apellidos}</div>
+                                                <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>{est.correo}</div>
                                                 {(est.historial || []).length > 0 && (
-                                                    <Badge style={{ position: 'absolute', top: -5, right: -5, padding: '2px 4px', fontSize: '0.5rem' }}>
-                                                        NUEVO
-                                                    </Badge>
+                                                    <div className="hide-mobile" style={{ marginTop: '0.75rem', fontSize: '0.65rem', color: 'var(--text-muted)' }}>
+                                                        <strong>MÓDULOS RECIENTES:</strong>
+                                                        <div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
+                                                            {est.historial.map(h => (
+                                                                <Badge key={h.id} variant="secondary" style={{ fontSize: '0.55rem', padding: '1px 6px' }}>
+                                                                    {h.contenido_titulo?.split(' ')[0]}
+                                                                </Badge>
+                                                            ))}
+                                                        </div>
+                                                    </div>
                                                 )}
-                                            </Button>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
+                                            </td>
+                                            <td style={{ padding: '1rem' }}>
+                                                <Badge variant="outline">{est.area_estudios || 'LOGICA_INTRO'}</Badge>
+                                                {(est.historial || []).some(h => h.comentario_docente) && (
+                                                    <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.65rem', color: '#10b981' }}>
+                                                        <MessageCircle size={10} /> Feedback Enviado
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td style={{ padding: '1rem', width: '30%' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                                    <div style={{ flex: 1, height: '8px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
+                                                        <div style={{ width: `${porcentaje}%`, height: '100%', background: 'linear-gradient(to right, var(--brand-primary), var(--brand-secondary))' }} />
+                                                    </div>
+                                                    <span style={{ fontSize: '0.8rem', fontWeight: 800, minWidth: '40px' }}>{porcentaje}%</span>
+                                                </div>
+                                            </td>
+                                            <td style={{ padding: '1rem', textAlign: 'right' }}>
+                                                <Button 
+                                                    variant="ghost" 
+                                                    style={{ color: 'var(--brand-primary)', position: 'relative' }}
+                                                    onClick={() => setFeedbackModal({ open: true, student: est, text: '' })}
+                                                >
+                                                    <Zap size={18} />
+                                                </Button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             );
 
         case 'usuarios':
             return (
                 <div className="fade-in">
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                        <thead style={{ background: 'var(--bg-secondary)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                            <tr>
-                                <th style={{ padding: '1rem', textAlign: 'left' }}>AGENTE</th>
-                                <th style={{ padding: '1rem', textAlign: 'left' }}>ROL / ÁREA</th>
-                                <th style={{ padding: '1rem', textAlign: 'left' }}>IDENTIFICACIÓN / CORREO</th>
-                                <th style={{ padding: '1rem', textAlign: 'center' }}>ESTADO</th>
-                                <th style={{ padding: '1rem', textAlign: 'right' }}>OPERACIONES</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {usersList.map(u => (
-                                <tr key={u.id} style={{ borderTop: '1px solid var(--border-default)' }}>
-                                    <td style={{ padding: '1rem' }}>
-                                        <div style={{ fontWeight: 800, fontSize: '0.9rem' }}>{u.nombres} {u.apellidos}</div>
-                                    </td>
-                                    <td style={{ padding: '1rem' }}>
-                                        <Badge variant={u.rol === 'ADMIN' ? 'danger' : u.rol === 'DOCENTE' ? 'primary' : 'outline'}>{u.rol}</Badge>
-                                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>{u.area_estudios || 'LOGISTICA_CORE'}</div>
-                                    </td>
-                                    <td style={{ padding: '1rem' }}>
-                                        <div style={{ fontSize: '0.85rem', fontFamily: 'monospace' }}>{u.cedula}</div>
-                                        <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>{u.correo}</div>
-                                    </td>
-                                    <td style={{ padding: '1rem', textAlign: 'center' }}>
-                                        <Badge style={{ 
-                                            background: u.is_verified ? 'rgba(16, 185, 129, 0.1)' : 'rgba(37, 99, 235, 0.1)', 
-                                            color: u.is_verified ? '#10b981' : 'var(--brand-primary)',
-                                            border: `1px solid ${u.is_verified ? '#10b98133' : 'rgba(37, 99, 235, 0.2)'}` 
-                                        }}>
-                                            {u.is_verified ? 'VERIFICADO' : 'PENDIENTE'}
-                                        </Badge>
-                                    </td>
-                                    <td style={{ padding: '1rem', textAlign: 'right' }}>
-                                        <Button 
-                                            variant="ghost" 
-                                            onClick={() => handleVerifyUser(u.id)}
-                                            style={{ color: u.is_verified ? '#ef4444' : '#10b981' }}
-                                        >
-                                            <Zap size={18} />
-                                        </Button>
-                                    </td>
+                    <div className="responsive-table-container">
+                        <table className="responsive-table">
+                            <thead style={{ background: 'var(--bg-secondary)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                <tr>
+                                    <th style={{ padding: '1rem', textAlign: 'left' }}>AGENTE</th>
+                                    <th style={{ padding: '1rem', textAlign: 'left' }}>ROL / ÁREA</th>
+                                    <th style={{ padding: '1rem', textAlign: 'left' }}>ID / CORREO</th>
+                                    <th style={{ padding: '1rem', textAlign: 'center' }}>ESTADO</th>
+                                    <th style={{ padding: '1rem', textAlign: 'right' }}>OPERACIONES</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {usersList.map(u => (
+                                    <tr key={u.id} style={{ borderTop: '1px solid var(--border-default)' }}>
+                                        <td style={{ padding: '1rem' }}>
+                                            <div style={{ fontWeight: 800, fontSize: '0.9rem' }}>{u.nombres} {u.apellidos}</div>
+                                        </td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <Badge variant={u.rol === 'ADMIN' ? 'danger' : u.rol === 'DOCENTE' ? 'primary' : 'outline'}>{u.rol}</Badge>
+                                        </td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <div style={{ fontSize: '0.85rem', fontFamily: 'monospace' }}>{u.cedula}</div>
+                                            <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>{u.correo}</div>
+                                        </td>
+                                        <td style={{ padding: '1rem', textAlign: 'center' }}>
+                                            <Badge style={{ 
+                                                background: u.is_verified ? 'rgba(16, 185, 129, 0.1)' : 'rgba(37, 99, 235, 0.1)', 
+                                                color: u.is_verified ? '#10b981' : 'var(--brand-primary)',
+                                                border: `1px solid ${u.is_verified ? '#10b98133' : 'rgba(37, 99, 235, 0.2)'}` 
+                                            }}>
+                                                {u.is_verified ? 'OK' : 'PND'}
+                                            </Badge>
+                                        </td>
+                                        <td style={{ padding: '1rem', textAlign: 'right' }}>
+                                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                                                <Button 
+                                                    variant="ghost" 
+                                                    onClick={() => handleVerifyUser(u.id)}
+                                                    style={{ color: u.is_verified ? '#ef4444' : '#10b981' }}
+                                                >
+                                                    <Zap size={18} />
+                                                </Button>
+                                                <Button 
+                                                    variant="ghost" 
+                                                    onClick={() => handleDeleteUser(u.id)}
+                                                    style={{ color: '#ef4444' }}
+                                                >
+                                                    <Trash2 size={18} />
+                                                </Button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             );
 
         case 'reportes':
             return (
                 <div className="fade-in">
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '2rem', marginBottom: '2rem' }}>
+                    <div className="admin-grid-layout" style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '2rem', marginBottom: '2rem' }}>
                         <div>
                             <p style={{ fontWeight: 700, marginBottom: '1rem' }}>Métricas por Rol</p>
                             {Object.entries(adminStats?.users_by_role || {}).map(([role, count]) => (
@@ -206,7 +210,7 @@ const renderActiveTabContent = (tab, props) => {
                                 </div>
                             ))}
                         </div>
-                        <div>
+                        <div className="hide-mobile">
                             <p style={{ fontWeight: 700, marginBottom: '1rem' }}>Resoluciones (Últimos 7 Días)</p>
                             <div style={{ height: '160px', display: 'flex', alignItems: 'flex-end', gap: '8px', paddingBottom: '20px', borderBottom: '1px solid var(--border-default)' }}>
                                 {adminStats?.activity_chart?.data.map((val, i) => (
@@ -227,14 +231,11 @@ const renderActiveTabContent = (tab, props) => {
                         </div>
                     </div>
                     
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem' }}>
                         {Object.entries(adminStats?.stats_by_type || {}).map(([type, stats]) => (
                             <Card key={type} style={{ padding: '1rem', textAlign: 'center', background: 'var(--bg-secondary)', borderTop: '3px solid var(--brand-primary)' }}>
                                 <p style={{ fontSize: '0.6rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>{type}S</p>
                                 <h3 style={{ margin: '0 0 0.5rem 0' }}>{stats.ejercicios} <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>ITEMS</span></h3>
-                                <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--brand-secondary)' }}>
-                                    {stats.participacion} INTERACCIONES
-                                </div>
                             </Card>
                         ))}
                     </div>
@@ -579,7 +580,7 @@ const AdminPanel = () => {
     });
     const [editingItem, setEditingItem] = useState(null);
     const [formData, setFormData] = useState({
-        tipo: 'trivia', titulo: '', descripcion: '', respuesta: '', opciones: [], dificultad: 'medio'
+        tipo: 'trivia', titulo: '', descripcion: '', respuesta: '', opciones: [], dificultad: 'medio', imagen: null
     });
     const [userFormData, setUserFormData] = useState({
         cedula: '', nombres: '', apellidos: '', correo: '', rol: 'ESTUDIANTE', password: 'Password123!', area_estudios: ''
@@ -669,6 +670,19 @@ const AdminPanel = () => {
         }
     };
 
+    const handleDeleteUser = async (userId) => {
+        if (window.confirm('¿ELIMINAR AGENTE? Esta operación es irreversible y borrará toda la persistencia asociada al usuario.')) {
+            try {
+                await api.delete(`/delete/${userId}/`);
+                showNotification('Usuario eliminado del sistema');
+                fetchUsers();
+                fetchAdminStats();
+            } catch (err) {
+                showNotification(err.response?.data?.error || 'Error al eliminar usuario', 'error');
+            }
+        }
+    };
+
     const showNotification = (msg, type = 'success') => {
         setNotification({ msg, type });
         setTimeout(() => setNotification(null), 3000);
@@ -677,12 +691,12 @@ const AdminPanel = () => {
     const handleOpenModal = (item = null) => {
         if (item) { 
             setEditingItem(item); 
-            setFormData({ ...item, opciones: item.opciones || [] }); 
+            setFormData({ ...item, opciones: item.opciones || [], imagen: null }); 
         } else { 
             setEditingItem(null); 
             setFormData({ 
                 tipo: ['trivia', 'adivinanza', 'rompecabezas', 'paradoja'].includes(activeTab) ? activeTab : 'trivia', 
-                titulo: '', descripcion: '', respuesta: '', opciones: [], dificultad: 'medio' 
+                titulo: '', descripcion: '', respuesta: '', opciones: [], dificultad: 'medio', imagen: null
             }); 
         }
         setIsModalOpen(true);
@@ -690,16 +704,41 @@ const AdminPanel = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        const data = new FormData();
+        Object.keys(formData).forEach(key => {
+            if (key === 'opciones') {
+                data.append(key, JSON.stringify(formData[key]));
+            } else if (key === 'imagen') {
+                if (formData[key]) data.append(key, formData[key]);
+            } else {
+                let value = formData[key];
+                // For puzzles, if description or answer are missing, provide defaults
+                if (formData.tipo === 'rompecabezas') {
+                    if (key === 'descripcion' && !value) value = 'Reconstruye la imagen para resolver el desafío.';
+                    if (key === 'respuesta' && !value) value = 'SOLVED';
+                }
+                data.append(key, value);
+            }
+        });
+
         try {
+            const config = {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            };
+
             if (editingItem) { 
-                await api.patch(`/logica/contenido/${editingItem.id}/`, formData); 
+                await api.patch(`/logica/contenido/${editingItem.id}/`, data, config); 
                 showNotification('Actualizado exitosamente'); 
             } else { 
-                await api.post('/logica/contenido/', formData); 
+                await api.post('/logica/contenido/', data, config); 
                 showNotification('Creado exitosamente'); 
             }
             fetchContents(); fetchLogs(); setIsModalOpen(false);
-        } catch (err) { showNotification('Fallo en la operación', 'error'); }
+        } catch (err) { 
+            console.error(err);
+            showNotification('Fallo en la operación', 'error'); 
+        }
     };
 
     const handleCreateUser = async (e) => {
@@ -764,27 +803,20 @@ const AdminPanel = () => {
     return (
         <div className="container fade-in" style={{ paddingBottom: '5rem' }}>
             {/* Admin Header */}
-            <header className="mb-4" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                    <div style={{ 
-                        width: '50px', height: '50px', 
-                        background: 'linear-gradient(135deg, var(--brand-primary), var(--brand-secondary))', 
-                        borderRadius: '14px',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white',
-                        boxShadow: '0 8px 24px rgba(37, 99, 235, 0.3)'
-                    }}>
-                        <LayoutDashboard size={28} />
+            <header className="admin-header-responsive mb-4" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div className="logo-icon" style={{ width: '42px', height: '42px' }}>
+                        <LayoutDashboard size={24} />
                     </div>
-                    <div>
-                        <h1 className="mb-0" style={{ fontSize: '1.8rem' }}>
-                            {user?.rol === 'DOCENTE' ? 'Panel Docente' : 'Panel Administrativo'}
-                        </h1>
-                    </div>
+                    <h1 style={{ fontSize: '1.5rem', margin: 0 }}>
+                        {user?.rol === 'DOCENTE' ? 'Panel Docente' : 'Panel Administrativo'}
+                    </h1>
                 </div>
-                <div style={{ display: 'flex', gap: '1rem' }}>
-                    <Link to="/dashboard" style={{ textDecoration: 'none' }}><Button variant="secondary"><ArrowLeft size={16} /> Panel de Usuario</Button></Link>
-                    {(user?.rol === 'ADMIN' || user?.is_staff) && activeTab === 'usuarios' && <Button onClick={() => setIsUserModalOpen(true)}><Plus size={18} /> Reclutar Agente</Button>}
-                    {['trivia', 'adivinanza', 'rompecabezas', 'paradoja'].includes(activeTab) && <Button onClick={() => handleOpenModal()}><Plus size={18} /> Inyectar Contenido</Button>}
+                <div style={{ display: 'flex', gap: '0.5rem', width: 'auto' }} className="w-full-mobile">
+                    <Link to="/dashboard" className="w-full-mobile" style={{ textDecoration: 'none' }}>
+                        <Button variant="secondary" className="w-full-mobile"><ArrowLeft size={16} /> Volver</Button>
+                    </Link>
+                    {(user?.rol === 'ADMIN' || user?.is_staff) && activeTab === 'usuarios' && <Button onClick={() => setIsUserModalOpen(true)} className="w-full-mobile"><Plus size={18} /> Reclutar</Button>}
                 </div>
             </header>
 
@@ -805,10 +837,22 @@ const AdminPanel = () => {
                 ))}
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(260px, 1fr) 3.5fr', gap: '2rem' }}>
+            <div className="admin-grid-layout" style={{ display: 'grid', gridTemplateColumns: 'minmax(260px, 1fr) 3.5fr', gap: '2rem' }}>
                 {/* Lateral Control Panel */}
-                <aside>
-                    <Card style={{ padding: '1rem', background: 'var(--bg-surface)', border: '1px solid var(--border-default)', marginBottom: '1.5rem' }}>
+                <aside className="admin-sidebar-responsive">
+                    <div className="mobile-tabs-scroll show-mobile">
+                         <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', padding: '0.5rem 0', scrollbarWidth: 'none' }}>
+                            {(user?.rol === 'ADMIN' || user?.is_staff) && (
+                                <Button variant="ghost" className={activeTab === 'usuarios' ? 'active-tab' : ''} onClick={() => setActiveTab('usuarios')}>Cuentas</Button>
+                            )}
+                            <Button variant="ghost" className={activeTab === 'progreso' ? 'active-tab' : ''} onClick={() => setActiveTab('progreso')}>Progreso</Button>
+                            <Button variant="ghost" className={activeTab === 'reportes' ? 'active-tab' : ''} onClick={() => setActiveTab('reportes')}>Métricas</Button>
+                            <Button variant="ghost" className={activeTab === 'trivia' ? 'active-tab' : ''} onClick={() => setActiveTab('trivia')}>Trivias</Button>
+                            <Button variant="ghost" className={activeTab === 'rompecabezas' ? 'active-tab' : ''} onClick={() => setActiveTab('rompecabezas')}>Puzzles</Button>
+                         </div>
+                    </div>
+
+                    <Card className="hide-mobile" style={{ padding: '1rem', background: 'var(--bg-surface)', border: '1px solid var(--border-default)', marginBottom: '1.5rem' }}>
                         <p style={{ fontSize: '0.75rem', fontWeight: 900, color: 'var(--brand-primary)', marginBottom: '1.5rem', padding: '0 1rem', textTransform: 'uppercase', letterSpacing: '2px' }}>Núcleo de Gestión</p>
                         
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
@@ -830,21 +874,11 @@ const AdminPanel = () => {
                             <NavButton id="adivinanza" label="Adivinanzas" icon={Brain} active={activeTab} onClick={setActiveTab} />
                             <NavButton id="rompecabezas" label="Puzzles" icon={Puzzle} active={activeTab} onClick={setActiveTab} />
                             <NavButton id="paradoja" label="Paradojas" icon={ScrollText} active={activeTab} onClick={setActiveTab} />
-                            
-                            {(user?.rol === 'ADMIN' || user?.is_staff) && (
-                                <>
-                                    <div style={{ margin: '1rem 0', height: '1px', background: 'var(--border-default)' }} />
-                                    <p style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '0.75rem', padding: '0 1rem', textTransform: 'uppercase' }}>Infraestructura</p>
-                                    <NavButton id="mantenimiento" label="Mantenimiento" icon={Server} active={activeTab} onClick={setActiveTab} />
-                                    <NavButton id="seguridad" label="Protocolos Seguridad" icon={Key} active={activeTab} onClick={setActiveTab} color="#f59e0b" />
-                                    <NavButton id="auditoria" label="Log de Operaciones" icon={ShieldAlert} active={activeTab} onClick={setActiveTab} color="#ef4444" />
-                                </>
-                            )}
                         </div>
                     </Card>
 
                     {/* Server Pulse Card */}
-                    <Card style={{ padding: '1.2rem', background: 'linear-gradient(135deg, #111827, #1f2937)', border: '1px solid #374151' }}>
+                    <Card className="hide-mobile" style={{ padding: '1.2rem', background: 'linear-gradient(135deg, #111827, #1f2937)', border: '1px solid #374151' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
                             <div className="pulse" style={{ width: '8px', height: '8px', background: '#10b981', borderRadius: '50%' }} />
                             <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'white' }}>Estado del Servidor</span>
@@ -887,7 +921,7 @@ const AdminPanel = () => {
                         <div className="workspace-content" style={{ padding: '1.5rem' }}>
                             {renderActiveTabContent(activeTab, {
                                 usersList, logs, contents, adminStats, systemStatus, securityStatus, studentProgress,
-                                handleVerifyUser, handleOpenModal, handleDelete, loading,
+                                handleVerifyUser, handleOpenModal, handleDelete, handleDeleteUser, loading,
                                 auditFilters, setAuditFilters
                             })}
                         </div>
@@ -909,12 +943,20 @@ const AdminPanel = () => {
                                <Button variant="ghost" onClick={() => setIsModalOpen(false)}><X size={24} /></Button>
                          </div>
                          <form onSubmit={handleSubmit}>
-                               <Input label="Protocolo / Título del Desafío" value={formData.titulo} onChange={e => setFormData({...formData, titulo: e.target.value})} required />
-                               <div className="input-group">
-                                     <label className="input-label">Descripción Detallada / Payload</label>
-                                     <textarea className="input-field" rows={4} value={formData.descripcion} onChange={e => setFormData({...formData, descripcion: e.target.value})} required style={{ background: '#0f172a', color: '#10b981', fontFamily: 'monospace' }} />
-                               </div>
-                               <Input label="Respuesta del Oráculo" value={formData.respuesta} onChange={e => setFormData({...formData, respuesta: e.target.value})} required />
+                                {formData.tipo !== 'rompecabezas' && (
+                                   <>
+                                       <Input label="Protocolo / Título del Desafío" value={formData.titulo} onChange={e => setFormData({...formData, titulo: e.target.value})} required />
+                                       <div className="input-group">
+                                             <label className="input-label">Descripción Detallada / Payload</label>
+                                             <textarea className="input-field" rows={4} value={formData.descripcion} onChange={e => setFormData({...formData, descripcion: e.target.value})} required style={{ background: '#0f172a', color: '#10b981', fontFamily: 'monospace' }} />
+                                       </div>
+                                       <Input label="Respuesta del Oráculo" value={formData.respuesta} onChange={e => setFormData({...formData, respuesta: e.target.value})} required />
+                                   </>
+                                )}
+                                
+                                {formData.tipo === 'rompecabezas' && (
+                                    <Input label="Título del Rompecabezas" value={formData.titulo} onChange={e => setFormData({...formData, titulo: e.target.value})} placeholder="Ej: Paisaje Lógico" required />
+                                )}
                                
                                {formData.tipo === 'trivia' && (
                                    <div className="input-group">
@@ -923,14 +965,34 @@ const AdminPanel = () => {
                                    </div>
                                )}
 
-                               <div className="input-group">
-                                   <label className="input-label">Grado de Complejidad Computacional</label>
-                                   <select className="input-field" value={formData.dificultad} onChange={e => setFormData({...formData, dificultad: e.target.value})}>
-                                       <option value="facil">NIVEL 1 - ELEMENTAL</option>
-                                       <option value="medio">NIVEL 2 - INTERMEDIO</option>
-                                       <option value="dificil">NIVEL 3 - CRÍTICO</option>
-                                   </select>
-                               </div>
+                                {formData.tipo !== 'rompecabezas' && (
+                                   <div className="input-group">
+                                       <label className="input-label">Grado de Complejidad Computacional</label>
+                                       <select className="input-field" value={formData.dificultad} onChange={e => setFormData({...formData, dificultad: e.target.value})}>
+                                           <option value="facil">NIVEL 1 - ELEMENTAL</option>
+                                           <option value="medio">NIVEL 2 - INTERMEDIO</option>
+                                           <option value="dificil">NIVEL 3 - CRÍTICO</option>
+                                       </select>
+                                   </div>
+                                )}
+
+                               {formData.tipo === 'rompecabezas' && (
+                                   <div className="input-group">
+                                       <label className="input-label">Cargar Escenario Visual (Imagen)</label>
+                                       <input 
+                                           type="file" 
+                                           accept="image/*"
+                                           onChange={e => setFormData({...formData, imagen: e.target.files[0]})}
+                                           className="input-field"
+                                           style={{ height: 'auto', padding: '1rem' }}
+                                       />
+                                       {editingItem?.imagen && !formData.imagen && (
+                                           <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+                                               Imagen actual: {editingItem.imagen.split('/').pop()} (Sube una nueva para reemplazar)
+                                           </p>
+                                       )}
+                                   </div>
+                               )}
 
                                <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
                                     <Button variant="secondary" onClick={() => setIsModalOpen(false)} className="w-full">Abortar Operación</Button>

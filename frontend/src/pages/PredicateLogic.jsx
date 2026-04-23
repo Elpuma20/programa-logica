@@ -9,6 +9,7 @@ import Badge from '../components/ui/Badge';
 const PredicateLogicLesson = () => {
     const [step, setStep] = useState(1);
     const [quizAnswer, setQuizAnswer] = useState(null);
+    const [showError, setShowError] = useState(false);
 
     const questions = {
         1: {
@@ -146,21 +147,45 @@ const PredicateLogicLesson = () => {
                             <Button 
                                 variant="ghost" 
                                 disabled={step === 1} 
-                                onClick={() => { setStep(s => s - 1); setQuizAnswer(null); }}
+                                onClick={() => { setStep(s => s - 1); setQuizAnswer(null); setShowError(false); }}
                                 className="predicate-nav-prev"
                             >
                                 Anterior
                             </Button>
                             {step === 1 ? (
-                                <Button 
-                                    onClick={() => { setStep(s => s + 1); setQuizAnswer(null); }}
-                                    className="predicate-nav-next"
-                                >
-                                    Continuar ∃
-                                </Button>
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
+                                    <Button 
+                                        onClick={() => { 
+                                            if (quizAnswer === questions[step].correct) {
+                                                setStep(s => s + 1); 
+                                                setQuizAnswer(null);
+                                                setShowError(false);
+                                            } else {
+                                                setShowError(true);
+                                            }
+                                        }}
+                                        className="predicate-nav-next"
+                                    >
+                                        Continuar ∃
+                                    </Button>
+                                    {showError && (
+                                        <div className="error-message-pop" style={{ marginTop: '0.25rem' }}>
+                                            Debes seleccionar la respuesta correcta
+                                        </div>
+                                    )}
+                                </div>
                             ) : (
                                 <Link to="/dashboard" style={{ textDecoration: 'none' }}>
-                                    <Button className="predicate-nav-finish" style={{ background: '#10b981' }}>
+                                    <Button 
+                                        className="predicate-nav-finish" 
+                                        style={{ background: '#10b981' }}
+                                        onClick={(e) => {
+                                            if (quizAnswer !== questions[step].correct) {
+                                                e.preventDefault();
+                                                setShowError(true);
+                                            }
+                                        }}
+                                    >
                                         <Award size={18} /> Finalizar Módulo
                                     </Button>
                                 </Link>

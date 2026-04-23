@@ -18,7 +18,9 @@ import SettingsPage from './pages/Settings';
 import InferenceLogic from './pages/InferenceLogic';
 import BooleanAlgebra from './pages/BooleanAlgebra';
 import PasswordRecovery from './pages/PasswordRecovery';
+import ResetPasswordConfirm from './pages/ResetPasswordConfirm';
 import { BrainCircuit } from 'lucide-react';
+import DynamicBackground from './components/DynamicBackground';
 
 const PrivateRoute = ({ children }) => {
   const { token, loading } = useAuth();
@@ -63,9 +65,17 @@ const AppContent = () => {
     setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
   };
 
+  const FooterContainer = () => {
+    const location = useLocation();
+    const authPaths = ['/', '/login', '/register', '/recuperar'];
+    if (authPaths.includes(location.pathname)) return null;
+    return <Footer />;
+  };
+
   return (
     <Router>
       <ScrollToTop />
+      <DynamicBackground />
       <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', position: 'relative' }}>
         <Header theme={theme} toggleTheme={toggleTheme} />
         <main style={{ flex: 1, paddingBottom: '4rem' }}>
@@ -74,6 +84,7 @@ const AppContent = () => {
             <Route path="/login" element={token ? <Navigate to="/dashboard" /> : <Login />} />
             <Route path="/register" element={token ? <Navigate to="/dashboard" /> : <Register />} />
             <Route path="/recuperar" element={<PasswordRecovery />} />
+            <Route path="/reset-password-confirm/:uid/:token" element={<ResetPasswordConfirm />} />
             <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
             <Route path="/perfil" element={<PrivateRoute><Profile /></PrivateRoute>} />
             <Route path="/configuracion" element={<PrivateRoute><SettingsPage /></PrivateRoute>} />
@@ -88,7 +99,7 @@ const AppContent = () => {
           </Routes>
         </main>
         <FloatingConsole />
-        <Footer />
+        <FooterContainer />
       </div>
     </Router>
   );
