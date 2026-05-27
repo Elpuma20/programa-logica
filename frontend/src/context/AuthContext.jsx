@@ -9,7 +9,36 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        const isGooglePending = sessionStorage.getItem('google_login_pending');
+        if (isGooglePending) {
+            sessionStorage.removeItem('google_login_pending');
+            const mockToken = 'mock-google-token-xyz';
+            const mockUser = {
+                cedula: '12345678',
+                nombres: 'Usuario Google',
+                apellidos: 'EduLógica',
+                correo: 'usuario.google@gmail.com',
+                rol: 'estudiante'
+            };
+            localStorage.setItem('token', mockToken);
+            setToken(mockToken);
+            setUser(mockUser);
+            setLoading(false);
+            return;
+        }
+
         if (token) {
+            if (token === 'mock-google-token-xyz') {
+                setUser({
+                    cedula: '12345678',
+                    nombres: 'Usuario Google',
+                    apellidos: 'EduLógica',
+                    correo: 'usuario.google@gmail.com',
+                    rol: 'estudiante'
+                });
+                setLoading(false);
+                return;
+            }
             api.defaults.headers.common['Authorization'] = `Token ${token}`;
             fetchUser();
         } else {

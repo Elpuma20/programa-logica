@@ -29,7 +29,7 @@ const MODULES = [
         desc: 'Aplica reglas de inferencia y métodos de demostración para validar razonamientos.',
         icon: Brain,
         path: '/inferencia',
-        color: '#8b5cf6',
+        color: '#2563eb',
         type: 'DEMOSTRACIÓN',
         action: 'Ver Reglas'
     },
@@ -39,7 +39,7 @@ const MODULES = [
         desc: 'Pon a prueba tu agilidad mental con trivias, acertijos y paradojas interactivas.',
         icon: Target,
         path: '/juegos',
-        color: '#06b6d4',
+        color: '#2563eb',
         type: 'PRÁCTICA',
         action: 'Entrar al Lab'
     },
@@ -49,7 +49,7 @@ const MODULES = [
         desc: 'Explora el análisis profundo de sujetos y propiedades con cuantificadores universales.',
         icon: GitBranch,
         path: '/predicados',
-        color: '#f43f5e',
+        color: '#2563eb',
         type: 'TEORÍA',
         action: 'Cerrar Brecha'
     },
@@ -59,7 +59,7 @@ const MODULES = [
         desc: 'Fundamentos de agrupación de datos, diagramas de Venn y relaciones lógicas.',
         icon: Layers,
         path: '/conjuntos',
-        color: '#f59e0b',
+        color: '#2563eb',
         type: 'TEORÍA',
         action: 'Explorar'
     },
@@ -69,7 +69,7 @@ const MODULES = [
         desc: 'Simplificación de funciones, compuertas lógicas y optimización de circuitos binarios.',
         icon: Binary,
         path: '/boole',
-        color: '#10b981',
+        color: '#2563eb',
         type: 'SIMULADOR',
         action: 'Abrir Simulador'
     }
@@ -106,17 +106,12 @@ const Dashboard = () => {
                 </div>
             </header>
 
-
-
-
-
             {/* Sección de Módulos */}
             <div className="modules-section">
                 <div className="section-header-main staggered-item">
                     <h2 className="modules-title-enhanced">
                         Módulos de <span>Entrenamiento</span>
                     </h2>
-
                 </div>
 
                 <div className="modules-grid">

@@ -58,10 +58,12 @@ const Footer = () => {
                     </div>
                 </div>
 
-                <div style={{
+                <div className="footer-bottom-row" style={{
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: '1rem',
                     paddingTop: '2rem',
                     borderTop: '1px solid var(--border-default)',
                     color: 'var(--text-muted)',

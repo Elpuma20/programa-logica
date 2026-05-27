@@ -116,20 +116,25 @@ const PredicateLogicLesson = () => {
                         <p className="predicate-quiz-question">{questions[step]?.q}</p>
                         
                         <div className="predicate-quiz-options">
-                            {questions[step]?.options.map((opt, i) => (
-                                <Button 
-                                    key={i} 
-                                    variant={quizAnswer === i ? (i === questions[step].correct ? "primary" : "secondary") : "secondary"}
-                                    onClick={() => handleQuiz(i)}
-                                    className="predicate-quiz-btn"
-                                    style={{ 
-                                        borderColor: quizAnswer === i ? (i === questions[step].correct ? "#10b981" : "#ef4444") : "var(--border-default)",
-                                        background: quizAnswer === i && i === questions[step].correct ? "rgba(16, 185, 129, 0.1)" : ""
-                                    }}
-                                >
-                                    {opt}
-                                </Button>
-                            ))}
+                            {questions[step]?.options.map((opt, i) => {
+                                const isSelected = quizAnswer === i;
+                                const isCorrectAnswer = i === questions[step].correct;
+                                return (
+                                    <Button 
+                                        key={i} 
+                                        variant={isSelected ? (isCorrectAnswer ? "primary" : "secondary") : "secondary"}
+                                        onClick={() => handleQuiz(i)}
+                                        className="predicate-quiz-btn"
+                                        style={{ 
+                                            borderColor: isSelected ? (isCorrectAnswer ? "#10b981" : "#ef4444") : "var(--border-default)",
+                                            background: isSelected ? (isCorrectAnswer ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.15)") : "",
+                                            color: isSelected ? (isCorrectAnswer ? "#10b981" : "#ef4444") : "var(--text-primary)"
+                                        }}
+                                    >
+                                        {opt}
+                                    </Button>
+                                );
+                            })}
                         </div>
                         
                         {/* Feedback */}

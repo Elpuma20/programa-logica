@@ -19,8 +19,8 @@ import InferenceLogic from './pages/InferenceLogic';
 import BooleanAlgebra from './pages/BooleanAlgebra';
 import PasswordRecovery from './pages/PasswordRecovery';
 import ResetPasswordConfirm from './pages/ResetPasswordConfirm';
+import GoogleSignIn from './pages/GoogleSignIn';
 import { BrainCircuit } from 'lucide-react';
-import DynamicBackground from './components/DynamicBackground';
 
 const PrivateRoute = ({ children }) => {
   const { token, loading } = useAuth();
@@ -52,6 +52,18 @@ const ScrollToTop = () => {
     return null;
 };
 
+const MainLayout = ({ children }) => {
+    const location = useLocation();
+    const authPaths = ['/', '/login', '/register', '/recuperar'];
+    const isAuthPage = authPaths.includes(location.pathname) || location.pathname.startsWith('/reset-password-confirm');
+    
+    return (
+        <main className={isAuthPage ? 'main-content-auth' : 'main-content-app'}>
+            {children}
+        </main>
+    );
+};
+
 const AppContent = () => {
   const { token } = useAuth();
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
@@ -68,18 +80,17 @@ const AppContent = () => {
   const FooterContainer = () => {
     const location = useLocation();
     const authPaths = ['/', '/login', '/register', '/recuperar'];
-    if (authPaths.includes(location.pathname)) return null;
+    const isAuthPage = authPaths.includes(location.pathname) || location.pathname.startsWith('/reset-password-confirm');
+    if (isAuthPage) return null;
     return <Footer />;
   };
 
   return (
     <Router>
       <ScrollToTop />
-      <DynamicBackground />
       <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', position: 'relative' }}>
         <Header theme={theme} toggleTheme={toggleTheme} />
-        <main style={{ flex: 1, paddingTop: '80px', paddingBottom: '4rem' }}>
-
+        <MainLayout>
           <Routes>
             <Route path="/" element={token ? <Navigate to="/dashboard" /> : <Login />} />
             <Route path="/login" element={token ? <Navigate to="/dashboard" /> : <Login />} />
@@ -98,7 +109,7 @@ const AppContent = () => {
             <Route path="/boole" element={<PrivateRoute><BooleanAlgebra /></PrivateRoute>} />
             <Route path="/admin" element={<PrivateRoute><AdminPanel /></PrivateRoute>} />
           </Routes>
-        </main>
+        </MainLayout>
         <FloatingConsole />
         <FooterContainer />
       </div>

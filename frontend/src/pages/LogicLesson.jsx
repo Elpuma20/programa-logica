@@ -248,26 +248,25 @@ const StepQuiz = ({ exercises, onComplete }) => {
     };
 
     const handleAnswer = (idx) => {
-        if (feedback) return;
+        if (feedback === 'correct') return;
         setSelected(idx);
         const correct = idx === exercises[current].a;
         if (correct) {
             setScore(s => s + 1);
             setFeedback('correct');
+            setTimeout(() => {
+                if (current + 1 < exercises.length) {
+                    setCurrent(c => c + 1);
+                    setSelected(null);
+                    setFeedback(null);
+                } else {
+                    setFinished(true);
+                }
+            }, 800);
         } else {
             setFeedback('wrong');
             setHasError(true);
         }
-
-        setTimeout(() => {
-            if (current + 1 < exercises.length) {
-                setCurrent(c => c + 1);
-                setSelected(null);
-                setFeedback(null);
-            } else {
-                setFinished(true);
-            }
-        }, 800);
     };
 
     if (finished) {
@@ -318,8 +317,8 @@ const StepQuiz = ({ exercises, onComplete }) => {
                             textAlign: 'left',
                             borderRadius: '12px',
                             border: `2px solid ${selected === i ? (feedback === 'correct' ? '#10b981' : '#ef4444') : 'var(--border-default)'}`,
-                            background: selected === i ? (feedback === 'correct' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)') : 'var(--bg-surface)',
-                            cursor: feedback ? 'default' : 'pointer',
+                            background: selected === i ? (feedback === 'correct' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)') : 'var(--bg-surface)',
+                            cursor: feedback === 'correct' ? 'default' : 'pointer',
                             transition: 'all 0.2s',
                             fontWeight: 600,
                             color: selected === i ? (feedback === 'correct' ? '#10b981' : '#ef4444') : 'var(--text-primary)'

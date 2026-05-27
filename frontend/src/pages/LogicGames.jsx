@@ -326,6 +326,7 @@ const DynamicGameModule = ({ type, icon: Icon, color }) => {
     const [showError, setShowError] = useState(false);
     const [shakeCard, setShakeCard] = useState(false);
     const [userInput, setUserInput] = useState('');
+    const [selectedTriviaOption, setSelectedTriviaOption] = useState(null);
 
     useEffect(() => {
         fetchData();
@@ -355,11 +356,21 @@ const DynamicGameModule = ({ type, icon: Icon, color }) => {
         setUserFeedback(null);
         setShowError(false);
         setUserInput('');
+        setSelectedTriviaOption(null);
     };
 
     const checkTriviaAnswer = (option) => {
-        setUserFeedback(option === current.respuesta ? 'correct' : 'wrong');
-        setShowAnswer(true);
+        setSelectedTriviaOption(option);
+        if (option === current.respuesta) {
+            setUserFeedback('correct');
+            setShowAnswer(true);
+            setShowError(false);
+        } else {
+            setUserFeedback('wrong');
+            setShowAnswer(false);
+            setShakeCard(true);
+            setTimeout(() => setShakeCard(false), 500);
+        }
     };
 
     const checkTypedAnswer = () => {
@@ -400,17 +411,26 @@ const DynamicGameModule = ({ type, icon: Icon, color }) => {
 
                 {type === 'trivia' && current.opciones && !showAnswer && (
                     <div className="game-module-options">
-                        {current.opciones.map((opt, i) => (
-                            <Button 
-                                key={i}
-                                variant="secondary"
-                                onClick={() => !showAnswer && checkTriviaAnswer(opt)}
-                                disabled={showAnswer}
-                                className={`game-module-option ${showAnswer && opt === current.respuesta ? 'correct-answer' : ''}`}
-                            >
-                                {opt}
-                            </Button>
-                        ))}
+                        {current.opciones.map((opt, i) => {
+                            const isSelected = selectedTriviaOption === opt;
+                            const isCorrect = opt === current.respuesta;
+                            return (
+                                <Button 
+                                    key={i}
+                                    variant="secondary"
+                                    onClick={() => !showAnswer && checkTriviaAnswer(opt)}
+                                    disabled={showAnswer}
+                                    className={`game-module-option ${isSelected ? (isCorrect ? 'correct-answer' : 'wrong-answer') : ''}`}
+                                    style={{
+                                        borderColor: isSelected ? (isCorrect ? '#10b981' : '#ef4444') : '',
+                                        background: isSelected ? (isCorrect ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)') : '',
+                                        color: isSelected ? (isCorrect ? '#10b981' : '#ef4444') : ''
+                                    }}
+                                >
+                                    {opt}
+                                </Button>
+                            );
+                        })}
                     </div>
                 )}
 
