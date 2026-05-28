@@ -64,13 +64,17 @@ class RegistroView(APIView):
                 msg.extra_headers['X-Priority'] = '1 (Highest)'
                 msg.extra_headers['Importance'] = 'High'
                 
-                msg.send(fail_silently=True)
+                # Enviar en un hilo de fondo (asíncronamente) para evitar bloqueos y timeouts
+                import threading
+                email_thread = threading.Thread(target=msg.send, kwargs={'fail_silently': True})
+                email_thread.daemon = True
+                email_thread.start()
                 
             except Exception as e:
                 # La excepción se captura de forma segura para no interrumpir el registro del usuario
                 import logging
                 logger = logging.getLogger(__name__)
-                logger.error(f"Error al enviar correo de verificación a {user.correo}: {e}", exc_info=True)
+                logger.error(f"Error al iniciar el hilo de correo de verificación a {user.correo}: {e}", exc_info=True)
             
             return Response({
                 'message': 'Usuario registrado. Por favor verifique su correo.',
@@ -243,7 +247,11 @@ class SolicitarRecuperacionView(APIView):
             msg.extra_headers['X-Priority'] = '1 (Highest)'
             msg.extra_headers['Importance'] = 'High'
             
-            msg.send()
+            # Enviar de forma asíncrona para evitar timeouts en producción
+            import threading
+            email_thread = threading.Thread(target=msg.send, kwargs={'fail_silently': True})
+            email_thread.daemon = True
+            email_thread.start()
             
             return Response({'message': 'Se ha enviado un enlace de recuperación a tu correo.'}, status=status.HTTP_200_OK)
         except Usuario.DoesNotExist:
