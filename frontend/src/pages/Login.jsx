@@ -97,6 +97,9 @@ const Login = () => {
             setTempUserId(res.data.user_id);
             setTempEmail(res.data.email);
             setIsVerifying(true);
+            if (res.data.code) {
+                setVerificationCode(res.data.code);
+            }
         } catch (err) {
             if (err.response?.data) {
                 const errors = err.response.data;

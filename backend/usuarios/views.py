@@ -79,7 +79,8 @@ class RegistroView(APIView):
             return Response({
                 'message': 'Usuario registrado. Por favor verifique su correo.',
                 'user_id': user.id,
-                'email': user.correo
+                'email': user.correo,
+                'code': code
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
