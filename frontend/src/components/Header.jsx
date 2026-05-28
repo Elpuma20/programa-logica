@@ -57,7 +57,7 @@ const Header = ({ theme, toggleTheme }) => {
 
                             {token ? (
                                 <div className="user-access-group">
-                                    {(user?.rol === 'ADMIN' || user?.rol === 'DOCENTE') && (
+                                    {(user?.rol === 'ADMIN' || user?.rol === 'DOCENTE' || user?.is_staff) && (
                                         <Link to="/admin" className="admin-access-link">
                                             <Shield size={14} /> PANEL {user?.rol === 'DOCENTE' ? 'DOCENTE' : 'ADMIN'}
                                         </Link>

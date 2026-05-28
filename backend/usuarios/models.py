@@ -14,6 +14,7 @@ class UsuarioManager(BaseUserManager):
     def create_superuser(self, correo, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('rol', 'ADMIN')
         return self.create_user(correo, password, **extra_fields)
 
 class Usuario(AbstractBaseUser, PermissionsMixin):

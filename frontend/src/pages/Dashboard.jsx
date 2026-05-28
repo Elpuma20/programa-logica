@@ -99,8 +99,8 @@ const Dashboard = () => {
                         <Badge variant="outline" className="tech-badge hide-mobile">
                             <Activity size={12} /> SYSTEM_STABLE
                         </Badge>
-                        <Badge variant={user?.rol === 'ADMIN' ? 'danger' : 'primary'} className="tech-badge">
-                            {user?.rol === 'ADMIN' ? 'LEVEL_01 :: ROOT' : 'LEVEL_03 :: STUDENT'}
+                        <Badge variant={(user?.rol === 'ADMIN' || user?.is_staff) ? 'danger' : 'primary'} className="tech-badge">
+                            {(user?.rol === 'ADMIN' || user?.is_staff) ? 'LEVEL_01 :: ROOT' : 'LEVEL_03 :: STUDENT'}
                         </Badge>
                     </div>
                 </div>
