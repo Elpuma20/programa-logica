@@ -64,10 +64,13 @@ class RegistroView(APIView):
                 msg.extra_headers['X-Priority'] = '1 (Highest)'
                 msg.extra_headers['Importance'] = 'High'
                 
-                msg.send()
+                msg.send(fail_silently=True)
                 
             except Exception as e:
-                print(f"Error al enviar correo: {e}")
+                # La excepción se captura de forma segura para no interrumpir el registro del usuario
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Error al enviar correo de verificación a {user.correo}: {e}", exc_info=True)
             
             return Response({
                 'message': 'Usuario registrado. Por favor verifique su correo.',
