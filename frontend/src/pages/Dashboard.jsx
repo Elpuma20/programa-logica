@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { 
     Table2, Brain, ChevronRight, BookOpen, Target, 
     Binary, Layers, GitBranch, GraduationCap, Sparkles,
-    Play, Layout, Cpu, BrainCircuit, Activity
+    Play, Layout, Cpu, BrainCircuit, Activity, ClipboardCheck
 } from 'lucide-react';
 
 import Card from '../components/ui/Card';
@@ -72,6 +72,16 @@ const MODULES = [
         color: '#2563eb',
         type: 'SIMULADOR',
         action: 'Abrir Simulador'
+    },
+    {
+        id: 'eval',
+        title: 'Evaluaciones',
+        desc: 'Pon a prueba tus conocimientos con evaluaciones no ponderadas y obtén tu resultado al instante.',
+        icon: ClipboardCheck,
+        path: '/evaluaciones',
+        color: '#10b981',
+        type: 'EVALUACIÓN',
+        action: 'Ver Evaluaciones'
     }
 ];
 

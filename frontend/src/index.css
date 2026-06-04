@@ -5450,4 +5450,72 @@ html, body {
     overflow-x: hidden;
 }
 
+/* ============================================
+   RESPONSIVIDAD COMPLETA PARA EL PANEL ADMIN / DOCENTE
+   ============================================ */
+
+/* Contenedor responsivo para tablas */
+.responsive-table-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-default);
+    background: var(--bg-primary);
+}
+
+.responsive-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 750px; /* Asegura un ancho mínimo para que se active el scroll y no se colapsen las columnas */
+}
+
+/* Adaptabilidad de la barra lateral (sidebar) del admin en dispositivos móviles */
+@media (max-width: 900px) {
+    /* Si el admin usa un diseño de grid principal, lo forzamos a una sola columna */
+    .admin-grid-layout {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1.5rem !important;
+    }
+
+    /* Convertir el sidebar en una barra horizontal de scroll */
+    .admin-sidebar-responsive {
+        display: flex !important;
+        flex-direction: row !important;
+        overflow-x: auto !important;
+        white-space: nowrap !important;
+        padding: 0.5rem !important;
+        gap: 0.5rem !important;
+        width: 100% !important;
+        border-right: none !important;
+        border-bottom: 1px solid var(--border-default) !important;
+        scrollbar-width: none; /* Ocultar scrollbar en Firefox */
+    }
+
+    .admin-sidebar-responsive::-webkit-scrollbar {
+        display: none; /* Ocultar scrollbar en Chrome/Safari */
+    }
+
+    .admin-sidebar-responsive > button,
+    .admin-sidebar-responsive > div {
+        flex: 0 0 auto !important;
+    }
+
+    /* Header del admin en columna */
+    .admin-header-responsive {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 1rem !important;
+    }
+
+    /* Modales adaptables */
+    .admin-modal-responsive {
+        width: 95vw !important;
+        max-height: 90vh !important;
+        overflow-y: auto !important;
+    }
+}
+
 

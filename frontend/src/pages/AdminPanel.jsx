@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { useAuth } from '../context/AuthContext';
-import { MessageCircle, Zap, Shield, Search, Users, Activity, BarChart3, Clock, Database, UserCheck, ShieldAlert, Cpu, LayoutDashboard, Brain, HelpCircle, Puzzle, ScrollText, CheckCircle2, AlertCircle, ChevronRight, ArrowLeft, ShieldCheck, Key, BrainCircuit, Server, Lock, Monitor, HardDrive, Globe, AlertTriangle, RefreshCw, Save, Edit3, Trash2, Plus, X } from 'lucide-react';
+import { MessageCircle, Zap, Shield, Search, Users, Activity, BarChart3, Clock, Database, UserCheck, ShieldAlert, Cpu, LayoutDashboard, Brain, HelpCircle, Puzzle, ScrollText, CheckCircle2, AlertCircle, ChevronRight, ArrowLeft, ShieldCheck, Key, BrainCircuit, Server, Lock, Monitor, HardDrive, Globe, AlertTriangle, RefreshCw, Save, Edit3, Trash2, Plus, X, ClipboardCheck, FileText, Mail, TrendingUp, TrendingDown } from 'lucide-react';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -31,7 +31,8 @@ const getTabTitle = (tab) => {
         'trivia': 'Base de Datos de Trivias',
         'adivinanza': 'Repositorio de Adivinanzas',
         'rompecabezas': 'Inventario de Desafíos Lógicos',
-        'paradoja': 'Archivo de Paradojas Teóricas'
+        'paradoja': 'Archivo de Paradojas Teóricas',
+        'evaluaciones': 'Gestión de Evaluaciones'
     };
     return titles[tab] || 'Módulo de Operaciones';
 };
@@ -52,7 +53,8 @@ const renderActiveTabContent = (tab, props) => {
     const { 
         usersList, logs, contents, adminStats, systemStatus, securityStatus, studentProgress, 
         handleVerifyUser, handleOpenModal, handleDelete, handleDeleteUser, loading,
-        auditFilters, setAuditFilters
+        auditFilters, setAuditFilters, handleSendResetPassword, handleOpenReport,
+        evaluacionesList, handleDeleteEvaluacion, handleOpenEvalModal
     } = props;
 
     switch(tab) {
@@ -73,6 +75,7 @@ const renderActiveTabContent = (tab, props) => {
                             <tbody>
                                 {(studentProgress?.estudiantes || []).map(est => {
                                     const porcentaje = Math.round((est.total_resoluciones / totalDesafios) * 100);
+                                    const progressColor = porcentaje >= 70 ? '#10b981' : porcentaje >= 30 ? '#f59e0b' : '#ef4444';
                                     return (
                                         <tr key={est.id} style={{ borderTop: '1px solid var(--border-default)' }}>
                                             <td style={{ padding: '1rem' }}>
@@ -102,19 +105,30 @@ const renderActiveTabContent = (tab, props) => {
                                             <td style={{ padding: '1rem', width: '30%' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                                     <div style={{ flex: 1, height: '8px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
-                                                        <div style={{ width: `${porcentaje}%`, height: '100%', background: 'linear-gradient(to right, var(--brand-primary), var(--brand-secondary))' }} />
+                                                        <div style={{ width: `${porcentaje}%`, height: '100%', background: progressColor, transition: 'width 0.5s' }} />
                                                     </div>
-                                                    <span style={{ fontSize: '0.8rem', fontWeight: 800, minWidth: '40px' }}>{porcentaje}%</span>
+                                                    <span style={{ fontSize: '0.8rem', fontWeight: 800, minWidth: '40px', color: progressColor }}>{porcentaje}%</span>
                                                 </div>
                                             </td>
                                             <td style={{ padding: '1rem', textAlign: 'right' }}>
-                                                <Button 
-                                                    variant="ghost" 
-                                                    style={{ color: 'var(--brand-primary)', position: 'relative' }}
-                                                    onClick={() => setFeedbackModal({ open: true, student: est, text: '' })}
-                                                >
-                                                    <Zap size={18} />
-                                                </Button>
+                                                <div style={{ display: 'flex', gap: '0.25rem', justifyContent: 'flex-end' }}>
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        style={{ color: 'var(--brand-primary)', padding: '0.4rem' }}
+                                                        onClick={() => setFeedbackModal({ open: true, student: est, text: '' })}
+                                                        title="Enviar retroalimentación"
+                                                    >
+                                                        <Zap size={16} />
+                                                    </Button>
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        style={{ color: '#8b5cf6', padding: '0.4rem' }}
+                                                        onClick={() => handleOpenReport(est.id)}
+                                                        title="Ver reporte de fortalezas/debilidades"
+                                                    >
+                                                        <FileText size={16} />
+                                                    </Button>
+                                                </div>
                                             </td>
                                         </tr>
                                     );
@@ -154,28 +168,38 @@ const renderActiveTabContent = (tab, props) => {
                                         </td>
                                         <td style={{ padding: '1rem', textAlign: 'center' }}>
                                             <Badge style={{ 
-                                                background: u.is_verified ? 'rgba(16, 185, 129, 0.1)' : 'rgba(37, 99, 235, 0.1)', 
-                                                color: u.is_verified ? '#10b981' : 'var(--brand-primary)',
-                                                border: `1px solid ${u.is_verified ? '#10b98133' : 'rgba(37, 99, 235, 0.2)'}` 
+                                                background: u.is_verified ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', 
+                                                color: u.is_verified ? '#10b981' : '#ef4444',
+                                                border: `1px solid ${u.is_verified ? '#10b98133' : '#ef444433'}` 
                                             }}>
-                                                {u.is_verified ? 'OK' : 'PND'}
+                                                {u.is_verified ? '✓ OK' : '✗ ALERTA'}
                                             </Badge>
                                         </td>
                                         <td style={{ padding: '1rem', textAlign: 'right' }}>
-                                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                                            <div style={{ display: 'flex', gap: '0.25rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
                                                 <Button 
                                                     variant="ghost" 
                                                     onClick={() => handleVerifyUser(u.id)}
-                                                    style={{ color: u.is_verified ? '#ef4444' : '#10b981' }}
+                                                    style={{ color: u.is_verified ? '#ef4444' : '#10b981', padding: '0.4rem' }}
+                                                    title={u.is_verified ? 'Revocar verificación' : 'Verificar usuario'}
                                                 >
-                                                    <Zap size={18} />
+                                                    <Zap size={16} />
+                                                </Button>
+                                                <Button 
+                                                    variant="ghost" 
+                                                    onClick={() => handleSendResetPassword(u.id)}
+                                                    style={{ color: 'var(--brand-primary)', padding: '0.4rem' }}
+                                                    title="Enviar enlace de cambio de contraseña"
+                                                >
+                                                    <Key size={16} />
                                                 </Button>
                                                 <Button 
                                                     variant="ghost" 
                                                     onClick={() => handleDeleteUser(u.id)}
-                                                    style={{ color: '#ef4444' }}
+                                                    style={{ color: '#ef4444', padding: '0.4rem' }}
+                                                    title="Eliminar usuario"
                                                 >
-                                                    <Trash2 size={18} />
+                                                    <Trash2 size={16} />
                                                 </Button>
                                             </div>
                                         </td>
@@ -524,36 +548,92 @@ const renderActiveTabContent = (tab, props) => {
                 </div>
             );
 
+        case 'evaluaciones':
+            return (
+                <div className="fade-in">
+                    <div className="responsive-table-container">
+                        <table className="responsive-table">
+                            <thead style={{ background: 'var(--bg-secondary)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                <tr>
+                                    <th style={{ padding: '1rem', textAlign: 'left' }}>EVALUACIÓN</th>
+                                    <th style={{ padding: '1rem', textAlign: 'left' }}>TIPO</th>
+                                    <th style={{ padding: '1rem', textAlign: 'center' }}>PREGUNTAS</th>
+                                    <th style={{ padding: '1rem', textAlign: 'center' }}>UMBRAL</th>
+                                    <th style={{ padding: '1rem', textAlign: 'center' }}>ESTADO</th>
+                                    <th style={{ padding: '1rem', textAlign: 'right' }}>ACCIONES</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {(evaluacionesList || []).map(ev => (
+                                    <tr key={ev.id} style={{ borderTop: '1px solid var(--border-default)' }}>
+                                        <td style={{ padding: '1rem' }}>
+                                            <div style={{ fontWeight: 700 }}>{ev.titulo}</div>
+                                            {ev.descripcion && <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>{ev.descripcion.slice(0, 60)}...</div>}
+                                        </td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <Badge variant="outline">{ev.tipo_logica?.toUpperCase()}</Badge>
+                                        </td>
+                                        <td style={{ padding: '1rem', textAlign: 'center', fontWeight: 700 }}>{ev.total_preguntas}</td>
+                                        <td style={{ padding: '1rem', textAlign: 'center' }}>{ev.umbral_aprobacion}%</td>
+                                        <td style={{ padding: '1rem', textAlign: 'center' }}>
+                                            <Badge style={{ 
+                                                background: ev.activa ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                                color: ev.activa ? '#10b981' : '#ef4444',
+                                                border: `1px solid ${ev.activa ? '#10b98133' : '#ef444433'}`
+                                            }}>
+                                                {ev.activa ? '✓ ACTIVA' : '✗ INACTIVA'}
+                                            </Badge>
+                                        </td>
+                                        <td style={{ padding: '1rem', textAlign: 'right' }}>
+                                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                                                <Button variant="ghost" onClick={() => handleOpenEvalModal(ev)} style={{ padding: '0.4rem' }}>
+                                                    <Edit3 size={16} />
+                                                </Button>
+                                                <Button variant="ghost" onClick={() => handleDeleteEvaluacion(ev.id)} style={{ color: '#ef4444', padding: '0.4rem' }}>
+                                                    <Trash2 size={16} />
+                                                </Button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+
         default: // Contents (Trivia, Adivinanza, etc)
             return (
                 <div className="fade-in">
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                        <thead style={{ background: 'var(--bg-secondary)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                            <tr>
-                                <th style={{ padding: '1rem', textAlign: 'left' }}>NODO / DESAFÍO</th>
-                                <th style={{ padding: '1rem', textAlign: 'center' }}>COMPLEJIDAD</th>
-                                <th style={{ padding: '1rem', textAlign: 'right' }}>OPERACIONES</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {contents.filter(c => c.tipo === tab).map(item => (
-                                <tr key={item.id} style={{ borderTop: '1px solid var(--border-default)' }}>
-                                    <td style={{ padding: '1rem', fontWeight: 700 }}>{item.titulo}</td>
-                                    <td style={{ padding: '1rem', textAlign: 'center' }}>
-                                        <Badge variant={item.dificultad === 'facil' ? 'success' : item.dificultad === 'medio' ? 'primary' : 'danger'}>
-                                            {item.dificultad.toUpperCase()}
-                                        </Badge>
-                                    </td>
-                                    <td style={{ padding: '1rem', textAlign: 'right' }}>
-                                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                                            <Button variant="ghost" onClick={() => handleOpenModal(item)} style={{ padding: '0.5rem' }}><Edit3 size={16} /></Button>
-                                            <Button variant="ghost" onClick={() => handleDelete(item.id)} style={{ padding: '0.5rem', color: '#ef4444' }}><Trash2 size={16} /></Button>
-                                        </div>
-                                    </td>
+                    <div className="responsive-table-container">
+                        <table className="responsive-table">
+                            <thead style={{ background: 'var(--bg-secondary)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                <tr>
+                                    <th style={{ padding: '1rem', textAlign: 'left' }}>NODO / DESAFÍO</th>
+                                    <th style={{ padding: '1rem', textAlign: 'center' }}>COMPLEJIDAD</th>
+                                    <th style={{ padding: '1rem', textAlign: 'right' }}>OPERACIONES</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {contents.filter(c => c.tipo === tab).map(item => (
+                                    <tr key={item.id} style={{ borderTop: '1px solid var(--border-default)' }}>
+                                        <td style={{ padding: '1rem', fontWeight: 700 }}>{item.titulo}</td>
+                                        <td style={{ padding: '1rem', textAlign: 'center' }}>
+                                            <Badge variant={item.dificultad === 'facil' ? 'success' : item.dificultad === 'medio' ? 'primary' : 'danger'}>
+                                                {item.dificultad.toUpperCase()}
+                                            </Badge>
+                                        </td>
+                                        <td style={{ padding: '1rem', textAlign: 'right' }}>
+                                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                                                <Button variant="ghost" onClick={() => handleOpenModal(item)} style={{ padding: '0.5rem' }}><Edit3 size={16} /></Button>
+                                                <Button variant="ghost" onClick={() => handleDelete(item.id)} style={{ padding: '0.5rem', color: '#ef4444' }}><Trash2 size={16} /></Button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             );
     }
@@ -588,6 +668,19 @@ const AdminPanel = () => {
     const [feedbackModal, setFeedbackModal] = useState({ open: false, student: null, text: '' });
     const [notification, setNotification] = useState(null);
 
+    // Estados para Evaluaciones
+    const [evaluacionesList, setEvaluacionesList] = useState([]);
+    const [isEvalModalOpen, setIsEvalModalOpen] = useState(false);
+    const [editingEvalItem, setEditingEvalItem] = useState(null);
+    const [evalFormData, setEvalFormData] = useState({
+        titulo: '',
+        descripcion: '',
+        tipo_logica: 'general',
+        umbral_aprobacion: 60,
+        activa: true,
+        preguntas: [{ pregunta: '', opciones: ['', '', '', ''], respuesta_correcta: '' }]
+    });
+
     useEffect(() => {
         const canAccess = user?.is_staff || user?.rol === 'ADMIN' || user?.rol === 'DOCENTE';
         if (!canAccess) { 
@@ -605,7 +698,8 @@ const AdminPanel = () => {
         try {
             const promises = [
                 fetchContents(),
-                fetchAdminStats()
+                fetchAdminStats(),
+                fetchEvaluaciones()
             ];
             
             if (user?.rol === 'ADMIN' || user?.is_staff) {
@@ -622,6 +716,15 @@ const AdminPanel = () => {
             await Promise.all(promises);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchEvaluaciones = async () => {
+        try {
+            const res = await api.get('/logica/evaluaciones-admin/');
+            setEvaluacionesList(res.data);
+        } catch (err) {
+            console.error('Error fetching evaluations', err);
         }
     };
 
@@ -782,6 +885,126 @@ const AdminPanel = () => {
         }
     };
 
+    const handleDeleteEvaluacion = async (id) => {
+        if (window.confirm('¿Confirmar la eliminación de esta evaluación?')) {
+            try {
+                await api.delete(`/logica/evaluaciones-admin/${id}/`);
+                showNotification('Evaluación eliminada con éxito');
+                fetchEvaluaciones();
+                fetchAdminStats();
+            } catch (err) {
+                showNotification('Error al eliminar la evaluación', 'error');
+            }
+        }
+    };
+
+    const handleOpenEvalModal = (item = null) => {
+        if (item) {
+            setEditingEvalItem(item);
+            setEvalFormData({
+                titulo: item.titulo || '',
+                descripcion: item.descripcion || '',
+                tipo_logica: item.tipo_logica || 'general',
+                umbral_aprobacion: item.umbral_aprobacion || 60,
+                activa: item.activa !== undefined ? item.activa : true,
+                preguntas: item.preguntas || [{ pregunta: '', opciones: ['', '', '', ''], respuesta_correcta: '' }]
+            });
+        } else {
+            setEditingEvalItem(null);
+            setEvalFormData({
+                titulo: '',
+                descripcion: '',
+                tipo_logica: 'general',
+                umbral_aprobacion: 60,
+                activa: true,
+                preguntas: [{ pregunta: '', opciones: ['', '', '', ''], respuesta_correcta: '' }]
+            });
+        }
+        setIsEvalModalOpen(true);
+    };
+
+    const handleAddQuestion = () => {
+        setEvalFormData(prev => ({
+            ...prev,
+            preguntas: [...prev.preguntas, { pregunta: '', opciones: ['', '', '', ''], respuesta_correcta: '' }]
+        }));
+    };
+
+    const handleRemoveQuestion = (index) => {
+        if (evalFormData.preguntas.length === 1) return;
+        setEvalFormData(prev => ({
+            ...prev,
+            preguntas: prev.preguntas.filter((_, idx) => idx !== index)
+        }));
+    };
+
+    const handleQuestionTextChange = (index, value) => {
+        setEvalFormData(prev => {
+            const updated = [...prev.preguntas];
+            updated[index].pregunta = value;
+            return { ...prev, preguntas: updated };
+        });
+    };
+
+    const handleOptionTextChange = (qIdx, optIdx, value) => {
+        setEvalFormData(prev => {
+            const updated = [...prev.preguntas];
+            const updatedOptions = [...updated[qIdx].opciones];
+            updatedOptions[optIdx] = value;
+            updated[qIdx].opciones = updatedOptions;
+            return { ...prev, preguntas: updated };
+        });
+    };
+
+    const handleCorrectAnswerChange = (qIdx, value) => {
+        setEvalFormData(prev => {
+            const updated = [...prev.preguntas];
+            updated[qIdx].respuesta_correcta = value;
+            return { ...prev, preguntas: updated };
+        });
+    };
+
+    const handleEvalSubmit = async (e) => {
+        e.preventDefault();
+        
+        // Validaciones básicas de campos
+        if (!evalFormData.titulo.trim()) {
+            showNotification('El título es obligatorio', 'error');
+            return;
+        }
+
+        for (let i = 0; i < evalFormData.preguntas.length; i++) {
+            const q = evalFormData.preguntas[i];
+            if (!q.pregunta.trim()) {
+                showNotification(`La pregunta ${i + 1} no tiene texto.`, 'error');
+                return;
+            }
+            if (q.opciones.some(opt => !opt.trim())) {
+                showNotification(`La pregunta ${i + 1} tiene opciones vacías.`, 'error');
+                return;
+            }
+            if (!q.respuesta_correcta.trim()) {
+                showNotification(`La pregunta ${i + 1} no tiene respuesta correcta seleccionada.`, 'error');
+                return;
+            }
+        }
+
+        try {
+            if (editingEvalItem) {
+                await api.patch(`/logica/evaluaciones-admin/${editingEvalItem.id}/`, evalFormData);
+                showNotification('Evaluación actualizada con éxito');
+            } else {
+                await api.post('/logica/evaluaciones-admin/', evalFormData);
+                showNotification('Evaluación creada con éxito');
+            }
+            fetchEvaluaciones();
+            setIsEvalModalOpen(false);
+        } catch (err) {
+            console.error(err);
+            showNotification('Error al guardar la evaluación', 'error');
+        }
+    };
+
     const filteredContents = contents.filter(c => c.tipo === activeTab);
 
     const statsOverview = [
@@ -827,6 +1050,12 @@ const AdminPanel = () => {
                             <Plus size={18} /> Inyectar {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
                         </Button>
                     )}
+
+                    {activeTab === 'evaluaciones' && (
+                        <Button onClick={() => handleOpenEvalModal()} className="w-full-mobile">
+                            <Plus size={18} /> Crear Evaluación
+                        </Button>
+                    )}
                 </div>
             </header>
 
@@ -859,6 +1088,7 @@ const AdminPanel = () => {
                             <Button variant="ghost" className={activeTab === 'reportes' ? 'active-tab' : ''} onClick={() => setActiveTab('reportes')}>Métricas</Button>
                             <Button variant="ghost" className={activeTab === 'trivia' ? 'active-tab' : ''} onClick={() => setActiveTab('trivia')}>Trivias</Button>
                             <Button variant="ghost" className={activeTab === 'rompecabezas' ? 'active-tab' : ''} onClick={() => setActiveTab('rompecabezas')}>Puzzles</Button>
+                            <Button variant="ghost" className={activeTab === 'evaluaciones' ? 'active-tab' : ''} onClick={() => setActiveTab('evaluaciones')}>Evaluaciones</Button>
                          </div>
                     </div>
 
@@ -871,6 +1101,7 @@ const AdminPanel = () => {
                             )}
                             <NavButton id="progreso" label="Monitoreo Académico" icon={Activity} active={activeTab} onClick={setActiveTab} />
                             <NavButton id="reportes" label="Centro de Métricas" icon={BarChart3} active={activeTab} onClick={setActiveTab} />
+                            <NavButton id="evaluaciones" label="Gestión de Evaluaciones" icon={ClipboardCheck} active={activeTab} onClick={setActiveTab} />
                             
                             {(user?.rol === 'ADMIN' || user?.is_staff) && (
                                 <>
@@ -932,7 +1163,8 @@ const AdminPanel = () => {
                             {renderActiveTabContent(activeTab, {
                                 usersList, logs, contents, adminStats, systemStatus, securityStatus, studentProgress,
                                 handleVerifyUser, handleOpenModal, handleDelete, handleDeleteUser, loading,
-                                auditFilters, setAuditFilters
+                                auditFilters, setAuditFilters,
+                                evaluacionesList, handleDeleteEvaluacion, handleOpenEvalModal
                             })}
                         </div>
                     </Card>
@@ -1095,6 +1327,119 @@ const AdminPanel = () => {
                             <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
                                 <Button variant="secondary" onClick={() => setFeedbackModal({ open: false, student: null, text: '' })} className="w-full">Cancelar</Button>
                                 <Button type="submit" className="w-full"><Save size={18} /> Enviar Guía</Button>
+                            </div>
+                        </form>
+                    </Card>
+                </div>
+            )}
+
+            {/* Evaluations Modal */}
+            {isEvalModalOpen && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+                    <Card style={{ width: '100%', maxWidth: '700px', maxHeight: '90vh', overflowY: 'auto', border: '1px solid var(--brand-primary)', background: 'var(--bg-surface)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                <div style={{ width: '40px', height: '40px', background: 'var(--brand-primary)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+                                    <ClipboardCheck size={20} />
+                                </div>
+                                <h2 style={{ margin: 0 }}>{editingEvalItem ? 'Modificar Evaluación' : 'Crear Nueva Evaluación'}</h2>
+                            </div>
+                            <Button variant="ghost" onClick={() => setIsEvalModalOpen(false)}><X size={24} /></Button>
+                        </div>
+                        <form onSubmit={handleEvalSubmit}>
+                            <Input label="Título de la Evaluación" value={evalFormData.titulo} onChange={e => setEvalFormData({...evalFormData, titulo: e.target.value})} required />
+                            
+                            <div className="input-group">
+                                <label className="input-label">Descripción</label>
+                                <textarea className="input-field" rows={3} value={evalFormData.descripcion} onChange={e => setEvalFormData({...evalFormData, descripcion: e.target.value})} style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-default)' }} />
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                                <div className="input-group">
+                                    <label className="input-label">Tipo de Lógica</label>
+                                    <select className="input-field" value={evalFormData.tipo_logica} onChange={e => setEvalFormData({...evalFormData, tipo_logica: e.target.value})}>
+                                        <option value="general">General</option>
+                                        <option value="proposicional">Lógica Proposicional</option>
+                                        <option value="predicados">Lógica de Predicados</option>
+                                        <option value="inferencia">Inferencia y Demostración</option>
+                                        <option value="conjuntos">Teoría de Conjuntos</option>
+                                        <option value="boole">Álgebra de Boole</option>
+                                    </select>
+                                </div>
+                                <Input label="Umbral de Aprobación (%)" type="number" min="0" max="100" value={evalFormData.umbral_aprobacion} onChange={e => setEvalFormData({...evalFormData, umbral_aprobacion: parseInt(e.target.value) || 0})} required />
+                            </div>
+
+                            <div className="input-group" style={{ marginBottom: '1.5rem' }}>
+                                <label className="input-label">Estado</label>
+                                <select className="input-field" value={evalFormData.activa ? "true" : "false"} onChange={e => setEvalFormData({...evalFormData, activa: e.target.value === "true"})}>
+                                    <option value="true">Activa (Visible para estudiantes)</option>
+                                    <option value="false">Inactiva (Oculta)</option>
+                                </select>
+                            </div>
+
+                            <div style={{ borderTop: '1px solid var(--border-default)', paddingTop: '1.5rem', marginBottom: '1.5rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                    <h3 style={{ margin: 0 }}>Preguntas de la Evaluación</h3>
+                                    <Button type="button" onClick={handleAddQuestion} variant="secondary" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem' }}>
+                                        <Plus size={16} /> Añadir Pregunta
+                                    </Button>
+                                </div>
+
+                                {evalFormData.preguntas.map((q, qIdx) => (
+                                    <div key={qIdx} style={{ background: 'var(--bg-secondary)', padding: '1.25rem', borderRadius: '10px', border: '1px solid var(--border-default)', marginBottom: '1.25rem', position: 'relative' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                            <Badge variant="outline">Pregunta {qIdx + 1}</Badge>
+                                            {evalFormData.preguntas.length > 1 && (
+                                                <Button type="button" onClick={() => handleRemoveQuestion(qIdx)} variant="ghost" style={{ color: '#ef4444', padding: '0.25rem' }}>
+                                                    <Trash2 size={16} />
+                                                </Button>
+                                            )}
+                                        </div>
+
+                                        <Input 
+                                            label="Enunciado de la Pregunta" 
+                                            value={q.pregunta} 
+                                            onChange={e => handleQuestionTextChange(qIdx, e.target.value)} 
+                                            required 
+                                        />
+
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+                                            {q.opciones.map((opt, optIdx) => (
+                                                <Input 
+                                                    key={optIdx}
+                                                    label={`Opción ${String.fromCharCode(65 + optIdx)}`} 
+                                                    value={opt} 
+                                                    onChange={e => handleOptionTextChange(qIdx, optIdx, e.target.value)} 
+                                                    required 
+                                                />
+                                            ))}
+                                        </div>
+
+                                        <div className="input-group">
+                                            <label className="input-label">Respuesta Correcta</label>
+                                            <select 
+                                                className="input-field" 
+                                                value={q.respuesta_correcta} 
+                                                onChange={e => handleCorrectAnswerChange(qIdx, e.target.value)}
+                                                required
+                                            >
+                                                <option value="">-- Selecciona la opción correcta --</option>
+                                                {q.opciones.map((opt, optIdx) => (
+                                                    <option key={optIdx} value={opt} disabled={!opt.trim()}>
+                                                        Opción {String.fromCharCode(65 + optIdx)}: {opt || '(vacía)'}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+                                <Button variant="secondary" onClick={() => setIsEvalModalOpen(false)} className="w-full">Cancelar</Button>
+                                <Button type="submit" className="w-full" style={{ background: 'var(--brand-primary)', color: 'white' }}>
+                                    <Save size={18} /> Guardar Evaluación
+                                </Button>
                             </div>
                         </form>
                     </Card>

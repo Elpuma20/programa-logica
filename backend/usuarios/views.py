@@ -248,9 +248,17 @@ class SolicitarRecuperacionView(APIView):
             msg.extra_headers['X-Priority'] = '1 (Highest)'
             msg.extra_headers['Importance'] = 'High'
             
-            # Enviar de forma asíncrona para evitar timeouts en producción
+            # Enviar de forma asíncrona para evitar timeouts en producción, pero capturando errores
+            def send_async_recuperacion(message, target_email):
+                try:
+                    message.send(fail_silently=False)
+                except Exception as ex:
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"Error enviando correo de recuperación en segundo plano a {target_email}: {ex}")
+
             import threading
-            email_thread = threading.Thread(target=msg.send, kwargs={'fail_silently': True})
+            email_thread = threading.Thread(target=send_async_recuperacion, args=(msg, correo))
             email_thread.daemon = True
             email_thread.start()
             
@@ -282,3 +290,69 @@ class ConfirmarRecuperacionView(APIView):
                 return Response({'error': 'El enlace ha expirado o ya ha sido utilizado.'}, status=status.HTTP_400_BAD_REQUEST)
         except (TypeError, ValueError, OverflowError, Usuario.DoesNotExist) as e:
             return Response({'error': 'El enlace de recuperación es inválido.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AdminEnviarResetPasswordView(APIView):
+    """Permite al admin enviar un enlace de cambio de contraseña al correo del usuario."""
+    permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request, pk):
+        try:
+            usuario = Usuario.objects.get(pk=pk)
+            token = default_token_generator.make_token(usuario)
+            uid = urlsafe_base64_encode(force_bytes(usuario.pk))
+
+            # Detectar el origen
+            origin = request.headers.get('Origin')
+            if not origin:
+                origin = "https://edulogica.onrender.com" if not settings.DEBUG else "http://localhost:5173"
+
+            reset_link = f"{origin}/reset-password-confirm/{uid}/{token}"
+
+            subject = 'Cambio de contraseña solicitado - EduLógica'
+            html_content = f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; background: #fff; padding: 20px; border-radius: 12px; border: 1px solid #eee;">
+                <h2 style="color: #2563eb; text-align: center;">Cambio de Contraseña</h2>
+                <p>Hola <strong>{usuario.nombres}</strong>,</p>
+                <p>Un administrador de <strong>EduLógica</strong> ha solicitado un cambio de contraseña para tu cuenta.</p>
+                <p>Para establecer tu nueva contraseña, haz clic en el siguiente botón:</p>
+                <div style="text-align: center; margin: 35px 0;">
+                    <a href="{reset_link}" style="background: #2563eb; color: #ffffff !important; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block; box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);">
+                        Cambiar Contraseña
+                    </a>
+                </div>
+                <p style="font-size: 14px; color: #666;">Si el botón no funciona, copia y pega el siguiente enlace en tu navegador:</p>
+                <p style="word-break: break-all; font-size: 12px; color: #2563eb; background: #f8fafc; padding: 10px; border-radius: 6px;">{reset_link}</p>
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;" />
+                <p style="font-size: 13px; color: #999; text-align: center;">Si no esperabas este correo, contacta a tu administrador.</p>
+            </div>
+            """
+
+            text_content = strip_tags(html_content)
+            msg = EmailMultiAlternatives(subject, text_content, settings.DEFAULT_FROM_EMAIL, [usuario.correo])
+            msg.attach_alternative(html_content, "text/html")
+            msg.extra_headers['X-Priority'] = '1 (Highest)'
+            msg.extra_headers['Importance'] = 'High'
+
+            # Enviar de forma asíncrona para evitar timeouts en producción, pero capturando errores
+            def send_async_admin_reset(message, target_email):
+                try:
+                    message.send(fail_silently=False)
+                except Exception as ex:
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"Error enviando correo de cambio de contraseña admin en segundo plano a {target_email}: {ex}")
+
+            import threading
+            email_thread = threading.Thread(target=send_async_admin_reset, args=(msg, usuario.correo))
+            email_thread.daemon = True
+            email_thread.start()
+
+            return Response({
+                'status': 'success',
+                'message': f'Enlace de cambio de contraseña enviado a {usuario.correo}'
+            })
+        except Usuario.DoesNotExist:
+            return Response({'error': 'Usuario no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': f'Error al enviar: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

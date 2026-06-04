@@ -20,6 +20,7 @@ import BooleanAlgebra from './pages/BooleanAlgebra';
 import PasswordRecovery from './pages/PasswordRecovery';
 import ResetPasswordConfirm from './pages/ResetPasswordConfirm';
 import GoogleSignIn from './pages/GoogleSignIn';
+import EvaluacionesPage from './pages/EvaluacionesPage';
 import { BrainCircuit } from 'lucide-react';
 
 const PrivateRoute = ({ children }) => {
@@ -107,6 +108,7 @@ const AppContent = () => {
             <Route path="/predicados" element={<PrivateRoute><PredicateLogicLesson /></PrivateRoute>} />
             <Route path="/inferencia" element={<PrivateRoute><InferenceLogic /></PrivateRoute>} />
             <Route path="/boole" element={<PrivateRoute><BooleanAlgebra /></PrivateRoute>} />
+            <Route path="/evaluaciones" element={<PrivateRoute><EvaluacionesPage /></PrivateRoute>} />
             <Route path="/admin" element={<PrivateRoute><AdminPanel /></PrivateRoute>} />
           </Routes>
         </MainLayout>

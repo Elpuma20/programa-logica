@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import { useAuth } from '../context/AuthContext';
-import { AlertCircle, Eye, EyeOff, User, Lock, ArrowRight, ShieldCheck, Mail, CreditCard, BrainCircuit } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff, User, Lock, ArrowRight, ShieldCheck, Mail, CreditCard, BrainCircuit, Instagram, Facebook } from 'lucide-react';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 
@@ -10,6 +10,36 @@ const backgrounds = [
     '/backgrounds/bg1.jpg',
     '/backgrounds/bg2.jpg',
     '/backgrounds/bg3.jpg'
+];
+
+const WhatsAppIcon = ({ size = 20, style }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}>
+        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+    </svg>
+);
+
+const socialLinks = [
+    {
+        name: 'WhatsApp',
+        icon: WhatsAppIcon,
+        url: 'https://wa.me/',
+        color: '#25D366',
+        hoverBg: 'rgba(37, 211, 102, 0.1)'
+    },
+    {
+        name: 'Instagram',
+        icon: Instagram,
+        url: 'https://www.instagram.com/aisunergoficial?igsh=c3dpbThkYTZ2ZHU2',
+        color: '#E4405F',
+        hoverBg: 'rgba(228, 64, 95, 0.1)'
+    },
+    {
+        name: 'Facebook',
+        icon: Facebook,
+        url: 'https://facebook.com/',
+        color: '#1877F2',
+        hoverBg: 'rgba(24, 119, 242, 0.1)'
+    }
 ];
 
 const Login = () => {
@@ -280,6 +310,43 @@ const Login = () => {
                                     ¿No tienes cuenta? <span onClick={toggleMode} style={{ color: '#2563eb', fontWeight: 600, cursor: 'pointer' }}>Regístrate aquí</span>
                                 </p>
                             </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center', marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px solid #e2e8f0' }}>
+                                <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600 }}>Nuestras redes sociales</span>
+                                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                                    {socialLinks.map((social) => (
+                                        <a
+                                            key={social.name}
+                                            href={social.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title={social.name}
+                                            style={{
+                                                width: '32px',
+                                                height: '32px',
+                                                borderRadius: '8px',
+                                                background: social.hoverBg,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                color: social.color,
+                                                border: `1px solid ${social.color}22`,
+                                                transition: 'all 0.2s ease',
+                                                textDecoration: 'none'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.background = social.color;
+                                                e.currentTarget.style.color = 'white';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.background = social.hoverBg;
+                                                e.currentTarget.style.color = social.color;
+                                            }}
+                                        >
+                                            <social.icon size={16} />
+                                        </a>
+                                    ))}
+                                </div>
+                            </div>
                         </>
                     ) : (
                         <>
@@ -349,6 +416,43 @@ const Login = () => {
                                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
                                     ¿Ya tienes cuenta? <span onClick={toggleMode} style={{ color: '#2563eb', fontWeight: 600, cursor: 'pointer' }}>Inicia sesión aquí</span>
                                 </p>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center', marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px solid #e2e8f0' }}>
+                                <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600 }}>Nuestras redes sociales</span>
+                                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                                    {socialLinks.map((social) => (
+                                        <a
+                                            key={social.name}
+                                            href={social.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title={social.name}
+                                            style={{
+                                                width: '32px',
+                                                height: '32px',
+                                                borderRadius: '8px',
+                                                background: social.hoverBg,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                color: social.color,
+                                                border: `1px solid ${social.color}22`,
+                                                transition: 'all 0.2s ease',
+                                                textDecoration: 'none'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.background = social.color;
+                                                e.currentTarget.style.color = 'white';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.background = social.hoverBg;
+                                                e.currentTarget.style.color = social.color;
+                                            }}
+                                        >
+                                            <social.icon size={16} />
+                                        </a>
+                                    ))}
+                                </div>
                             </div>
                         </>
                     )}

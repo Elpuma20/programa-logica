@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "start": "concurrently \"npm run dev\" \"cd ../backend && py manage.py runserver\"",
+    "start": "concurrently \"npm run dev\" \"cd ../backend && ./venv/bin/python manage.py runserver\"",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
