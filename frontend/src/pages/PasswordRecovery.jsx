@@ -76,41 +76,33 @@ const PasswordRecovery = () => {
                     maxHeight: '90vh',
                     overflowY: 'auto'
                 }}>
-                    <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                    <div className="auth-header-container">
                         <div className="flex-center mb-4">
-                            <div style={{ 
-                                width: 64, height: 64,
-                                background: '#2563eb', 
-                                borderRadius: '18px',
-                                color: 'white',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                margin: '0 auto'
-                            }}>
+                            <div className="auth-logo-icon">
                                 <BrainCircuit size={32} />
                             </div>
                         </div>
-                        <h2 className="mb-2" style={{ color: '#1e293b', fontSize: '1.75rem', fontWeight: 800 }}>
-                            Recuperar <span style={{ color: '#2563eb' }}>Acceso</span>
+                        <h2 className="auth-title">
+                            Recuperar Acceso
                         </h2>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Ingresa tu correo para recibir un enlace de recuperación</p>
+                        <p className="auth-subtitle">Ingresa tu correo para recibir un enlace de recuperación</p>
                     </div>
 
                     {!message || message.type !== 'success' ? (
                         <form onSubmit={handleSubmit}>
-                            <div className="input-group" style={{ marginBottom: '1.5rem' }}>
-                                <label className="input-label" style={{textTransform: 'none', fontWeight: 700, fontSize: '0.8rem', color: '#555'}}>Correo Institucional</label>
+                            <div className="input-group">
+                                <label className="auth-input-label">Correo Institucional</label>
                                 <div style={{ position: 'relative' }}>
-                                    <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
+                                    <div className="auth-input-icon">
                                         <Mail size={18} />
                                     </div>
                                     <input 
-                                        className="input-field"
+                                        className="input-field auth-input-field"
                                         type="email"
                                         placeholder="usuario@institucion.edu"
                                         value={correo}
                                         onChange={(e) => setCorreo(e.target.value)}
                                         required
-                                        style={{ paddingLeft: '2.8rem', borderRadius: '8px', background: 'rgba(255,255,255,0.8)' }}
                                     />
                                 </div>
                             </div>
@@ -124,7 +116,7 @@ const PasswordRecovery = () => {
                                     display: 'flex',
                                     gap: '0.5rem',
                                     fontSize: '0.85rem',
-                                    marginBottom: '1.5rem'
+                                    marginBottom: '1rem'
                                 }}>
                                     <AlertCircle size={18} />
                                     {message.text}
@@ -133,50 +125,36 @@ const PasswordRecovery = () => {
 
                             <Button 
                                 type="submit" 
-                                className="w-full" 
+                                className="w-full auth-btn-submit" 
                                 disabled={loading}
-                                style={{ 
-                                    height: '3.5rem', 
-                                    background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-                                    border: 'none',
-                                    fontSize: '1rem',
-                                    borderRadius: '8px',
-                                    color: 'white'
-                                }}
                             >
-                                {loading ? <RefreshCw className="spin" size={20} /> : 'Enviar Enlace de Recuperación'}
+                                {loading ? <RefreshCw className="spin" size={20} /> : 'Enviar Enlace'}
                             </Button>
                         </form>
                     ) : (
-                        <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+                        <div style={{ textAlign: 'center', padding: '0.5rem 0' }}>
                             <div style={{ 
-                                width: 60, height: 60, 
+                                width: 50, height: 50, 
                                 background: 'rgba(16, 185, 129, 0.1)', 
                                 color: '#10b981',
                                 borderRadius: '50%',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                margin: '0 auto 1.5rem auto'
+                                margin: '0 auto 1.25rem auto'
                             }}>
-                                <CheckCircle size={32} />
+                                <CheckCircle size={28} />
                             </div>
-                            <h3 style={{ color: '#10b981', fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>¡Correo Enviado!</h3>
-                            <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: 1.6, fontSize: '0.9rem' }}>
+                            <h3 style={{ color: '#10b981', fontSize: '1.35rem', fontWeight: 700, marginBottom: '0.75rem' }}>¡Correo Enviado!</h3>
+                            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', lineHeight: 1.5, fontSize: '0.85rem' }}>
                                 Hemos enviado un enlace seguro a <strong>{correo}</strong>. 
-                                Revisa tu bandeja de entrada (y la carpeta de spam) para continuar.
+                                Revisa tu bandeja de entrada para continuar.
                             </p>
-                            <Button className="w-full" onClick={() => navigate('/login')} style={{ height: '3.5rem', background: '#f1f5f9', color: '#334155', border: '1px solid #e2e8f0', borderRadius: '8px', fontWeight: 600 }}>
+                            <Button className="w-full auth-btn-submit" onClick={() => navigate('/login')} style={{ background: '#f1f5f9', color: '#334155', border: '1px solid #e2e8f0' }}>
                                 Volver al Login
                             </Button>
                         </div>
                     )}
 
-                    <div style={{ 
-                        marginTop: '2rem', 
-                        textAlign: 'center', 
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '0.75rem'
-                    }}>
+                    <div className="auth-footer-container">
                         <Link to="/login" style={{ 
                             color: '#2563eb', 
                             fontSize: '0.85rem', 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import { 
@@ -6,8 +6,13 @@ import {
     CheckCircle, AlertCircle, RefreshCw 
 } from 'lucide-react';
 import Card from '../components/ui/Card';
-import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
+
+const backgrounds = [
+    '/backgrounds/bg1.jpg',
+    '/backgrounds/bg2.jpg',
+    '/backgrounds/bg3.jpg'
+];
 
 const ResetPasswordConfirm = () => {
     const { uid, token } = useParams();
@@ -18,6 +23,14 @@ const ResetPasswordConfirm = () => {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState(null);
     const navigate = useNavigate();
+    const [currentBg, setCurrentBg] = useState(0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentBg((prev) => (prev + 1) % backgrounds.length);
+        }, 5000);
+        return () => clearInterval(interval);
+    }, []);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -45,7 +58,7 @@ const ResetPasswordConfirm = () => {
                 token: token,
                 new_password: formData.new_password
             });
-            setMessage({ type: 'success', text: res.data.success });
+            setMessage({ type: 'success', text: res.data.success || 'Tu contraseña ha sido restablecida con éxito.' });
             setTimeout(() => navigate('/login'), 3000);
         } catch (err) {
             setMessage({ 
@@ -58,98 +71,139 @@ const ResetPasswordConfirm = () => {
     };
 
     return (
-        <div className="container flex-center" style={{ minHeight: '80vh' }}>
-            <Card className="fade-in" style={{ width: '450px', maxWidth: '100%' }}>
-                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                    <div className="flex-center mb-4">
-                        <div style={{ 
-                            width: 64, height: 64,
-                            background: 'linear-gradient(135deg, var(--brand-primary), var(--brand-secondary))', 
-                            borderRadius: '18px',
-                            color: 'white',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            boxShadow: '0 8px 24px rgba(37, 99, 235, 0.25)'
-                        }}>
-                            <BrainCircuit size={32} />
-                        </div>
-                    </div>
-                    <h2 className="mb-2">Nueva <span className="text-gradient">Contraseña</span></h2>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Ingresa tu nueva clave maestra</p>
-                </div>
+        <div style={{ position: 'relative', height: '100vh', width: '100vw', margin: 0, padding: 0, overflow: 'hidden', boxSizing: 'border-box' }}>
+            {backgrounds.map((bg, index) => (
+                <div key={bg} style={{
+                    position: 'absolute',
+                    inset: 0,
+                    backgroundImage: `url(${bg})`,
+                    backgroundPosition: 'center',
+                    backgroundSize: 'cover',
+                    backgroundRepeat: 'no-repeat',
+                    opacity: currentBg === index ? 1 : 0,
+                    transition: 'opacity 1s ease-in-out',
+                    zIndex: 0
+                }}></div>
+            ))}
 
-                <form onSubmit={handleSubmit}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                        <Input 
-                            label="Nueva Contraseña"
-                            name="new_password"
-                            type="password"
-                            placeholder="Mínimo 8 caracteres"
-                            value={formData.new_password}
-                            onChange={handleChange}
-                            icon={<Lock size={18} />}
-                            required
-                        />
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.7) 100%)', zIndex: 1 }}></div>
 
-                        <Input 
-                            label="Confirmar Nueva Contraseña"
-                            name="confirm_password"
-                            type="password"
-                            placeholder="Mínimo 8 caracteres"
-                            value={formData.confirm_password}
-                            onChange={handleChange}
-                            icon={<Lock size={18} />}
-                            required
-                        />
-
-                        {message && (
-                            <div className="fade-in" style={{ 
-                                padding: '1rem', 
-                                background: message.type === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', 
-                                color: message.type === 'success' ? '#10b981' : '#ef4444', 
-                                borderRadius: '12px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.75rem',
-                                fontSize: '0.85rem',
-                                fontWeight: 700,
-                                border: `1px solid ${message.type === 'success' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`
-                            }}>
-                                {message.type === 'success' ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
-                                {message.text}
-                            </div>
-                        )}
-
-                        <Button 
-                            type="submit" 
-                            className="w-full" 
-                            disabled={loading}
-                            style={{ height: '3.5rem' }}
-                        >
-                            {loading ? <RefreshCw className="spin" size={20} /> : 'Actualizar Contraseña'}
-                        </Button>
-                    </div>
-                </form>
-
-                <div style={{ 
-                    marginTop: '2rem', 
-                    textAlign: 'center', 
-                    paddingTop: '1.5rem', 
-                    borderTop: '1px solid var(--border-default)' 
+            <div style={{ display: 'flex', position: 'relative', zIndex: 2, height: '100%', width: '100%', justifyContent: 'center', alignItems: 'center' }}>
+                <Card className="fade-in auth-card-container" style={{ 
+                    width: '420px', 
+                    maxWidth: '95%', 
+                    background: 'rgba(255, 255, 255, 0.95)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                    padding: '2.5rem',
+                    maxHeight: '90vh',
+                    overflowY: 'auto'
                 }}>
-                    <Link to="/login" style={{ 
-                        color: 'var(--text-secondary)', 
-                        fontSize: '0.95rem', 
-                        textDecoration: 'none',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '0.5rem',
-                        fontWeight: 600
-                    }}>
-                        <ArrowLeft size={16} /> Volver al Inicio de Sesión
-                    </Link>
-                </div>
-            </Card>
+                    <div className="auth-header-container">
+                        <div className="flex-center mb-4">
+                            <div className="auth-logo-icon">
+                                <BrainCircuit size={32} />
+                            </div>
+                        </div>
+                        <h2 className="auth-title">Nueva Contraseña</h2>
+                        <p className="auth-subtitle">Ingresa tu nueva clave de acceso</p>
+                    </div>
+
+                    {!message || message.type !== 'success' ? (
+                        <form onSubmit={handleSubmit}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <div className="input-group">
+                                    <label className="auth-input-label">Nueva Contraseña</label>
+                                    <div style={{ position: 'relative' }}>
+                                        <div className="auth-input-icon"><Lock size={18} /></div>
+                                        <input 
+                                            className="input-field auth-input-field" 
+                                            name="new_password"
+                                            type="password"
+                                            placeholder="Mínimo 8 caracteres"
+                                            value={formData.new_password}
+                                            onChange={handleChange}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="input-group">
+                                    <label className="auth-input-label">Confirmar Contraseña</label>
+                                    <div style={{ position: 'relative' }}>
+                                        <div className="auth-input-icon"><Lock size={18} /></div>
+                                        <input 
+                                            className="input-field auth-input-field" 
+                                            name="confirm_password"
+                                            type="password"
+                                            placeholder="Mínimo 8 caracteres"
+                                            value={formData.confirm_password}
+                                            onChange={handleChange}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+
+                                {message && message.type === 'error' && (
+                                    <div className="fade-in" style={{ 
+                                        padding: '1rem', 
+                                        background: 'rgba(239, 68, 68, 0.1)', 
+                                        color: '#ef4444', 
+                                        borderRadius: '12px',
+                                        display: 'flex',
+                                        gap: '0.5rem',
+                                        fontSize: '0.85rem'
+                                    }}>
+                                        <AlertCircle size={18} />
+                                        {message.text}
+                                    </div>
+                                )}
+
+                                <Button 
+                                    type="submit" 
+                                    className="w-full auth-btn-submit" 
+                                    disabled={loading}
+                                >
+                                    {loading ? <RefreshCw className="spin" size={20} /> : 'Actualizar Contraseña'}
+                                </Button>
+                            </div>
+                        </form>
+                    ) : (
+                        <div style={{ textAlign: 'center', padding: '0.5rem 0' }}>
+                            <div style={{ 
+                                width: 50, height: 50, 
+                                background: 'rgba(16, 185, 129, 0.1)', 
+                                color: '#10b981',
+                                borderRadius: '50%',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                margin: '0 auto 1.25rem auto'
+                            }}>
+                                <CheckCircle size={28} />
+                            </div>
+                            <h3 style={{ color: '#10b981', fontSize: '1.35rem', fontWeight: 700, marginBottom: '0.75rem' }}>¡Éxito!</h3>
+                            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', lineHeight: 1.5, fontSize: '0.85rem' }}>
+                                Tu contraseña ha sido actualizada correctamente. Serás redirigido al inicio de sesión...
+                            </p>
+                        </div>
+                    )}
+
+                    <div className="auth-footer-container">
+                        <Link to="/login" style={{ 
+                            color: '#2563eb', 
+                            fontSize: '0.85rem', 
+                            textDecoration: 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '0.5rem',
+                            fontWeight: 600
+                        }}>
+                            <ArrowLeft size={16} /> Volver al Inicio de Sesión
+                        </Link>
+                    </div>
+                </Card>
+            </div>
         </div>
     );
 };
