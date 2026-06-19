@@ -5518,4 +5518,202 @@ html, body {
     }
 }
 
+/* ============================================
+   RESPONSIVE AUTH DESIGN SYSTEM (LOGIN/REGISTER)
+   ============================================ */
+
+.auth-header-container {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    transition: margin-bottom var(--transition-base);
+}
+
+.auth-logo-icon {
+    width: 64px;
+    height: 64px;
+    background: #2563eb;
+    border-radius: 18px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.auth-title {
+    color: #2563eb;
+    font-size: 1.75rem;
+    font-weight: 800;
+}
+
+.auth-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.auth-input-label {
+    text-transform: none;
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: #555;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.auth-input-field {
+    padding-left: 2.8rem !important;
+    border-radius: 8px !important;
+    background: rgba(255, 255, 255, 0.8) !important;
+}
+
+.auth-input-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+}
+
+.auth-eye-btn {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    color: var(--text-muted);
+    padding: 4px;
+}
+
+.auth-btn-submit {
+    height: 3.5rem;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.auth-btn-google {
+    height: 3.5rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.auth-divider-container {
+    display: flex;
+    align-items: center;
+    margin: 1.5rem 0;
+}
+
+.auth-footer-container {
+    margin-top: 2rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* Responsive override for mobile views */
+@media (max-width: 480px) {
+    .auth-header-container {
+        margin-bottom: 1.25rem !important;
+    }
+    
+    .auth-logo-icon {
+        width: 46px !important;
+        height: 46px !important;
+        border-radius: 12px !important;
+    }
+    
+    .auth-logo-icon svg {
+        width: 20px !important;
+        height: 20px !important;
+    }
+    
+    .auth-title {
+        font-size: 1.35rem !important;
+    }
+    
+    .auth-subtitle {
+        font-size: 0.8rem !important;
+    }
+    
+    .auth-input-label {
+        font-size: 0.75rem !important;
+        margin-bottom: 0.25rem !important;
+    }
+    
+    .auth-input-field {
+        padding-left: 2.3rem !important;
+        font-size: 0.85rem !important;
+        min-height: 40px !important;
+    }
+    
+    .auth-input-icon {
+        left: 0.75rem !important;
+    }
+    
+    .auth-input-icon svg {
+        width: 15px !important;
+        height: 15px !important;
+    }
+    
+    .auth-eye-btn {
+        right: 0.5rem !important;
+    }
+    
+    .auth-eye-btn svg {
+        width: 15px !important;
+        height: 15px !important;
+    }
+    
+    .auth-btn-submit {
+        height: 2.85rem !important;
+        font-size: 0.85rem !important;
+        margin-top: 0.25rem !important;
+    }
+    
+    .auth-btn-google {
+        height: 2.85rem !important;
+    }
+    
+    .auth-btn-google svg {
+        width: 20px !important;
+        height: 20px !important;
+    }
+    
+    .auth-divider-container {
+        margin: 1rem 0 !important;
+    }
+    
+    .auth-footer-container {
+        margin-top: 1.25rem !important;
+        gap: 0.5rem !important;
+    }
+    
+    .auth-footer-container a,
+    .auth-footer-container p,
+    .auth-footer-container span {
+        font-size: 0.78rem !important;
+    }
+    
+    .auth-card-container {
+        max-height: 92vh !important;
+        padding: 1.5rem !important;
+    }
+}
+
+
 

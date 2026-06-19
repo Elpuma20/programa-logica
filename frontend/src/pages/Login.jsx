@@ -178,14 +178,14 @@ const Login = () => {
 
                     {isVerifying ? (
                         <>
-                            <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                            <div className="auth-header-container">
                                 <div className="flex-center mb-4">
-                                    <div style={{ width: 64, height: 64, background: '#2563eb', borderRadius: '18px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <div className="auth-logo-icon">
                                         <ShieldCheck size={32} />
                                     </div>
                                 </div>
-                                <h2 style={{ color: '#2563eb', fontSize: '1.75rem', fontWeight: 800 }}>Verifica tu Cuenta</h2>
-                                <p style={{ color: 'var(--text-secondary)' }}>Hemos enviado un código a {tempEmail}</p>
+                                <h2 className="auth-title">Verifica tu Cuenta</h2>
+                                <p className="auth-subtitle">Hemos enviado un código a {tempEmail}</p>
                             </div>
                             <form onSubmit={handleVerifyCode}>
                                 <div className="input-group">
@@ -203,36 +203,36 @@ const Login = () => {
                                         <AlertCircle size={18} /> {error}
                                     </div>
                                 )}
-                                <Button type="submit" className="w-full" disabled={isSubmitting || verificationCode.length < 6} style={{ height: '3.5rem', background: '#2563eb', color: 'white', borderRadius: '8px' }}>
+                                <Button type="submit" className="w-full auth-btn-submit" disabled={isSubmitting || verificationCode.length < 6}>
                                     {isSubmitting ? 'Verificando...' : 'Verificar y Entrar'}
                                 </Button>
                             </form>
                         </>
                     ) : isLoginMode ? (
                         <>
-                            <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+                            <div className="auth-header-container">
                                 <div className="flex-center mb-4">
-                                    <div style={{ width: 64, height: 64, background: '#2563eb', borderRadius: '18px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
+                                    <div className="auth-logo-icon">
                                         <BrainCircuit size={32} />
                                     </div>
                                 </div>
-                                <h2 className="mb-2" style={{ color: '#2563eb', fontSize: '1.75rem', fontWeight: 800 }}>Iniciar Sesión</h2>
-                                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Ingresa tus credenciales para acceder</p>
+                                <h2 className="auth-title">Iniciar Sesión</h2>
+                                <p className="auth-subtitle">Ingresa tus credenciales para acceder</p>
                             </div>
                             <form onSubmit={handleLoginSubmit}>
                                 <div className="input-group">
-                                    <label className="input-label" style={{ textTransform: 'none', fontWeight: 700, fontSize: '0.8rem', color: '#555' }}>Usuario o Correo</label>
+                                    <label className="auth-input-label">Usuario o Correo</label>
                                     <div style={{ position: 'relative' }}>
-                                        <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}><User size={18} /></div>
-                                        <input className="input-field" type="email" placeholder="usuario@ejemplo.com" value={loginCorreo} onChange={(e) => setLoginCorreo(e.target.value)} required style={{ paddingLeft: '2.8rem', borderRadius: '8px', background: 'rgba(255,255,255,0.8)' }} />
+                                        <div className="auth-input-icon"><User size={18} /></div>
+                                        <input className="input-field auth-input-field" type="email" placeholder="usuario@ejemplo.com" value={loginCorreo} onChange={(e) => setLoginCorreo(e.target.value)} required />
                                     </div>
                                 </div>
                                 <div className="input-group">
-                                    <label className="input-label" style={{ textTransform: 'none', fontWeight: 700, fontSize: '0.8rem', color: '#555' }}>Contraseña</label>
+                                    <label className="auth-input-label">Contraseña</label>
                                     <div style={{ position: 'relative' }}>
-                                        <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}><Lock size={18} /></div>
-                                        <input className="input-field" type={showPassword ? "text" : "password"} placeholder="••••••••" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required style={{ paddingLeft: '2.8rem', paddingRight: '2.8rem', borderRadius: '8px', background: 'rgba(255,255,255,0.8)' }} />
-                                        <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', color: 'var(--text-muted)', padding: '4px' }}>
+                                        <div className="auth-input-icon"><Lock size={18} /></div>
+                                        <input className="input-field auth-input-field" type={showPassword ? "text" : "password"} placeholder="••••••••" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required style={{ paddingRight: '2.8rem' }} />
+                                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="auth-eye-btn">
                                             {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
                                         </button>
                                     </div>
@@ -242,11 +242,11 @@ const Login = () => {
                                         <AlertCircle size={18} /> {error}
                                     </div>
                                 )}
-                                <Button type="submit" className="w-full" disabled={loading} style={{ height: '3.5rem', background: 'linear-gradient(135deg, #2563eb, #1d4ed8)', border: 'none', borderRadius: '8px', marginTop: '0.5rem' }}>
+                                <Button type="submit" className="w-full auth-btn-submit" disabled={loading}>
                                     {loading ? 'Cargando...' : <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Iniciar Sesión <ArrowRight size={18} style={{ marginLeft: '8px' }} /></span>}
                                 </Button>
 
-                                <div style={{ display: 'flex', alignItems: 'center', margin: '1.5rem 0' }}>
+                                <div className="auth-divider-container">
                                     <div style={{ flex: 1, height: '1px', background: '#e2e8f0' }}></div>
                                     <span style={{ padding: '0 1rem', color: '#64748b', fontSize: '0.85rem', fontWeight: 600 }}>O continuar con</span>
                                     <div style={{ flex: 1, height: '1px', background: '#e2e8f0' }}></div>
@@ -254,18 +254,8 @@ const Login = () => {
 
                                 <Button
                                     type="button"
-                                    className="w-full"
+                                    className="w-full auth-btn-google"
                                     onClick={handleGoogleLogin}
-                                    style={{
-                                        height: '3.5rem',
-                                        background: '#ffffff',
-                                        border: '1px solid #e2e8f0',
-                                        borderRadius: '8px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-                                    }}
                                 >
                                     <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -276,64 +266,63 @@ const Login = () => {
                                 </Button>
 
                             </form>
-                            <div style={{ marginTop: '2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                            <div className="auth-footer-container">
                                 <Link to="/recuperar" style={{ color: '#2563eb', fontSize: '0.85rem', fontWeight: 600, textDecoration: 'none' }}>¿Olvidaste tu contraseña?</Link>
                                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
                                     ¿No tienes cuenta? <span onClick={toggleMode} style={{ color: '#2563eb', fontWeight: 600, cursor: 'pointer' }}>Regístrate aquí</span>
                                 </p>
                             </div>
-                            {/* Social networks section removed */}
                         </>
                     ) : (
                         <>
-                            <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+                            <div className="auth-header-container">
                                 <div className="flex-center mb-4">
-                                    <div style={{ width: 64, height: 64, background: '#2563eb', borderRadius: '18px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
+                                    <div className="auth-logo-icon">
                                         <BrainCircuit size={32} />
                                     </div>
                                 </div>
-                                <h2 className="mb-2" style={{ color: '#2563eb', fontSize: '1.75rem', fontWeight: 800 }}>Crear Cuenta</h2>
-                                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Únete para comenzar tu aprendizaje</p>
+                                <h2 className="auth-title">Crear Cuenta</h2>
+                                <p className="auth-subtitle">Únete para comenzar tu aprendizaje</p>
                             </div>
                             <form onSubmit={handleRegisterSubmit}>
                                 <div className="input-group">
-                                    <label className="input-label" style={{ textTransform: 'none', fontWeight: 700, fontSize: '0.8rem', color: '#555' }}>Nombre Completo</label>
+                                    <label className="auth-input-label">Nombre Completo</label>
                                     <div style={{ position: 'relative' }}>
-                                        <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}><User size={18} /></div>
-                                        <input className="input-field" type="text" placeholder="Ej. Juan Pérez" value={regNombre} onChange={(e) => setRegNombre(e.target.value)} required style={{ paddingLeft: '2.8rem', borderRadius: '8px', background: 'rgba(255,255,255,0.8)' }} />
+                                        <div className="auth-input-icon"><User size={18} /></div>
+                                        <input className="input-field auth-input-field" type="text" placeholder="Ej. Juan Pérez" value={regNombre} onChange={(e) => setRegNombre(e.target.value)} required />
                                     </div>
                                 </div>
                                 <div className="input-group">
-                                    <label className="input-label" style={{ textTransform: 'none', fontWeight: 700, fontSize: '0.8rem', color: '#555' }}>Cédula</label>
+                                    <label className="auth-input-label">Cédula</label>
                                     <div style={{ position: 'relative' }}>
-                                        <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}><CreditCard size={18} /></div>
-                                        <input className="input-field" type="text" placeholder="Ej. 12345678" value={regCedula} onChange={(e) => setRegCedula(e.target.value)} required style={{ paddingLeft: '2.8rem', borderRadius: '8px', background: 'rgba(255,255,255,0.8)' }} />
+                                        <div className="auth-input-icon"><CreditCard size={18} /></div>
+                                        <input className="input-field auth-input-field" type="text" placeholder="Ej. 12345678" value={regCedula} onChange={(e) => setRegCedula(e.target.value)} required />
                                     </div>
                                 </div>
                                 <div className="input-group">
-                                    <label className="input-label" style={{ textTransform: 'none', fontWeight: 700, fontSize: '0.8rem', color: '#555' }}>Correo Electrónico</label>
+                                    <label className="auth-input-label">Correo Electrónico</label>
                                     <div style={{ position: 'relative' }}>
-                                        <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}><Mail size={18} /></div>
-                                        <input className="input-field" type="email" placeholder="usuario@edu" value={regCorreo} onChange={(e) => setRegCorreo(e.target.value)} required style={{ paddingLeft: '2.8rem', borderRadius: '8px', background: 'rgba(255,255,255,0.8)' }} />
+                                        <div className="auth-input-icon"><Mail size={18} /></div>
+                                        <input className="input-field auth-input-field" type="email" placeholder="usuario@edu" value={regCorreo} onChange={(e) => setRegCorreo(e.target.value)} required />
                                     </div>
                                 </div>
                                 <div className="auth-password-grid">
                                     <div className="input-group">
-                                        <label className="input-label" style={{ textTransform: 'none', fontWeight: 700, fontSize: '0.8rem', color: '#555' }}>Contraseña</label>
+                                        <label className="auth-input-label">Contraseña</label>
                                         <div style={{ position: 'relative' }}>
-                                            <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}><Lock size={18} /></div>
-                                            <input className="input-field" type={showPassword ? "text" : "password"} placeholder="••••••••" value={regPassword} onChange={(e) => setRegPassword(e.target.value)} required style={{ paddingLeft: '2.8rem', paddingRight: '2.8rem', borderRadius: '8px', background: 'rgba(255,255,255,0.8)' }} />
-                                            <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '0.5rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', color: 'var(--text-muted)', padding: '4px' }}>
+                                            <div className="auth-input-icon"><Lock size={18} /></div>
+                                            <input className="input-field auth-input-field" type={showPassword ? "text" : "password"} placeholder="••••••••" value={regPassword} onChange={(e) => setRegPassword(e.target.value)} required style={{ paddingRight: '2.5rem' }} />
+                                            <button type="button" onClick={() => setShowPassword(!showPassword)} className="auth-eye-btn">
                                                 {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
                                             </button>
                                         </div>
                                     </div>
                                     <div className="input-group">
-                                        <label className="input-label" style={{ textTransform: 'none', fontWeight: 700, fontSize: '0.8rem', color: '#555' }}>Confirmar</label>
+                                        <label className="auth-input-label">Confirmar</label>
                                         <div style={{ position: 'relative' }}>
-                                            <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}><Lock size={18} /></div>
-                                            <input className="input-field" type={showConfirmPassword ? "text" : "password"} placeholder="••••••••" value={regConfirm} onChange={(e) => setRegConfirm(e.target.value)} required style={{ paddingLeft: '2.8rem', paddingRight: '2.8rem', borderRadius: '8px', background: 'rgba(255,255,255,0.8)' }} />
-                                            <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} style={{ position: 'absolute', right: '0.5rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', color: 'var(--text-muted)', padding: '4px' }}>
+                                            <div className="auth-input-icon"><Lock size={18} /></div>
+                                            <input className="input-field auth-input-field" type={showConfirmPassword ? "text" : "password"} placeholder="••••••••" value={regConfirm} onChange={(e) => setRegConfirm(e.target.value)} required style={{ paddingRight: '2.5rem' }} />
+                                            <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="auth-eye-btn">
                                                 {showConfirmPassword ? <Eye size={18} /> : <EyeOff size={18} />}
                                             </button>
                                         </div>
@@ -344,11 +333,11 @@ const Login = () => {
                                         <AlertCircle size={18} /> {error}
                                     </div>
                                 )}
-                                <Button type="submit" className="w-full" disabled={isSubmitting} style={{ height: '3.5rem', background: 'linear-gradient(135deg, #2563eb, #1d4ed8)', border: 'none', borderRadius: '8px', marginTop: '0.5rem' }}>
+                                <Button type="submit" className="w-full auth-btn-submit" disabled={isSubmitting}>
                                     {isSubmitting ? 'Registrando...' : 'Registrarse'}
                                 </Button>
                             </form>
-                            <div style={{ marginTop: '2rem', textAlign: 'center' }}>
+                            <div className="auth-footer-container">
                                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
                                     ¿Ya tienes cuenta? <span onClick={toggleMode} style={{ color: '#2563eb', fontWeight: 600, cursor: 'pointer' }}>Inicia sesión aquí</span>
                                 </p>
