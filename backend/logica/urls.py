@@ -25,5 +25,6 @@ urlpatterns = [
     path('resultados-evaluaciones/', ResultadosEvaluacionesAdminView.as_view(), name='resultados-evaluaciones-admin'),
     # Reporte
     path('reporte-estudiante/<int:pk>/', ReporteEstudianteView.as_view(), name='reporte-estudiante'),
+    path('reporte/<int:pk>/', ReporteEstudianteView.as_view(), name='reporte-estudiante-alias'),
     path('', include(router.urls)),
 ]

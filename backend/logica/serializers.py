@@ -12,7 +12,7 @@ class ResolucionSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Resolucion
-        fields = ['id', 'contenido', 'contenido_titulo', 'contenido_tipo', 'fecha_completada', 'completado', 'comentario_docente']
+        fields = ['id', 'contenido', 'contenido_titulo', 'contenido_tipo', 'fecha_completada', 'completado', 'comentario_docente', 'intentos', 'tiempo_usado', 'historial_intentos']
 
 
 class EvaluacionSerializer(serializers.ModelSerializer):
@@ -77,9 +77,9 @@ class ResultadoEvaluacionSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'evaluacion', 'evaluacion_titulo', 'evaluacion_tipo',
             'respuestas', 'puntaje', 'total_preguntas',
-            'aprobado', 'fecha', 'porcentaje', 'estudiante', 'estudiante_nombre'
+            'aprobado', 'fecha', 'porcentaje', 'estudiante', 'estudiante_nombre', 'tiempo_usado'
         ]
-        read_only_fields = ['puntaje', 'total_preguntas', 'aprobado', 'fecha', 'estudiante']
+        read_only_fields = ['puntaje', 'total_preguntas', 'aprobado', 'fecha', 'estudiante', 'tiempo_usado']
 
     def get_porcentaje(self, obj):
         if obj.total_preguntas > 0:

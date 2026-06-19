@@ -21,6 +21,14 @@ const EvaluacionesPage = () => {
     const [resultado, setResultado] = useState(null);
     const [enviando, setEnviando] = useState(false);
     const [vista, setVista] = useState('lista'); // lista | evaluacion | resultado | historial
+    const [startTime, setStartTime] = useState(null);
+
+    const formatTiempo = (segundos) => {
+        if (!segundos) return '0s';
+        const m = Math.floor(segundos / 60);
+        const s = segundos % 60;
+        return m > 0 ? `${m}m ${s}s` : `${s}s`;
+    };
 
     useEffect(() => {
         fetchData();
@@ -46,6 +54,7 @@ const EvaluacionesPage = () => {
         setSelectedEval(evaluacion);
         setRespuestas({});
         setResultado(null);
+        setStartTime(Date.now());
         setVista('evaluacion');
     };
 
@@ -69,8 +78,10 @@ const EvaluacionesPage = () => {
 
         setEnviando(true);
         try {
+            const secondsSpent = startTime ? Math.max(1, Math.round((Date.now() - startTime) / 1000)) : 0;
             const res = await api.post(`/logica/evaluaciones/${selectedEval.id}/responder/`, {
-                respuestas
+                respuestas,
+                tiempo_usado: secondsSpent
             });
             setResultado(res.data);
             setVista('resultado');
@@ -145,7 +156,7 @@ const EvaluacionesPage = () => {
                         {selectedEval?.titulo}
                     </p>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
                         <div style={{ padding: '1rem', background: 'var(--bg-secondary)', borderRadius: '12px' }}>
                             <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 800, marginBottom: '0.25rem' }}>PUNTAJE</p>
                             <h3 style={{ margin: 0 }}>{resultado.puntaje}/{resultado.total_preguntas}</h3>
@@ -157,6 +168,10 @@ const EvaluacionesPage = () => {
                         <div style={{ padding: '1rem', background: 'var(--bg-secondary)', borderRadius: '12px' }}>
                             <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 800, marginBottom: '0.25rem' }}>UMBRAL</p>
                             <h3 style={{ margin: 0 }}>{resultado.umbral}%</h3>
+                        </div>
+                        <div style={{ padding: '1rem', background: 'var(--bg-secondary)', borderRadius: '12px' }}>
+                            <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 800, marginBottom: '0.25rem' }}>TIEMPO</p>
+                            <h3 style={{ margin: 0 }}>{formatTiempo(resultado.tiempo_usado)}</h3>
                         </div>
                     </div>
 
@@ -354,12 +369,15 @@ const EvaluacionesPage = () => {
                             }}>
                                 <div>
                                     <h4 style={{ margin: '0 0 0.25rem 0' }}>{res.evaluacion_titulo}</h4>
-                                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                                    <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center', flexWrap: 'wrap' }}>
                                         <Badge variant={res.aprobado ? 'success' : 'danger'}>
                                             {res.aprobado ? 'APROBADO' : 'REPROBADO'}
                                         </Badge>
                                         <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                                             {res.puntaje}/{res.total_preguntas} ({res.porcentaje}%)
+                                        </span>
+                                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                            <Clock size={12} /> {formatTiempo(res.tiempo_usado)}
                                         </span>
                                         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                                             {new Date(res.fecha).toLocaleDateString()}

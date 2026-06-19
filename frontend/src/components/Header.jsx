@@ -59,7 +59,7 @@ const Header = ({ theme, toggleTheme }) => {
                                 <div className="user-access-group">
                                     {(user?.rol === 'ADMIN' || user?.rol === 'DOCENTE' || user?.is_staff) && (
                                         <Link to="/admin" className="admin-access-link">
-                                            <Shield size={14} /> PANEL {user?.rol === 'DOCENTE' ? 'DOCENTE' : 'ADMIN'}
+                                            <Shield size={14} /> PANEL DE {user?.rol === 'DOCENTE' ? 'DOCENTE' : 'ADMINISTRACIÓN'}
                                         </Link>
                                     )}
                                     
@@ -69,7 +69,9 @@ const Header = ({ theme, toggleTheme }) => {
                                         </div>
                                         <div className="user-info-text">
                                             <span className="user-name-label">{user?.nombres?.split(' ')[0]}</span>
-                                            <span className="user-role-label">{user?.rol}</span>
+                                            <span className="user-role-label">
+                                                {user?.rol === 'ADMIN' ? 'Administrador' : user?.rol === 'DOCENTE' ? 'Docente' : 'Estudiante'}
+                                            </span>
                                         </div>
                                     </Link>
 
@@ -120,7 +122,9 @@ const Header = ({ theme, toggleTheme }) => {
                                 <div className="drawer-user-info">
                                     <h4>{user?.nombres}</h4>
                                     <span>{user?.correo}</span>
-                                    <div className="drawer-role-badge technical-label">{user?.rol}</div>
+                                    <div className="drawer-role-badge technical-label">
+                                        {user?.rol === 'ADMIN' ? 'Administrador' : user?.rol === 'DOCENTE' ? 'Docente' : 'Estudiante'}
+                                    </div>
                                 </div>
                             </div>
 

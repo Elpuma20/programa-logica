@@ -21,6 +21,7 @@ class ContenidoLogico(models.Model):
     opciones = models.JSONField(null=True, blank=True, help_text="Para trivias: listas de opciones ['A', 'B', 'C']")
     dificultad = models.CharField(max_length=10, choices=DIFICULTAD, default='medio')
     imagen = models.FileField(upload_to='logica/', null=True, blank=True, help_text="Imagen para el rompecabezas")
+    activo = models.BooleanField(default=True, help_text="Habilitado/Deshabilitado para los estudiantes")
     fecha_creacion = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -36,6 +37,9 @@ class Resolucion(models.Model):
     fecha_completada = models.DateTimeField(auto_now_add=True)
     completado = models.BooleanField(default=True)
     comentario_docente = models.TextField(null=True, blank=True, help_text="Comentarios de retroalimentación del docente")
+    intentos = models.IntegerField(default=1, help_text="Cantidad de intentos realizados")
+    tiempo_usado = models.IntegerField(default=0, help_text="Tiempo total utilizado en segundos")
+    historial_intentos = models.JSONField(default=list, blank=True, help_text="Historial detallado de intentos")
 
     def __str__(self):
         return f"{self.usuario.correo} - {self.contenido.titulo} ({self.fecha_completada.date()})"
@@ -94,6 +98,7 @@ class ResultadoEvaluacion(models.Model):
     puntaje = models.IntegerField(help_text="Cantidad de respuestas correctas")
     total_preguntas = models.IntegerField()
     aprobado = models.BooleanField()
+    tiempo_usado = models.IntegerField(default=0, help_text="Tiempo utilizado en segundos")
     fecha = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

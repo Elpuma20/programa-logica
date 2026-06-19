@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api';
 import { useAuth } from '../context/AuthContext';
 import { MessageCircle, Zap, Shield, Search, Users, Activity, BarChart3, Clock, Database, UserCheck, ShieldAlert, Cpu, LayoutDashboard, Brain, HelpCircle, Puzzle, ScrollText, CheckCircle2, AlertCircle, ChevronRight, ArrowLeft, ShieldCheck, Key, BrainCircuit, Server, Lock, Monitor, HardDrive, Globe, AlertTriangle, RefreshCw, Save, Edit3, Trash2, Plus, X, ClipboardCheck, FileText, Mail, TrendingUp, TrendingDown } from 'lucide-react';
@@ -43,32 +43,142 @@ const getDataCount = (tab, data) => {
     if (tab === 'auditoria') return (data.logs || []).length;
     if (tab === 'reportes') return data.adminStats?.total_resolutions || 0;
     if (['trivia', 'adivinanza', 'rompecabezas', 'paradoja'].includes(tab)) {
-        return (data.contents || []).filter(c => c.tipo === tab).length;
+        return (Array.isArray(data.contents) ? data.contents : []).filter(c => c.tipo === tab).length;
     }
     return 0;
 };
 
+const getAddButtonText = (tab) => {
+    const texts = {
+        'trivia': 'Agregar Trivia',
+        'adivinanza': 'Agregar Adivinanza',
+        'rompecabezas': 'Agregar Rompecabezas',
+        'paradoja': 'Agregar Paradojas'
+    };
+    return texts[tab] || 'Agregar Registro';
+};
 
 const renderActiveTabContent = (tab, props) => {
     const { 
         usersList, logs, contents, adminStats, systemStatus, securityStatus, studentProgress, 
         handleVerifyUser, handleOpenModal, handleDelete, handleDeleteUser, loading,
         auditFilters, setAuditFilters, handleSendResetPassword, handleOpenReport,
-        evaluacionesList, handleDeleteEvaluacion, handleOpenEvalModal
+        evaluacionesList, handleDeleteEvaluacion, handleOpenEvalModal,
+        user,
+        selectedSeccion, selectedJuego, setSelectedSeccion, setSelectedJuego, fetchStudentProgress,
+        selectedHistorialUsuario, setSelectedHistorialUsuario,
+        handleToggleActive, handleToggleEvalActive
     } = props;
 
     switch(tab) {
         case 'progreso':
             const totalDesafios = studentProgress?.meta?.total_desafios || 1;
+            const secciones = studentProgress?.secciones_disponibles || [];
+            const juegos = studentProgress?.juegos_disponibles || [];
+            const sexoStats = studentProgress?.meta?.distribucion_sexo || { 'Masculino': 0, 'Femenino': 0 };
+            const seccionStats = studentProgress?.meta?.distribucion_seccion || {};
+
             return (
                 <div className="fade-in">
+                    {/* Filtros de Reporte */}
+                    <div style={{ 
+                        display: 'grid', 
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+                        gap: '1.5rem', 
+                        marginBottom: '2rem',
+                        background: 'var(--bg-secondary)',
+                        padding: '1.25rem',
+                        borderRadius: '12px',
+                        border: '1px solid var(--border-default)'
+                    }}>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Filtrar por Sección</label>
+                            <select 
+                                value={selectedSeccion}
+                                onChange={(e) => {
+                                    setSelectedSeccion(e.target.value);
+                                    fetchStudentProgress(e.target.value, selectedJuego);
+                                }}
+                                style={{ 
+                                    width: '100%', padding: '0.6rem', borderRadius: '8px', 
+                                    background: 'var(--bg-surface)', border: '1px solid var(--border-default)', 
+                                    color: 'var(--text-primary)', fontSize: '0.85rem'
+                                }}
+                            >
+                                <option value="">TODAS LAS SECCIONES</option>
+                                {secciones.map(sec => (
+                                    <option key={sec} value={sec}>{sec}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Filtrar por Actividad / Juego</label>
+                            <select 
+                                value={selectedJuego}
+                                onChange={(e) => {
+                                    setSelectedJuego(e.target.value);
+                                    fetchStudentProgress(selectedSeccion, e.target.value);
+                                }}
+                                style={{ 
+                                    width: '100%', padding: '0.6rem', borderRadius: '8px', 
+                                    background: 'var(--bg-surface)', border: '1px solid var(--border-default)', 
+                                    color: 'var(--text-primary)', fontSize: '0.85rem'
+                                }}
+                            >
+                                <option value="">TODAS LAS ACTIVIDADES (GENERAL)</option>
+                                {juegos.map(j => (
+                                    <option key={j.id} value={j.id}>{j.titulo} ({j.tipo})</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* Resumen Agrupado por Sección y por Sexo */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '1.5rem', marginBottom: '2rem' }} className="grid-responsive-two">
+                        <Card style={{ padding: '1.25rem', background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }}>
+                            <h4 style={{ margin: '0 0 1rem 0', fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Distribución por Sexo</h4>
+                            <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
+                                <div style={{ textAlign: 'center' }}>
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>Femenino</span>
+                                    <h3 style={{ margin: '0.25rem 0 0 0', fontSize: '1.5rem', color: '#ec4899' }}>{sexoStats.Femenino}</h3>
+                                </div>
+                                <div style={{ width: '1px', height: '30px', background: 'var(--border-default)' }} />
+                                <div style={{ textAlign: 'center' }}>
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>Masculino</span>
+                                    <h3 style={{ margin: '0.25rem 0 0 0', fontSize: '1.5rem', color: '#2563eb' }}>{sexoStats.Masculino}</h3>
+                                </div>
+                            </div>
+                        </Card>
+                        <Card style={{ padding: '1.25rem', background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }}>
+                            <h4 style={{ margin: '0 0 1rem 0', fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Distribución por Sección</h4>
+                            <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '0.25rem' }}>
+                                {Object.entries(seccionStats).map(([sec, count]) => (
+                                    <div key={sec} style={{ textAlign: 'center', minWidth: '80px' }}>
+                                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>{sec}</span>
+                                        <h3 style={{ margin: '0.25rem 0 0 0', fontSize: '1.2rem', color: 'var(--brand-primary)' }}>{count}</h3>
+                                    </div>
+                                ))}
+                            </div>
+                        </Card>
+                    </div>
+
+                    {/* Tabla de Métricas del Monitoreo */}
                     <div className="responsive-table-container">
                         <table className="responsive-table">
                             <thead style={{ background: 'var(--bg-secondary)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                                 <tr>
                                     <th style={{ padding: '1rem', textAlign: 'left' }}>ESTUDIANTE</th>
-                                    <th style={{ padding: '1rem', textAlign: 'left' }}>ÁREA / MÓDULO</th>
-                                    <th style={{ padding: '1rem', textAlign: 'left' }}>PROGRESO LOGRADO</th>
+                                    <th style={{ padding: '1rem', textAlign: 'center' }}>SECCIÓN</th>
+                                    <th style={{ padding: '1rem', textAlign: 'center' }}>SEXO</th>
+                                    {selectedJuego ? (
+                                        <>
+                                            <th style={{ padding: '1rem', textAlign: 'center' }}>CALIFICACIÓN</th>
+                                            <th style={{ padding: '1rem', textAlign: 'center' }}>INTENTOS</th>
+                                            <th style={{ padding: '1rem', textAlign: 'center' }}>TIEMPO EMPLEADO</th>
+                                        </>
+                                    ) : (
+                                        <th style={{ padding: '1rem', textAlign: 'left' }}>PROGRESO LOGRADO</th>
+                                    )}
                                     <th style={{ padding: '1rem', textAlign: 'right' }}>ACCIONES</th>
                                 </tr>
                             </thead>
@@ -76,12 +186,20 @@ const renderActiveTabContent = (tab, props) => {
                                 {(studentProgress?.estudiantes || []).map(est => {
                                     const porcentaje = Math.round((est.total_resoluciones / totalDesafios) * 100);
                                     const progressColor = porcentaje >= 70 ? '#10b981' : porcentaje >= 30 ? '#f59e0b' : '#ef4444';
+                                    
+                                    const formatTime = (seconds) => {
+                                        if (!seconds) return '0s';
+                                        const mins = Math.floor(seconds / 60);
+                                        const secs = seconds % 60;
+                                        return mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+                                    };
+
                                     return (
                                         <tr key={est.id} style={{ borderTop: '1px solid var(--border-default)' }}>
                                             <td style={{ padding: '1rem' }}>
                                                 <div style={{ fontWeight: 800 }}>{est.nombres} {est.apellidos}</div>
                                                 <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>{est.correo}</div>
-                                                {(est.historial || []).length > 0 && (
+                                                {!selectedJuego && (est.historial || []).length > 0 && (
                                                     <div className="hide-mobile" style={{ marginTop: '0.75rem', fontSize: '0.65rem', color: 'var(--text-muted)' }}>
                                                         <strong>MÓDULOS RECIENTES:</strong>
                                                         <div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
@@ -94,24 +212,53 @@ const renderActiveTabContent = (tab, props) => {
                                                     </div>
                                                 )}
                                             </td>
-                                            <td style={{ padding: '1rem' }}>
-                                                <Badge variant="outline">{est.area_estudios || 'LOGICA_INTRO'}</Badge>
-                                                {(est.historial || []).some(h => h.comentario_docente) && (
-                                                    <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.65rem', color: '#10b981' }}>
-                                                        <MessageCircle size={10} /> Feedback Enviado
-                                                    </div>
-                                                )}
+                                            <td style={{ padding: '1rem', textAlign: 'center' }}>
+                                                <Badge variant="outline">{est.seccion}</Badge>
                                             </td>
-                                            <td style={{ padding: '1rem', width: '30%' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                                    <div style={{ flex: 1, height: '8px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
-                                                        <div style={{ width: `${porcentaje}%`, height: '100%', background: progressColor, transition: 'width 0.5s' }} />
-                                                    </div>
-                                                    <span style={{ fontSize: '0.8rem', fontWeight: 800, minWidth: '40px', color: progressColor }}>{porcentaje}%</span>
-                                                </div>
+                                            <td style={{ padding: '1rem', textAlign: 'center', fontSize: '0.8rem', fontWeight: 600 }}>
+                                                {est.sexo}
                                             </td>
+                                            {selectedJuego ? (
+                                                <>
+                                                    <td style={{ padding: '1rem', textAlign: 'center' }}>
+                                                        <Badge style={{
+                                                            background: est.aprobado ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                                            color: est.aprobado ? '#10b981' : '#ef4444',
+                                                            border: `1px solid ${est.aprobado ? '#10b98133' : '#ef444433'}`,
+                                                            fontWeight: 800
+                                                        }}>
+                                                            {est.calificacion}
+                                                        </Badge>
+                                                    </td>
+                                                    <td style={{ padding: '1rem', textAlign: 'center', fontWeight: 700 }}>
+                                                        {est.intentos}
+                                                    </td>
+                                                    <td style={{ padding: '1rem', textAlign: 'center', fontFamily: 'monospace' }}>
+                                                        {formatTime(est.tiempo_usado)}
+                                                    </td>
+                                                </>
+                                            ) : (
+                                                <td style={{ padding: '1rem', width: '30%' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                                        <div style={{ flex: 1, height: '8px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
+                                                            <div style={{ width: `${porcentaje}%`, height: '100%', background: progressColor, transition: 'width 0.5s' }} />
+                                                        </div>
+                                                        <span style={{ fontSize: '0.8rem', fontWeight: 800, minWidth: '40px', color: progressColor }}>{porcentaje}%</span>
+                                                    </div>
+                                                </td>
+                                            )}
                                             <td style={{ padding: '1rem', textAlign: 'right' }}>
                                                 <div style={{ display: 'flex', gap: '0.25rem', justifyContent: 'flex-end' }}>
+                                                    {selectedJuego && est.historial && est.historial.length > 0 && (
+                                                        <Button 
+                                                            variant="ghost" 
+                                                            style={{ color: 'var(--brand-secondary)', padding: '0.4rem' }}
+                                                            onClick={() => setSelectedHistorialUsuario(est)}
+                                                            title="Ver historial detallado de intentos"
+                                                        >
+                                                            <Clock size={16} />
+                                                        </Button>
+                                                    )}
                                                     <Button 
                                                         variant="ghost" 
                                                         style={{ color: 'var(--brand-primary)', padding: '0.4rem' }}
@@ -124,7 +271,7 @@ const renderActiveTabContent = (tab, props) => {
                                                         variant="ghost" 
                                                         style={{ color: '#8b5cf6', padding: '0.4rem' }}
                                                         onClick={() => handleOpenReport(est.id)}
-                                                        title="Ver reporte de fortalezas/debilidades"
+                                                        title="Ver de fortalezas/debilidades"
                                                     >
                                                         <FileText size={16} />
                                                     </Button>
@@ -576,22 +723,30 @@ const renderActiveTabContent = (tab, props) => {
                                         <td style={{ padding: '1rem', textAlign: 'center', fontWeight: 700 }}>{ev.total_preguntas}</td>
                                         <td style={{ padding: '1rem', textAlign: 'center' }}>{ev.umbral_aprobacion}%</td>
                                         <td style={{ padding: '1rem', textAlign: 'center' }}>
-                                            <Badge style={{ 
-                                                background: ev.activa ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                                                color: ev.activa ? '#10b981' : '#ef4444',
-                                                border: `1px solid ${ev.activa ? '#10b98133' : '#ef444433'}`
-                                            }}>
-                                                {ev.activa ? '✓ ACTIVA' : '✗ INACTIVA'}
-                                            </Badge>
+                                            <button
+                                                onClick={() => handleToggleEvalActive(ev)}
+                                                style={{ background: 'none', border: 'none', cursor: 'pointer', outline: 'none' }}
+                                                title="Hacer clic para Habilitar/Deshabilitar"
+                                            >
+                                                <Badge style={{ 
+                                                    background: ev.activa ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                                    color: ev.activa ? '#10b981' : '#ef4444',
+                                                    border: `1px solid ${ev.activa ? '#10b98133' : '#ef444433'}`
+                                                }}>
+                                                    {ev.activa ? '✓ HABILITADO' : '✗ DESHABILITADO'}
+                                                </Badge>
+                                            </button>
                                         </td>
                                         <td style={{ padding: '1rem', textAlign: 'right' }}>
                                             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                                                 <Button variant="ghost" onClick={() => handleOpenEvalModal(ev)} style={{ padding: '0.4rem' }}>
                                                     <Edit3 size={16} />
                                                 </Button>
-                                                <Button variant="ghost" onClick={() => handleDeleteEvaluacion(ev.id)} style={{ color: '#ef4444', padding: '0.4rem' }}>
-                                                    <Trash2 size={16} />
-                                                </Button>
+                                                {(user?.rol === 'ADMIN' || user?.is_staff) && (
+                                                    <Button variant="ghost" onClick={() => handleDeleteEvaluacion(ev.id)} style={{ color: '#ef4444', padding: '0.4rem' }}>
+                                                        <Trash2 size={16} />
+                                                    </Button>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
@@ -611,22 +766,40 @@ const renderActiveTabContent = (tab, props) => {
                                 <tr>
                                     <th style={{ padding: '1rem', textAlign: 'left' }}>NODO / DESAFÍO</th>
                                     <th style={{ padding: '1rem', textAlign: 'center' }}>COMPLEJIDAD</th>
+                                    <th style={{ padding: '1rem', textAlign: 'center' }}>ESTADO</th>
                                     <th style={{ padding: '1rem', textAlign: 'right' }}>OPERACIONES</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {contents.filter(c => c.tipo === tab).map(item => (
+                                {(Array.isArray(contents) ? contents : []).filter(c => c.tipo === tab).map(item => (
                                     <tr key={item.id} style={{ borderTop: '1px solid var(--border-default)' }}>
                                         <td style={{ padding: '1rem', fontWeight: 700 }}>{item.titulo}</td>
                                         <td style={{ padding: '1rem', textAlign: 'center' }}>
                                             <Badge variant={item.dificultad === 'facil' ? 'success' : item.dificultad === 'medio' ? 'primary' : 'danger'}>
-                                                {item.dificultad.toUpperCase()}
+                                                {(item.dificultad || 'medio').toUpperCase()}
                                             </Badge>
+                                        </td>
+                                        <td style={{ padding: '1rem', textAlign: 'center' }}>
+                                            <button
+                                                onClick={() => handleToggleActive(item)}
+                                                style={{ background: 'none', border: 'none', cursor: 'pointer', outline: 'none' }}
+                                                title="Hacer clic para Habilitar/Deshabilitar"
+                                            >
+                                                <Badge style={{ 
+                                                    background: item.activo ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                                    color: item.activo ? '#10b981' : '#ef4444',
+                                                    border: `1px solid ${item.activo ? '#10b98133' : '#ef444433'}`
+                                                }}>
+                                                    {item.activo ? '✓ HABILITADO' : '✗ DESHABILITADO'}
+                                                </Badge>
+                                            </button>
                                         </td>
                                         <td style={{ padding: '1rem', textAlign: 'right' }}>
                                             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                                                 <Button variant="ghost" onClick={() => handleOpenModal(item)} style={{ padding: '0.5rem' }}><Edit3 size={16} /></Button>
-                                                <Button variant="ghost" onClick={() => handleDelete(item.id)} style={{ padding: '0.5rem', color: '#ef4444' }}><Trash2 size={16} /></Button>
+                                                {(user?.rol === 'ADMIN' || user?.is_staff) && (
+                                                    <Button variant="ghost" onClick={() => handleDelete(item.id)} style={{ padding: '0.5rem', color: '#ef4444' }}><Trash2 size={16} /></Button>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
@@ -642,6 +815,9 @@ const renderActiveTabContent = (tab, props) => {
 const AdminPanel = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const tabParam = searchParams.get('tab');
+    
     const [contents, setContents] = useState([]);
     const [logs, setLogs] = useState([]);
     const [usersList, setUsersList] = useState([]);
@@ -650,7 +826,23 @@ const AdminPanel = () => {
     const [systemStatus, setSystemStatus] = useState(null);
     const [securityStatus, setSecurityStatus] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('usuarios'); 
+    const [activeTab, setActiveTab] = useState(tabParam || (user?.rol === 'DOCENTE' ? 'progreso' : 'usuarios')); 
+
+    useEffect(() => {
+        const tab = searchParams.get('tab');
+        if (tab && tab !== activeTab) {
+            setActiveTab(tab);
+        }
+    }, [searchParams]);
+
+    useEffect(() => {
+        if (activeTab) {
+            setSearchParams({ tab: activeTab }, { replace: true });
+        }
+    }, [activeTab, setSearchParams]); 
+    const [selectedSeccion, setSelectedSeccion] = useState('');
+    const [selectedJuego, setSelectedJuego] = useState('');
+    const [selectedHistorialUsuario, setSelectedHistorialUsuario] = useState(null); 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isUserModalOpen, setIsUserModalOpen] = useState(false);
     const [auditFilters, setAuditFilters] = useState({
@@ -680,6 +872,11 @@ const AdminPanel = () => {
         activa: true,
         preguntas: [{ pregunta: '', opciones: ['', '', '', ''], respuesta_correcta: '' }]
     });
+
+    // Estados para Reporte de Rendimiento Cognitivo
+    const [selectedReport, setSelectedReport] = useState(null);
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+    const [loadingReport, setLoadingReport] = useState(false);
 
     useEffect(() => {
         const canAccess = user?.is_staff || user?.rol === 'ADMIN' || user?.rol === 'DOCENTE';
@@ -758,9 +955,39 @@ const AdminPanel = () => {
         catch (err) { console.error('Error fetching security status', err); }
     };
 
-    const fetchStudentProgress = async () => {
-        try { const res = await api.get('/logica/progreso/'); setStudentProgress(res.data); } 
-        catch (err) { console.error('Error fetching student progress', err); }
+    const fetchStudentProgress = async (seccionFilter = selectedSeccion, juegoFilter = selectedJuego) => {
+        try {
+            let url = '/logica/progreso/';
+            const params = [];
+            if (seccionFilter) params.push(`seccion=${encodeURIComponent(seccionFilter)}`);
+            if (juegoFilter) params.push(`juego_id=${encodeURIComponent(juegoFilter)}`);
+            if (params.length > 0) url += '?' + params.join('&');
+            
+            const res = await api.get(url);
+            setStudentProgress(res.data);
+        } catch (err) {
+            console.error('Error fetching student progress', err);
+        }
+    };
+
+    const handleToggleActive = async (item) => {
+        try {
+            await api.patch(`/logica/contenido/${item.id}/`, { activo: !item.activo });
+            showNotification('Disponibilidad del desafío actualizada');
+            fetchContents();
+        } catch (err) {
+            showNotification('Error al cambiar disponibilidad', 'error');
+        }
+    };
+
+    const handleToggleEvalActive = async (ev) => {
+        try {
+            await api.patch(`/logica/evaluaciones-admin/${ev.id}/`, { activa: !ev.activa });
+            showNotification('Disponibilidad de la evaluación actualizada');
+            fetchEvaluaciones();
+        } catch (err) {
+            showNotification('Error al cambiar disponibilidad', 'error');
+        }
     };
 
     const handleVerifyUser = async (userId) => {
@@ -786,6 +1013,33 @@ const AdminPanel = () => {
         }
     };
 
+    const handleSendResetPassword = async (userId) => {
+        try {
+            const userObj = usersList.find(u => u.id === userId);
+            if (!userObj || !userObj.correo) {
+                showNotification('El usuario no posee un correo electrónico válido', 'error');
+                return;
+            }
+            await api.post('/password-reset/', { correo: userObj.correo });
+            showNotification('Enlace de recuperación enviado con éxito');
+        } catch (err) {
+            showNotification(err.response?.data?.error || 'Error al enviar enlace de recuperación', 'error');
+        }
+    };
+
+    const handleOpenReport = async (userId) => {
+        setLoadingReport(true);
+        try {
+            const res = await api.get(`/logica/reporte/${userId}/`);
+            setSelectedReport(res.data);
+            setIsReportModalOpen(true);
+        } catch (err) {
+            showNotification(err.response?.data?.error || 'Error al cargar reporte del estudiante', 'error');
+        } finally {
+            setLoadingReport(false);
+        }
+    };
+
     const showNotification = (msg, type = 'success') => {
         setNotification({ msg, type });
         setTimeout(() => setNotification(null), 3000);
@@ -799,7 +1053,7 @@ const AdminPanel = () => {
             setEditingItem(null); 
             setFormData({ 
                 tipo: ['trivia', 'adivinanza', 'rompecabezas', 'paradoja'].includes(activeTab) ? activeTab : 'trivia', 
-                titulo: '', descripcion: '', respuesta: '', opciones: [], dificultad: 'medio', imagen: null
+                titulo: '', descripcion: '', respuesta: '', opciones: [], dificultad: 'medio', imagen: null, activo: true
             }); 
         }
         setIsModalOpen(true);
@@ -1005,7 +1259,7 @@ const AdminPanel = () => {
         }
     };
 
-    const filteredContents = contents.filter(c => c.tipo === activeTab);
+    const filteredContents = (Array.isArray(contents) ? contents : []).filter(c => c.tipo === activeTab);
 
     const statsOverview = [
         { label: 'Agentes Totales', value: usersList.length, icon: Users, color: 'var(--brand-primary)' },
@@ -1047,7 +1301,7 @@ const AdminPanel = () => {
                     
                     {['trivia', 'adivinanza', 'rompecabezas', 'paradoja'].includes(activeTab) && (
                         <Button onClick={() => handleOpenModal()} className="w-full-mobile">
-                            <Plus size={18} /> Inyectar {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+                            <Plus size={18} /> {getAddButtonText(activeTab)}
                         </Button>
                     )}
 
@@ -1117,28 +1371,6 @@ const AdminPanel = () => {
                             <NavButton id="paradoja" label="Paradojas" icon={ScrollText} active={activeTab} onClick={setActiveTab} />
                         </div>
                     </Card>
-
-                    {/* Server Pulse Card */}
-                    <Card className="hide-mobile" style={{ padding: '1.2rem', background: 'linear-gradient(135deg, #111827, #1f2937)', border: '1px solid #374151' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-                            <div className="pulse" style={{ width: '8px', height: '8px', background: '#10b981', borderRadius: '50%' }} />
-                            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'white' }}>Estado del Servidor</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                            <span style={{ fontSize: '0.7rem', color: '#9ca3af' }}>CPU</span>
-                            <span style={{ fontSize: '0.7rem', color: 'white', fontFamily: 'monospace' }}>{systemStatus?.server?.cpu_usage}%</span>
-                        </div>
-                        <div style={{ height: '4px', background: '#374151', borderRadius: '2px', marginBottom: '1rem' }}>
-                            <div style={{ width: `${systemStatus?.server?.cpu_usage}%`, height: '100%', background: 'var(--brand-primary)', borderRadius: '2px' }} />
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                            <span style={{ fontSize: '0.7rem', color: '#9ca3af' }}>RAM</span>
-                            <span style={{ fontSize: '0.7rem', color: 'white', fontFamily: 'monospace' }}>{systemStatus?.server?.ram_usage}%</span>
-                        </div>
-                        <div style={{ height: '4px', background: '#374151', borderRadius: '2px' }}>
-                            <div style={{ width: `${systemStatus?.server?.ram_usage}%`, height: '100%', background: '#8b5cf6', borderRadius: '2px' }} />
-                        </div>
-                    </Card>
                 </aside>
 
                 {/* Main Dynamic Workspace */}
@@ -1164,7 +1396,12 @@ const AdminPanel = () => {
                                 usersList, logs, contents, adminStats, systemStatus, securityStatus, studentProgress,
                                 handleVerifyUser, handleOpenModal, handleDelete, handleDeleteUser, loading,
                                 auditFilters, setAuditFilters,
-                                evaluacionesList, handleDeleteEvaluacion, handleOpenEvalModal
+                                evaluacionesList, handleDeleteEvaluacion, handleOpenEvalModal,
+                                user,
+                                selectedSeccion, selectedJuego, setSelectedSeccion, setSelectedJuego, fetchStudentProgress,
+                                selectedHistorialUsuario, setSelectedHistorialUsuario,
+                                handleSendResetPassword, handleOpenReport,
+                                handleToggleActive, handleToggleEvalActive
                             })}
                         </div>
                     </Card>
@@ -1180,7 +1417,7 @@ const AdminPanel = () => {
                                    <div style={{ width: '40px', height: '40px', background: 'var(--brand-primary)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
                                        <Database size={20} />
                                    </div>
-                                   <h2 style={{ margin: 0 }}>{editingItem ? 'Modificar Registro' : `Inyectar ${activeTab}`}</h2>
+                                   <h2 style={{ margin: 0 }}>{editingItem ? 'Modificar Registro' : getAddButtonText(activeTab)}</h2>
                                </div>
                                <Button variant="ghost" onClick={() => setIsModalOpen(false)}><X size={24} /></Button>
                          </div>
@@ -1235,6 +1472,14 @@ const AdminPanel = () => {
                                        )}
                                    </div>
                                )}
+
+                                <div className="input-group" style={{ marginBottom: '1.5rem' }}>
+                                    <label className="input-label">Disponibilidad del Desafío</label>
+                                    <select className="input-field" value={formData.activo === undefined || formData.activo ? "true" : "false"} onChange={e => setFormData({...formData, activo: e.target.value === "true"})}>
+                                        <option value="true">Habilitado (Visible para estudiantes)</option>
+                                        <option value="false">Deshabilitado (Oculto)</option>
+                                    </select>
+                                </div>
 
                                <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
                                     <Button variant="secondary" onClick={() => setIsModalOpen(false)} className="w-full">Abortar Operación</Button>
@@ -1442,6 +1687,164 @@ const AdminPanel = () => {
                                 </Button>
                             </div>
                         </form>
+                    </Card>
+                </div>
+            )}
+
+            {/* Modal de Historial Detallado de Intentos */}
+            {selectedHistorialUsuario && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+                    <Card style={{ width: '100%', maxWidth: '600px', border: '1px solid var(--brand-secondary)', background: 'var(--bg-surface)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', alignItems: 'center' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <Clock size={20} style={{ color: 'var(--brand-secondary)' }} />
+                                <h3 style={{ margin: 0 }}>Historial de Intentos</h3>
+                            </div>
+                            <Button variant="ghost" onClick={() => setSelectedHistorialUsuario(null)}><X size={20} /></Button>
+                        </div>
+                        <div style={{ marginBottom: '1.25rem' }}>
+                            <p style={{ margin: 0, fontWeight: 800 }}>Estudiante: {selectedHistorialUsuario.nombres} {selectedHistorialUsuario.apellidos}</p>
+                            <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>Métrica de Actividad para: {studentProgress?.juegos_disponibles?.find(j => j.id === selectedJuego)?.titulo || selectedJuego}</p>
+                        </div>
+                        
+                        <div style={{ maxHeight: '300px', overflowY: 'auto', border: '1px solid var(--border-default)', borderRadius: '8px' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                                <thead style={{ background: 'var(--bg-secondary)', color: 'var(--text-muted)' }}>
+                                    <tr>
+                                        <th style={{ padding: '0.75rem', textAlign: 'center' }}>Intento</th>
+                                        <th style={{ padding: '0.75rem', textAlign: 'left' }}>Fecha</th>
+                                        <th style={{ padding: '0.75rem', textAlign: 'center' }}>Duración</th>
+                                        <th style={{ padding: '0.75rem', textAlign: 'right' }}>Resultado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {selectedHistorialUsuario.historial && selectedHistorialUsuario.historial.length > 0 ? (
+                                        selectedHistorialUsuario.historial.map((h, index) => (
+                                            <tr key={index} style={{ borderTop: '1px solid var(--border-default)' }}>
+                                                <td style={{ padding: '0.75rem', textAlign: 'center', fontWeight: 800 }}>#{h.n_intento || (index + 1)}</td>
+                                                <td style={{ padding: '0.75rem' }}>{new Date(h.fecha).toLocaleString()}</td>
+                                                <td style={{ padding: '0.75rem', textAlign: 'center', fontFamily: 'monospace' }}>
+                                                    {h.tiempo_usado ? (h.tiempo_usado > 60 ? `${Math.floor(h.tiempo_usado / 60)}m ${h.tiempo_usado % 60}s` : `${h.tiempo_usado}s`) : '0s'}
+                                                </td>
+                                                <td style={{ padding: '0.75rem', textAlign: 'right', fontWeight: 700, color: (h.resultado?.includes('Aprobado') || h.resultado === 'Completado') ? '#10b981' : '#ef4444' }}>
+                                                    {h.resultado}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="4" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>Sin intentos registrados</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
+                            <Button variant="secondary" onClick={() => setSelectedHistorialUsuario(null)}>Cerrar</Button>
+                        </div>
+                    </Card>
+                </div>
+            )}
+
+            {/* Modal de Reporte de Fortalezas y Debilidades */}
+            {isReportModalOpen && selectedReport && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+                    <Card style={{ width: '100%', maxWidth: '750px', maxHeight: '90vh', overflowY: 'auto', border: '1px solid var(--brand-primary)', background: 'var(--bg-surface)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', alignItems: 'center', borderBottom: '1px solid var(--border-default)', paddingBottom: '0.75rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <ShieldAlert size={22} style={{ color: 'var(--brand-primary)' }} />
+                                <h3 style={{ margin: 0, fontSize: '1.2rem', letterSpacing: '1px', textTransform: 'uppercase' }}>Reporte de Rendimiento Cognitivo</h3>
+                            </div>
+                            <Button variant="ghost" onClick={() => { setIsReportModalOpen(false); setSelectedReport(null); }}><X size={20} /></Button>
+                        </div>
+
+                        {/* Datos del Estudiante */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', background: 'var(--bg-secondary)', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+                            <div>
+                                <span style={{ color: 'var(--text-muted)', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase' }}>Estudiante</span>
+                                <div style={{ fontWeight: 800, fontSize: '1.05rem', marginTop: '0.15rem' }}>{selectedReport.estudiante.nombres} {selectedReport.estudiante.apellidos}</div>
+                                <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{selectedReport.estudiante.correo}</div>
+                            </div>
+                            <div>
+                                <span style={{ color: 'var(--text-muted)', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase' }}>Programa / Nivel</span>
+                                <div style={{ fontWeight: 800, marginTop: '0.15rem' }}>{selectedReport.estudiante.area_estudios || 'Ingeniería en Sistemas'}</div>
+                                <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{selectedReport.estudiante.semestre ? `${selectedReport.estudiante.semestre}° Semestre` : 'N/A'}</div>
+                            </div>
+                        </div>
+
+                        {/* Fortalezas y Debilidades */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }} className="grid-responsive-two">
+                            {/* Fortalezas */}
+                            <div style={{ background: 'rgba(16, 185, 129, 0.04)', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '1rem', borderRadius: '8px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#10b981', fontWeight: 800, fontSize: '0.9rem', marginBottom: '0.75rem', textTransform: 'uppercase' }}>
+                                    <TrendingUp size={16} /> Fortalezas Identificadas
+                                </div>
+                                {selectedReport.fortalezas && selectedReport.fortalezas.length > 0 ? (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                        {selectedReport.fortalezas.map((f, i) => (
+                                            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', padding: '0.4rem 0.6rem', background: 'var(--bg-surface)', borderRadius: '6px', borderLeft: '3px solid #10b981' }}>
+                                                <span style={{ fontWeight: 700 }}>{f.area}</span>
+                                                <Badge style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.2)', fontSize: '0.7rem' }}>
+                                                    {f.porcentaje}%
+                                                </Badge>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>Sin fortalezas de nivel crítico registradas aún.</p>
+                                )}
+                            </div>
+
+                            {/* Debilidades */}
+                            <div style={{ background: 'rgba(239, 68, 68, 0.04)', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '1rem', borderRadius: '8px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ef4444', fontWeight: 800, fontSize: '0.9rem', marginBottom: '0.75rem', textTransform: 'uppercase' }}>
+                                    <TrendingDown size={16} /> Áreas a Reforzar
+                                </div>
+                                {selectedReport.debilidades && selectedReport.debilidades.length > 0 ? (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                        {selectedReport.debilidades.map((d, i) => (
+                                            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', padding: '0.4rem 0.6rem', background: 'var(--bg-surface)', borderRadius: '6px', borderLeft: '3px solid #ef4444' }}>
+                                                <span style={{ fontWeight: 700 }}>{d.area}</span>
+                                                <Badge style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', fontSize: '0.7rem' }}>
+                                                    {d.porcentaje}%
+                                                </Badge>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>El estudiante mantiene un rendimiento general estable.</p>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Estadísticas Generales */}
+                        <div style={{ borderTop: '1px solid var(--border-default)', paddingTop: '1.25rem', marginBottom: '1.5rem' }}>
+                            <h4 style={{ margin: '0 0 1rem 0', fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Métricas Generales de Resolución</h4>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }} className="grid-responsive-two">
+                                <div style={{ padding: '0.75rem', background: 'var(--bg-secondary)', borderRadius: '8px', textAlign: 'center' }}>
+                                    <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Retos Resueltos</div>
+                                    <div style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '0.25rem' }}>{selectedReport.estadisticas_generales.total_resoluciones} / {selectedReport.estadisticas_generales.total_contenido_disponible}</div>
+                                </div>
+                                <div style={{ padding: '0.75rem', background: 'var(--bg-secondary)', borderRadius: '8px', textAlign: 'center' }}>
+                                    <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Porcentaje Retos</div>
+                                    <div style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '0.25rem', color: 'var(--brand-primary)' }}>
+                                        {selectedReport.estadisticas_generales.total_contenido_disponible > 0 ? `${Math.round((selectedReport.estadisticas_generales.total_resoluciones / selectedReport.estadisticas_generales.total_contenido_disponible) * 100)}%` : '0%'}
+                                    </div>
+                                </div>
+                                <div style={{ padding: '0.75rem', background: 'var(--bg-secondary)', borderRadius: '8px', textAlign: 'center' }}>
+                                    <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Exámenes Aprobados</div>
+                                    <div style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '0.25rem', color: '#10b981' }}>{selectedReport.estadisticas_generales.evaluaciones_aprobadas}</div>
+                                </div>
+                                <div style={{ padding: '0.75rem', background: 'var(--bg-secondary)', borderRadius: '8px', textAlign: 'center' }}>
+                                    <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Exámenes Reprobados</div>
+                                    <div style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '0.25rem', color: '#ef4444' }}>{selectedReport.estadisticas_generales.evaluaciones_reprobadas}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', borderTop: '1px solid var(--border-default)', paddingTop: '1.25rem' }}>
+                            <Button variant="secondary" onClick={() => { setIsReportModalOpen(false); setSelectedReport(null); }}>Cerrar Reporte</Button>
+                        </div>
                     </Card>
                 </div>
             )}

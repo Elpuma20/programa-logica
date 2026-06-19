@@ -26,6 +26,8 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     correo = models.EmailField(unique=True)
     telefono = models.CharField(max_length=20, null=True, blank=True)
     direccion = models.TextField(null=True, blank=True)
+    seccion = models.CharField(max_length=50, null=True, blank=True, default="Sección A")
+    sexo = models.CharField(max_length=10, choices=[('M', 'Masculino'), ('F', 'Femenino')], null=True, blank=True, default="M")
     
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)

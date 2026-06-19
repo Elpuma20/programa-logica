@@ -328,6 +328,99 @@ const DynamicGameModule = ({ type, icon: Icon, color }) => {
     const [userInput, setUserInput] = useState('');
     const [selectedTriviaOption, setSelectedTriviaOption] = useState(null);
 
+    const [startTime, setStartTime] = useState(Date.now());
+    const [attempts, setAttempts] = useState(1);
+    const [errorDetails, setErrorDetails] = useState(null);
+
+    const analyzeError = (input, correct, gameType, currentItem) => {
+        const cleanUser = (input || '').trim().toLowerCase();
+        const cleanCorrect = (correct || '').trim().toLowerCase();
+        
+        if (!cleanUser) {
+            return {
+                tipo: "Respuesta Vacía",
+                explicacion: "No has ingresado ninguna deducción.",
+                pista: "Lee la pregunta detenidamente e intenta escribir una respuesta válida."
+            };
+        }
+        
+        const userHasOr = cleanUser.includes('o') || cleanUser.includes('or') || cleanUser.includes('∨') || cleanUser.includes('v');
+        const correctHasAnd = cleanCorrect.includes('y') || cleanCorrect.includes('and') || cleanCorrect.includes('∧') || cleanCorrect.includes('^');
+        if (userHasOr && correctHasAnd) {
+            return {
+                tipo: "Confusión de Conectores Lógicos",
+                explicacion: "Has utilizado disyunción (O / ∨) cuando la proposición requiere conjunción (Y / ∧).",
+                pista: "Recuerda que la conjunción '∧' exige que ambos enunciados se cumplan simultáneamente. La disyunción '∨' es más permisiva."
+            };
+        }
+        
+        const userHasAnd = cleanUser.includes('y') || cleanUser.includes('and') || cleanUser.includes('∧') || cleanUser.includes('^');
+        const correctHasOr = cleanCorrect.includes('o') || cleanCorrect.includes('or') || cleanCorrect.includes('∨') || cleanCorrect.includes('v');
+        if (userHasAnd && correctHasOr) {
+            return {
+                tipo: "Confusión de Conectores Lógicos",
+                explicacion: "Has utilizado conjunción (Y / ∧) cuando la proposición requiere disyunción (O / ∨).",
+                pista: "La disyunción '∨' requiere que al menos uno de los enunciados sea verdadero. No es obligatorio que se cumplan ambos."
+            };
+        }
+        
+        const userTrue = ['v', 'verdadero', 'true', 't', '1'].includes(cleanUser);
+        const correctFalse = ['f', 'falso', 'false', '0'].includes(cleanCorrect);
+        if (userTrue && correctFalse) {
+            return {
+                tipo: "Cálculo Semántico Erróneo (Falso Positivo)",
+                explicacion: "Evaluaste la expresión como verdadera, pero la resolución formal da como resultado falso.",
+                pista: "Revisa los operadores de negación (¬) o condicionales. Recuerda que la implicación 'p → q' solo es falsa si p es Verdadero y q es Falso."
+            };
+        }
+        
+        const userFalse = ['f', 'falso', 'false', '0'].includes(cleanUser);
+        const correctTrue = ['v', 'verdadero', 'true', 't', '1'].includes(cleanCorrect);
+        if (userFalse && correctTrue) {
+            return {
+                tipo: "Cálculo Semántico Erróneo (Falso Negativo)",
+                explicacion: "Evaluaste la expresión como falsa, pero la resolución formal da como resultado verdadera.",
+                pista: "Revisa si el antecedente del condicional es falso. Recuerda que si el antecedente es Falso, el condicional siempre es Verdadero."
+            };
+        }
+        
+        const openP = (cleanUser.match(/\(/g) || []).length;
+        const closeP = (cleanUser.match(/\)/g) || []).length;
+        if (openP !== closeP) {
+            return {
+                tipo: "Error de Estructura / Sintaxis",
+                explicacion: "Los paréntesis en tu fórmula lógica están mal cerrados o desbalanceados.",
+                pista: "Asegúrate de que cada paréntesis de apertura '(' tenga su correspondiente cierre ')' en el orden apropiado."
+            };
+        }
+
+        if (gameType === 'adivinanza' || gameType === 'paradoja') {
+            return {
+                tipo: "Error de Deducción Semántica",
+                explicacion: "Tu deducción conceptual no coincide con la premisa lógica de la adivinanza o paradoja.",
+                pista: `Refuerzo conceptual: Analiza con cuidado las premisas.`
+            };
+        }
+        
+        return {
+            tipo: "Error de Análisis Lógico",
+            explicacion: "La respuesta propuesta no cumple con la equivalencia lógica de la solución.",
+            pista: "Relee los axiomas de la unidad y asegúrate de verificar todos los casos de la tabla de verdad."
+        };
+    };
+
+    const registerResolution = async (finalAttempts) => {
+        try {
+            const secondsSpent = Math.max(1, Math.round((Date.now() - startTime) / 1000));
+            await api.post(`/logica/contenido/${current.id}/resolver/`, {
+                tiempo_usado: secondsSpent,
+                intentos: finalAttempts
+            });
+        } catch (err) {
+            console.error("Error al registrar resolución:", err);
+        }
+    };
+
     useEffect(() => {
         fetchData();
     }, [type]);
@@ -357,6 +450,9 @@ const DynamicGameModule = ({ type, icon: Icon, color }) => {
         setShowError(false);
         setUserInput('');
         setSelectedTriviaOption(null);
+        setStartTime(Date.now());
+        setAttempts(1);
+        setErrorDetails(null);
     };
 
     const checkTriviaAnswer = (option) => {
@@ -365,9 +461,13 @@ const DynamicGameModule = ({ type, icon: Icon, color }) => {
             setUserFeedback('correct');
             setShowAnswer(true);
             setShowError(false);
+            registerResolution(attempts);
         } else {
             setUserFeedback('wrong');
             setShowAnswer(false);
+            setAttempts(a => a + 1);
+            const details = analyzeError(option, current.respuesta, type, current);
+            setErrorDetails(details);
             setShakeCard(true);
             setTimeout(() => setShakeCard(false), 500);
         }
@@ -387,8 +487,12 @@ const DynamicGameModule = ({ type, icon: Icon, color }) => {
             setUserFeedback('correct');
             setShowAnswer(true);
             setShowError(false);
+            registerResolution(attempts);
         } else {
             setUserFeedback('wrong');
+            setAttempts(a => a + 1);
+            const details = analyzeError(userInput, current.respuesta, type, current);
+            setErrorDetails(details);
             setShakeCard(true);
             setTimeout(() => setShakeCard(false), 500);
         }
@@ -450,6 +554,7 @@ const DynamicGameModule = ({ type, icon: Icon, color }) => {
                             onComplete={() => {
                                 setUserFeedback('correct');
                                 setShowAnswer(true);
+                                registerResolution(attempts);
                             }}
                         />
                     </div>
@@ -472,9 +577,14 @@ const DynamicGameModule = ({ type, icon: Icon, color }) => {
                                         if (val.toString().toLowerCase() === current.respuesta.toLowerCase()) {
                                             setUserFeedback('correct');
                                             setShowAnswer(true);
+                                            registerResolution(attempts);
                                         } else {
                                             setUserFeedback('wrong');
-                                            setTimeout(() => setUserFeedback('idle'), 1000);
+                                            setAttempts(a => a + 1);
+                                            const details = analyzeError(val.toString(), current.respuesta, type, current);
+                                            setErrorDetails(details);
+                                            setShakeCard(true);
+                                            setTimeout(() => setShakeCard(false), 500);
                                         }
                                     }}
                                     style={{
@@ -498,6 +608,39 @@ const DynamicGameModule = ({ type, icon: Icon, color }) => {
                         <p style={{ textAlign: 'center', fontSize: '0.75rem', marginTop: '1rem', color: 'var(--text-muted)' }}>
                             Selecciona la pieza que completa la secuencia lógica
                         </p>
+
+                        {/* Retroalimentación pedagógica para rompecabezas sin imagen */}
+                        {userFeedback === 'wrong' && errorDetails && (
+                            <div className="pedagogical-feedback fade-in" style={{
+                                marginTop: '1.25rem',
+                                padding: '1rem',
+                                borderRadius: '8px',
+                                borderLeft: '4px solid #f59e0b',
+                                background: 'rgba(245, 158, 11, 0.08)',
+                                color: 'var(--text-primary)',
+                                textAlign: 'left'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                                    <HelpCircle size={18} color="#f59e0b" />
+                                    <span style={{ fontWeight: 800, color: '#f59e0b', fontSize: '0.9rem', textTransform: 'uppercase' }}>
+                                        Retroalimentación: {errorDetails.tipo}
+                                    </span>
+                                </div>
+                                <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', lineHeight: '1.4' }}>
+                                    {errorDetails.explicacion}
+                                </p>
+                                <div style={{ 
+                                    fontSize: '0.8rem', 
+                                    fontStyle: 'italic', 
+                                    color: 'var(--text-muted)', 
+                                    borderTop: '1px solid rgba(245, 158, 11, 0.2)', 
+                                    paddingTop: '0.5rem', 
+                                    marginTop: '0.5rem' 
+                                }}>
+                                    <strong>Pista:</strong> {errorDetails.pista}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
 
@@ -522,6 +665,39 @@ const DynamicGameModule = ({ type, icon: Icon, color }) => {
                         >
                             Verificar Respuesta
                         </Button>
+
+                        {/* Retroalimentación pedagógica para trivias, adivinanzas, paradojas */}
+                        {userFeedback === 'wrong' && errorDetails && (
+                            <div className="pedagogical-feedback fade-in" style={{
+                                marginTop: '1.25rem',
+                                padding: '1rem',
+                                borderRadius: '8px',
+                                borderLeft: '4px solid #f59e0b',
+                                background: 'rgba(245, 158, 11, 0.08)',
+                                color: 'var(--text-primary)',
+                                textAlign: 'left'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                                    <HelpCircle size={18} color="#f59e0b" />
+                                    <span style={{ fontWeight: 800, color: '#f59e0b', fontSize: '0.9rem', textTransform: 'uppercase' }}>
+                                        Retroalimentación: {errorDetails.tipo}
+                                    </span>
+                                </div>
+                                <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', lineHeight: '1.4' }}>
+                                    {errorDetails.explicacion}
+                                </p>
+                                <div style={{ 
+                                    fontSize: '0.8rem', 
+                                    fontStyle: 'italic', 
+                                    color: 'var(--text-muted)', 
+                                    borderTop: '1px solid rgba(245, 158, 11, 0.2)', 
+                                    paddingTop: '0.5rem', 
+                                    marginTop: '0.5rem' 
+                                }}>
+                                    <strong>Pista:</strong> {errorDetails.pista}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

@@ -18,18 +18,59 @@ class HistorialResolucionesView(APIView):
         serializer = ResolucionSerializer(resoluciones, many=True)
         return Response(serializer.data)
 
+from django.utils import timezone
+
 class RegistrarResolucionView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pk):
         try:
             contenido = ContenidoLogico.objects.get(pk=pk)
+            tiempo = int(request.data.get('tiempo_usado', 0))
+            intentos_req = int(request.data.get('intentos', 1))
+            
             resolucion, created = Resolucion.objects.get_or_create(
                 usuario=request.user,
                 contenido=contenido,
-                defaults={'completado': True}
+                defaults={
+                    'completado': True,
+                    'intentos': intentos_req,
+                    'tiempo_usado': tiempo,
+                    'historial_intentos': [
+                        {
+                            'n_intento': i,
+                            'fecha': timezone.now().isoformat(),
+                            'tiempo_usado': round(tiempo / intentos_req) if i == intentos_req else 0,
+                            'resultado': 'Completado' if i == intentos_req else 'Incorrecto'
+                        } for i in range(1, intentos_req + 1)
+                    ]
+                }
             )
-            return Response({'status': 'success', 'created': created})
+            
+            if not created:
+                start_intento = resolucion.intentos + 1
+                resolucion.intentos += intentos_req
+                resolucion.tiempo_usado += tiempo
+                resolucion.completado = True
+                
+                # Anexar al historial
+                historial = resolucion.historial_intentos or []
+                for i in range(start_intento, resolucion.intentos + 1):
+                    historial.append({
+                        'n_intento': i,
+                        'fecha': timezone.now().isoformat(),
+                        'tiempo_usado': round(tiempo / intentos_req) if i == resolucion.intentos else 0,
+                        'resultado': 'Completado' if i == resolucion.intentos else 'Incorrecto'
+                    })
+                resolucion.historial_intentos = historial
+                resolucion.save()
+                
+            return Response({
+                'status': 'success',
+                'created': created,
+                'intentos': resolucion.intentos,
+                'tiempo_usado': resolucion.tiempo_usado
+            })
         except ContenidoLogico.DoesNotExist:
             return Response({'error': 'Contenido no encontrado'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -83,6 +124,8 @@ class ContenidoLogicoViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         queryset = ContenidoLogico.objects.all().order_by('-fecha_creacion')
+        if self.request.user and self.request.user.is_authenticated and self.request.user.rol == 'ESTUDIANTE':
+            queryset = queryset.filter(activo=True)
         tipo = self.request.query_params.get('tipo')
         if tipo:
             queryset = queryset.filter(tipo=tipo)
@@ -95,37 +138,127 @@ class ContenidoLogicoViewSet(viewsets.ModelViewSet):
             permission_classes = [IsDocenteOrAdmin]
         return [permission() for permission in permission_classes]
 
+    def destroy(self, request, *args, **kwargs):
+        if request.user.rol == 'DOCENTE':
+            return Response({'error': 'El docente no tiene permisos para eliminar registros del sistema.'}, status=status.HTTP_403_FORBIDDEN)
+        return super().destroy(request, *args, **kwargs)
+
 class ProgresoEstudiantesView(APIView):
     permission_classes = [IsDocenteOrAdmin]
 
     def get(self, request):
-        # Listar estudiantes con su conteo de resoluciones
+        seccion = request.query_params.get('seccion')
+        juego_id = request.query_params.get('juego_id')
+
+        # Base query
+        estudiantes = Usuario.objects.filter(rol='ESTUDIANTE')
+        if seccion:
+            estudiantes = estudiantes.filter(seccion=seccion)
+
+        total_desafios = ContenidoLogico.objects.count()
         estudiantes_data = []
-        estudiantes = Usuario.objects.filter(rol='ESTUDIANTE').annotate(
-            total_resoluciones=Count('resoluciones', filter=Q(resoluciones__completado=True))
-        )
-        
+
         for est in estudiantes:
-            # Obtener últimas 3 resoluciones de cada estudiante
-            ultimas_resoluciones = Resolucion.objects.filter(usuario=est).order_by('-fecha_completada')[:3]
-            res_serializer = ResolucionSerializer(ultimas_resoluciones, many=True)
-            
-            estudiantes_data.append({
+            est_info = {
                 'id': est.id,
                 'nombres': est.nombres,
                 'apellidos': est.apellidos,
                 'correo': est.correo,
-                'total_resoluciones': est.total_resoluciones,
-                'area_estudios': est.area_estudios,
-                'historial': res_serializer.data
+                'seccion': est.seccion or 'Sección A',
+                'sexo': est.get_sexo_display() if est.sexo else 'Masculino',
+                'area_estudios': est.area_estudios or 'Ingeniería en Sistemas',
+            }
+
+            if juego_id:
+                if juego_id.startswith('game_'):
+                    try:
+                        game_pk = int(juego_id.split('_')[1])
+                        res = Resolucion.objects.filter(usuario=est, contenido_id=game_pk).first()
+                        if res:
+                            est_info['intentos'] = res.intentos
+                            est_info['tiempo_usado'] = res.tiempo_usado
+                            est_info['calificacion'] = "Completado" if res.completado else "Incompleto"
+                            est_info['aprobado'] = res.completado
+                            est_info['historial'] = res.historial_intentos or []
+                        else:
+                            est_info['intentos'] = 0
+                            est_info['tiempo_usado'] = 0
+                            est_info['calificacion'] = "Pendiente"
+                            est_info['aprobado'] = False
+                            est_info['historial'] = []
+                    except (ValueError, IndexError):
+                        pass
+                elif juego_id.startswith('eval_'):
+                    try:
+                        eval_pk = int(juego_id.split('_')[1])
+                        resultados = ResultadoEvaluacion.objects.filter(estudiante=est, evaluacion_id=eval_pk).order_by('-fecha')
+                        if resultados.exists():
+                            latest = resultados.first()
+                            est_info['intentos'] = resultados.count()
+                            est_info['tiempo_usado'] = sum(r.tiempo_usado for r in resultados)
+                            est_info['calificacion'] = f"{latest.puntaje}/{latest.total_preguntas} ({round(latest.puntaje / latest.total_preguntas * 100)}%)"
+                            est_info['aprobado'] = latest.aprobado
+                            est_info['historial'] = [
+                                {
+                                    'n_intento': len(resultados) - idx,
+                                    'fecha': r.fecha.isoformat(),
+                                    'tiempo_usado': r.tiempo_usado,
+                                    'resultado': f"Aprobado ({r.puntaje}/{r.total_preguntas})" if r.aprobado else f"Reprobado ({r.puntaje}/{r.total_preguntas})"
+                                } for idx, r in enumerate(resultados)
+                            ]
+                        else:
+                            est_info['intentos'] = 0
+                            est_info['tiempo_usado'] = 0
+                            est_info['calificacion'] = "Sin evaluar"
+                            est_info['aprobado'] = False
+                            est_info['historial'] = []
+                    except (ValueError, IndexError):
+                        pass
+            else:
+                total_resoluciones = Resolucion.objects.filter(usuario=est, completado=True).count()
+                est_info['total_resoluciones'] = total_resoluciones
+                ultimas = Resolucion.objects.filter(usuario=est).order_by('-fecha_completada')[:3]
+                est_info['historial'] = ResolucionSerializer(ultimas, many=True).data
+
+            estudiantes_data.append(est_info)
+
+        secciones_disponibles = list(Usuario.objects.filter(rol='ESTUDIANTE').values_list('seccion', flat=True).distinct())
+        secciones_disponibles = [s for s in secciones_disponibles if s]
+        if "Sección A" not in secciones_disponibles:
+            secciones_disponibles.append("Sección A")
+
+        juegos_disponibles = []
+        for g in ContenidoLogico.objects.all().order_by('tipo', 'titulo'):
+            juegos_disponibles.append({
+                'id': f"game_{g.id}",
+                'titulo': f"{g.tipo.capitalize()}: {g.titulo}",
+                'tipo': 'Juego'
             })
-        
-        total_desafios = ContenidoLogico.objects.count()
-        
+        for ev in Evaluacion.objects.all().order_by('titulo'):
+            juegos_disponibles.append({
+                'id': f"eval_{ev.id}",
+                'titulo': f"Evaluación: {ev.titulo}",
+                'tipo': 'Evaluación'
+            })
+
+        total_m = estudiantes.filter(sexo='M').count()
+        total_f = estudiantes.filter(sexo='F').count()
+
+        distribucion_seccion = {}
+        for sec in secciones_disponibles:
+            distribucion_seccion[sec] = estudiantes.filter(seccion=sec).count()
+
         return Response({
             'estudiantes': estudiantes_data,
+            'secciones_disponibles': secciones_disponibles,
+            'juegos_disponibles': juegos_disponibles,
             'meta': {
-                'total_desafios': total_desafios
+                'total_desafios': total_desafios,
+                'distribucion_sexo': {
+                    'Masculino': total_m,
+                    'Femenino': total_f
+                },
+                'distribucion_seccion': distribucion_seccion
             }
         })
 
@@ -188,6 +321,11 @@ class EvaluacionViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(creado_por=self.request.user)
 
+    def destroy(self, request, *args, **kwargs):
+        if request.user.rol == 'DOCENTE':
+            return Response({'error': 'El docente no tiene permisos para eliminar registros del sistema.'}, status=status.HTTP_403_FORBIDDEN)
+        return super().destroy(request, *args, **kwargs)
+
 
 class ListarEvaluacionesEstudianteView(APIView):
     """Lista evaluaciones activas para estudiantes (sin respuestas correctas)"""
@@ -213,6 +351,8 @@ class ResponderEvaluacionView(APIView):
             )
 
         respuestas = request.data.get('respuestas', {})
+        tiempo_usado = int(request.data.get('tiempo_usado', 0))
+        
         if not respuestas:
             return Response(
                 {'error': 'Debes enviar tus respuestas.'},
@@ -248,7 +388,8 @@ class ResponderEvaluacionView(APIView):
             respuestas=respuestas,
             puntaje=correctas,
             total_preguntas=total,
-            aprobado=aprobado
+            aprobado=aprobado,
+            tiempo_usado=tiempo_usado
         )
 
         return Response({
@@ -258,6 +399,7 @@ class ResponderEvaluacionView(APIView):
             'porcentaje': porcentaje,
             'aprobado': aprobado,
             'umbral': evaluacion.umbral_aprobacion,
+            'tiempo_usado': resultado.tiempo_usado,
             'detalle': detalle
         }, status=status.HTTP_201_CREATED)
 
