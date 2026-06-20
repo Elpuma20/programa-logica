@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import api from '../api';
 import { 
     BrainCircuit, ArrowLeft, Lock, 
@@ -15,7 +15,14 @@ const backgrounds = [
 ];
 
 const ResetPasswordConfirm = () => {
-    const { uid, token } = useParams();
+    const { uid, token: urlToken } = useParams();
+    const location = useLocation();
+    
+    // Extraer token de ruta o de los query params ?token=...
+    const queryParams = new URLSearchParams(location.search);
+    const queryToken = queryParams.get('token');
+    const token = urlToken || queryToken;
+
     const [formData, setFormData] = useState({
         new_password: '',
         confirm_password: ''
@@ -53,11 +60,15 @@ const ResetPasswordConfirm = () => {
 
         setLoading(true);
         try {
-            const res = await api.post('/password-reset-confirm/', {
-                uid: uid,
-                token: token,
-                new_password: formData.new_password
-            });
+            const payload = uid 
+                ? { uid: uid, token: token, new_password: formData.new_password }
+                : { token: token, new_password: formData.new_password };
+                
+            const endpoint = uid 
+                ? '/password-reset-confirm/' 
+                : '/auth/reset-password/';
+
+            const res = await api.post(endpoint, payload);
             setMessage({ type: 'success', text: res.data.success || 'Tu contraseña ha sido restablecida con éxito.' });
             setTimeout(() => navigate('/login'), 3000);
         } catch (err) {

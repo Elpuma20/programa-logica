@@ -7,6 +7,9 @@ from .models import Usuario
 from auditoria.models import Bitacora
 import random
 import string
+import secrets
+from datetime import timedelta
+from django.utils import timezone
 from django.core.mail import EmailMultiAlternatives
 from django.utils.html import strip_tags
 from django.conf import settings
@@ -209,17 +212,21 @@ class SolicitarRecuperacionView(APIView):
     def post(self, request):
         correo = request.data.get('correo')
         try:
-            usuario = Usuario.objects.get(correo=correo)
-            token = default_token_generator.make_token(usuario)
-            uid = urlsafe_base64_encode(force_bytes(usuario.pk))
+            usuario = Usuario.objects.get(correo__iexact=correo.strip())
             
-            # Detectar el origen de la petición para generar el link correcto
+            # Generar token criptográfico
+            token = secrets.token_hex(32)
+            usuario.reset_password_token = token
+            usuario.reset_password_expires = timezone.now() + timedelta(minutes=15)
+            usuario.save()
+            
+            # Detectar origen
             origin = request.headers.get('Origin')
             if not origin:
-                # Fallback para local o producción si no hay Origin
                 origin = "https://edulogica.onrender.com" if not settings.DEBUG else "http://localhost:5173"
             
-            reset_link = f"{origin}/reset-password-confirm/{uid}/{token}"
+            # Formato limpio con parámetro query string
+            reset_link = f"{origin}/reset-password?token={token}"
 
             subject = 'Restablecimiento de contraseña - EduLógica'
             html_content = f"""
@@ -227,6 +234,7 @@ class SolicitarRecuperacionView(APIView):
                 <h2 style="color: #2563eb; text-align: center;">Restablecimiento de contraseña</h2>
                 <p>Hola <strong>{usuario.nombres}</strong>,</p>
                 <p>Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en <strong>EduLógica</strong>.</p>
+                <p>Este enlace es de un solo uso y expirará en exactamente 15 minutos.</p>
                 <p>Para continuar, haz clic en el siguiente botón:</p>
                 <div style="text-align: center; margin: 35px 0;">
                     <a href="{reset_link}" style="background: #2563eb; color: #ffffff !important; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block; box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);">
@@ -241,14 +249,12 @@ class SolicitarRecuperacionView(APIView):
             """
             
             text_content = strip_tags(html_content)
-            msg = EmailMultiAlternatives(subject, text_content, settings.DEFAULT_FROM_EMAIL, [correo])
+            msg = EmailMultiAlternatives(subject, text_content, settings.DEFAULT_FROM_EMAIL, [usuario.correo])
             msg.attach_alternative(html_content, "text/html")
             
-            # Prioridad
             msg.extra_headers['X-Priority'] = '1 (Highest)'
             msg.extra_headers['Importance'] = 'High'
             
-            # Enviar de forma asíncrona para evitar timeouts en producción, pero capturando errores
             def send_async_recuperacion(message, target_email):
                 try:
                     message.send(fail_silently=False)
@@ -258,14 +264,13 @@ class SolicitarRecuperacionView(APIView):
                     logger.error(f"Error enviando correo de recuperación en segundo plano a {target_email}: {ex}")
 
             import threading
-            email_thread = threading.Thread(target=send_async_recuperacion, args=(msg, correo))
+            email_thread = threading.Thread(target=send_async_recuperacion, args=(msg, usuario.correo))
             email_thread.daemon = True
             email_thread.start()
             
-            return Response({'message': 'Se ha enviado un enlace de recuperación a tu correo.'}, status=status.HTTP_200_OK)
+            return Response({'message': 'Si el correo está registrado, recibirás un enlace de recuperación.'}, status=status.HTTP_200_OK)
         except Usuario.DoesNotExist:
-            # Por seguridad, respondemos lo mismo aunque no exista el usuario
-            return Response({'message': 'Se ha enviado un enlace de recuperación a tu correo.'}, status=status.HTTP_200_OK)
+            return Response({'message': 'Si el correo está registrado, recibirás un enlace de recuperación.'}, status=status.HTTP_200_OK)
         except Exception as e:
             print(f"Error en recuperación: {e}")
             return Response({'error': 'Error al procesar la solicitud.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -274,22 +279,44 @@ class ConfirmarRecuperacionView(APIView):
     permission_classes = [permissions.AllowAny]
     
     def post(self, request):
-        uidb64 = request.data.get('uid')
         token = request.data.get('token')
         new_password = request.data.get('new_password')
         
-        try:
-            uid = force_str(urlsafe_base64_decode(uidb64))
-            usuario = Usuario.objects.get(pk=uid)
+        if not token or not new_password:
+            return Response({'error': 'Faltan datos obligatorios.'}, status=status.HTTP_400_BAD_REQUEST)
             
-            if default_token_generator.check_token(usuario, token):
-                usuario.set_password(new_password)
+        try:
+            usuario = Usuario.objects.get(reset_password_token=token)
+            
+            # Validar expiración
+            if usuario.reset_password_expires and usuario.reset_password_expires < timezone.now():
+                usuario.reset_password_token = None
+                usuario.reset_password_expires = None
                 usuario.save()
-                return Response({'success': 'Tu contraseña ha sido restablecida con éxito.'}, status=status.HTTP_200_OK)
-            else:
-                return Response({'error': 'El enlace ha expirado o ya ha sido utilizado.'}, status=status.HTTP_400_BAD_REQUEST)
-        except (TypeError, ValueError, OverflowError, Usuario.DoesNotExist) as e:
-            return Response({'error': 'El enlace de recuperación es inválido.'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'El enlace ha expirado.'}, status=status.HTTP_400_BAD_REQUEST)
+                
+            # Establecer contraseña
+            usuario.set_password(new_password)
+            usuario.reset_password_token = None
+            usuario.reset_password_expires = None
+            usuario.save()
+            
+            return Response({'success': 'Tu contraseña ha sido restablecida con éxito.'}, status=status.HTTP_200_OK)
+            
+        except Usuario.DoesNotExist:
+            # Soporte de retrocompatibilidad con formato antiguo uid/token
+            uidb64 = request.data.get('uid')
+            if uidb64:
+                try:
+                    uid = force_str(urlsafe_base64_decode(uidb64))
+                    usuario = Usuario.objects.get(pk=uid)
+                    if default_token_generator.check_token(usuario, token):
+                        usuario.set_password(new_password)
+                        usuario.save()
+                        return Response({'success': 'Tu contraseña ha sido restablecida con éxito.'}, status=status.HTTP_200_OK)
+                except Exception:
+                    pass
+            return Response({'error': 'El enlace de recuperación es inválido o ya ha sido utilizado.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class AdminEnviarResetPasswordView(APIView):

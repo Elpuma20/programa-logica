@@ -56,7 +56,7 @@ const ScrollToTop = () => {
 const MainLayout = ({ children }) => {
     const location = useLocation();
     const authPaths = ['/', '/login', '/register', '/recuperar'];
-    const isAuthPage = authPaths.includes(location.pathname) || location.pathname.startsWith('/reset-password-confirm');
+    const isAuthPage = authPaths.includes(location.pathname) || location.pathname.startsWith('/reset-password-confirm') || location.pathname.startsWith('/reset-password');
     
     return (
         <main className={isAuthPage ? 'main-content-auth' : 'main-content-app'}>
@@ -81,7 +81,7 @@ const AppContent = () => {
   const FooterContainer = () => {
     const location = useLocation();
     const authPaths = ['/', '/login', '/register', '/recuperar'];
-    const isAuthPage = authPaths.includes(location.pathname) || location.pathname.startsWith('/reset-password-confirm');
+    const isAuthPage = authPaths.includes(location.pathname) || location.pathname.startsWith('/reset-password-confirm') || location.pathname.startsWith('/reset-password');
     if (isAuthPage) return null;
     return <Footer />;
   };
@@ -97,6 +97,7 @@ const AppContent = () => {
             <Route path="/login" element={token ? <Navigate to="/dashboard" /> : <Login />} />
             <Route path="/register" element={token ? <Navigate to="/dashboard" /> : <Register />} />
             <Route path="/recuperar" element={<PasswordRecovery />} />
+            <Route path="/reset-password" element={<ResetPasswordConfirm />} />
             <Route path="/reset-password-confirm/:uid/:token" element={<ResetPasswordConfirm />} />
             <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
             <Route path="/perfil" element={<PrivateRoute><Profile /></PrivateRoute>} />

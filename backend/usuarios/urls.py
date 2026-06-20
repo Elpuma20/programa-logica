@@ -16,6 +16,8 @@ urlpatterns = [
     path('change-password/', CambioPasswordView.as_view(), name='change-password'),
     path('password-reset/', SolicitarRecuperacionView.as_view(), name='password-reset-request'),
     path('password-reset-confirm/', ConfirmarRecuperacionView.as_view(), name='password-reset-confirm'),
+    path('auth/forgot-password/', SolicitarRecuperacionView.as_view(), name='forgot-password'),
+    path('auth/reset-password/', ConfirmarRecuperacionView.as_view(), name='reset-password'),
     path('admin-reset-password/<int:pk>/', AdminEnviarResetPasswordView.as_view(), name='admin-reset-password'),
 ]
 
