@@ -141,13 +141,9 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173').rstrip('/')
 
 # CORS & CSRF
-CORS_ALLOW_ALL_ORIGINS = False
-CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = [
-    FRONTEND_URL,
-    "http://127.0.0.1:5173",
-    "http://localhost:5173",
-]
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = False
+CORS_ALLOWED_ORIGINS = [] # No necesario si ALLOW_ALL_ORIGINS es True
 
 # Agregar dominios adicionales si existen en la variable de entorno
 cors_extra = os.environ.get('CORS_EXTRA_ORIGINS')
