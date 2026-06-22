@@ -10,7 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +24,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-5xv7ic7mn$%e8fh^%iac$8zum252*ig+y7ziy=lm*a_-@(zqw_'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-5xv7ic7mn$%e8fh^%iac$8zum252*ig+y7ziy=lm*a_-@(zqw_')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = ['edulogica.onrender.com', 'localhost', '127.0.0.1']
+allowed_hosts_env = os.environ.get('ALLOWED_HOSTS')
+if allowed_hosts_env:
+    ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(',')]
+else:
+    ALLOWED_HOSTS = ['edulogica.onrender.com', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -128,18 +136,34 @@ USE_I18N = True
 
 USE_TZ = True
 
-ALLOWED_HOSTS = ['edulogica.onrender.com', 'edulogica-m.onrender.com', '.onrender.com', 'localhost', '127.0.0.1']
-
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-CORS_ALLOW_ALL_ORIGINS = True
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173').rstrip('/')
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://edulogica.onrender.com",
-    "https://edulogica-m.onrender.com",
-    "https://*.onrender.com",
+# CORS & CSRF
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    FRONTEND_URL,
+    "http://127.0.0.1:5173",
+    "http://localhost:5173",
 ]
 
+# Agregar dominios adicionales si existen en la variable de entorno
+cors_extra = os.environ.get('CORS_EXTRA_ORIGINS')
+if cors_extra:
+    CORS_ALLOWED_ORIGINS.extend([origin.strip().rstrip('/') for origin in cors_extra.split(',')])
+
+csrf_trusted_origins_env = os.environ.get('CSRF_TRUSTED_ORIGINS')
+if csrf_trusted_origins_env:
+    CSRF_TRUSTED_ORIGINS = [origin.strip().rstrip('/') for origin in csrf_trusted_origins_env.split(',')]
+else:
+    CSRF_TRUSTED_ORIGINS = [
+        FRONTEND_URL,
+        "https://edulogica.onrender.com",
+        "https://edulogica-m.onrender.com",
+        "https://*.onrender.com",
+    ]
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -160,7 +184,20 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-# Email Configuration (RESEND API - Bypasses SMTP Port Blocks)
-EMAIL_BACKEND = 'plataforma.email_backend.ResendEmailBackend'
-RESEND_API_KEY = 're_3o2qJF61_H1isGm8QQECjMQeJGvfmoW5Q'  # Reemplazar con tu API Key de resend.com
-DEFAULT_FROM_EMAIL = 'onboarding@resend.dev'
+
+# Email Configuration (Dynamic API & SMTP support)
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'plataforma.email_backend.ResendEmailBackend')
+RESEND_API_KEY = os.environ.get('RESEND_API_KEY', 're_3o2qJF61_H1isGm8QQECjMQeJGvfmoW5Q')
+
+# SMTP settings (fallback if EMAIL_BACKEND is set to django.core.mail.backends.smtp.EmailBackend)
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 465))
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+
+# Configuración segura para producción (TLS/SSL)
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'False').lower() == 'true'
+EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'True').lower() == 'true'
+EMAIL_TIMEOUT = int(os.environ.get('EMAIL_TIMEOUT', 10))
+
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'onboarding@resend.dev')

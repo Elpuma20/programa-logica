@@ -162,32 +162,44 @@ const Register = () => {
                             />
                         </div>
 
-                        <Input 
-                            label="Contraseña"
-                            name="password"
-                            type={showPassword ? "text" : "password"}
-                            placeholder="Crea una contraseña segura"
-                            value={formData.password}
-                            onChange={handleChange}
-                            required
-                            rightElement={
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    style={{
-                                        background: 'none',
-                                        border: 'none',
-                                        cursor: 'pointer',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        color: 'var(--text-muted)',
-                                        padding: '4px'
-                                    }}
-                                >
-                                    {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
-                                </button>
-                            }
-                        />
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
+                            <Input 
+                                label="Número de Teléfono (WhatsApp)"
+                                name="telefono"
+                                type="tel"
+                                placeholder="+58..."
+                                value={formData.telefono}
+                                onChange={handleChange}
+                                required
+                                helpText="Debe incluir el código de país (+58)"
+                            />
+                            <Input 
+                                label="Contraseña"
+                                name="password"
+                                type={showPassword ? "text" : "password"}
+                                placeholder="Crea una contraseña segura"
+                                value={formData.password}
+                                onChange={handleChange}
+                                required
+                                rightElement={
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            color: 'var(--text-muted)',
+                                            padding: '4px'
+                                        }}
+                                    >
+                                        {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
+                                    </button>
+                                }
+                            />
+                        </div>
 
                         {error && (
                             <div className="fade-in" style={{ 

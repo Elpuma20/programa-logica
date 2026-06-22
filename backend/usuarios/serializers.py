@@ -18,6 +18,13 @@ class RegistroSerializer(serializers.ModelSerializer):
         user = Usuario.objects.create_user(**validated_data)
         return user
 
+    def validate_telefono(self, value):
+        if not value:
+            raise serializers.ValidationError("El número de teléfono es obligatorio.")
+        if not value.startswith('+'):
+            raise serializers.ValidationError("El número de teléfono debe incluir el código de país (ej. +58).")
+        return value
+
 class LoginSerializer(serializers.Serializer):
     correo = serializers.CharField()
     password = serializers.CharField()

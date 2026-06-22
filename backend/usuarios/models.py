@@ -24,7 +24,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     semestre = models.CharField(max_length=20, null=True, blank=True)
     area_estudios = models.CharField(max_length=100, null=True, blank=True)
     correo = models.EmailField(unique=True)
-    telefono = models.CharField(max_length=20, null=True, blank=True)
+    telefono = models.CharField(max_length=20, unique=True, null=True, blank=True)
     direccion = models.TextField(null=True, blank=True)
     seccion = models.CharField(max_length=50, null=True, blank=True, default="Sección A")
     sexo = models.CharField(max_length=10, choices=[('M', 'Masculino'), ('F', 'Femenino')], null=True, blank=True, default="M")
@@ -42,6 +42,8 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     rol = models.CharField(max_length=20, choices=ROLES, default='ESTUDIANTE')
     reset_password_token = models.CharField(max_length=100, null=True, blank=True)
     reset_password_expires = models.DateTimeField(null=True, blank=True)
+    reset_code = models.CharField(max_length=6, null=True, blank=True)
+    reset_code_expires = models.DateTimeField(null=True, blank=True)
     
     objects = UsuarioManager()
     

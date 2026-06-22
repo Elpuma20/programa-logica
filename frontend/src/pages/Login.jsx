@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import { useAuth } from '../context/AuthContext';
-import { AlertCircle, Eye, EyeOff, User, Lock, ArrowRight, ShieldCheck, Mail, CreditCard, BrainCircuit } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff, User, Lock, ArrowRight, ShieldCheck, Mail, CreditCard, BrainCircuit, Phone } from 'lucide-react';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 
@@ -23,6 +23,7 @@ const Login = () => {
     const [regNombre, setRegNombre] = useState('');
     const [regCedula, setRegCedula] = useState('');
     const [regCorreo, setRegCorreo] = useState('');
+    const [regTelefono, setRegTelefono] = useState('');
     const [regPassword, setRegPassword] = useState('');
     const [regConfirm, setRegConfirm] = useState('');
 
@@ -41,7 +42,7 @@ const Login = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleGoogleLogin = useCallback(() => {
-        // REEMPLAZA EL VALOR DE ABAJO CON TU CLIENT ID OBTENIDO DE GOOGLE CLOUD
+
         const clientId = '20002938503-ek8tp28lunnho7014vni06unk4k739rb.apps.googleusercontent.com';
 
         const redirectUri = `${window.location.origin}/dashboard`;
@@ -93,6 +94,7 @@ const Login = () => {
                 nombres: nombres,
                 apellidos: apellidos,
                 correo: regCorreo,
+                telefono: regTelefono,
                 password: regPassword,
             };
             const res = await api.post('/register/', formData);
@@ -304,6 +306,13 @@ const Login = () => {
                                     <div style={{ position: 'relative' }}>
                                         <div className="auth-input-icon"><Mail size={18} /></div>
                                         <input className="input-field auth-input-field" type="email" placeholder="usuario@edu" value={regCorreo} onChange={(e) => setRegCorreo(e.target.value)} required />
+                                    </div>
+                                </div>
+                                <div className="input-group">
+                                    <label className="auth-input-label">Teléfono (WhatsApp)</label>
+                                    <div style={{ position: 'relative' }}>
+                                        <div className="auth-input-icon"><Phone size={18} /></div>
+                                        <input className="input-field auth-input-field" type="tel" placeholder="+58..." value={regTelefono} onChange={(e) => setRegTelefono(e.target.value)} required />
                                     </div>
                                 </div>
                                 <div className="auth-password-grid">

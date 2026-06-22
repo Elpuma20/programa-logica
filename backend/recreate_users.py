@@ -44,6 +44,7 @@ def recreate_users():
         apellidos='Lógica',
         rol='DOCENTE',
         area_estudios='Ciencias Exactas',
+        telefono='+584120000001',
         is_verified=True,
     )
     print(f"✅ Docente recreado -> correo: {docente_email} | password: {docente_password}")

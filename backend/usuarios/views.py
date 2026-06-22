@@ -78,6 +78,8 @@ class RegistroView(APIView):
                 import logging
                 logger = logging.getLogger(__name__)
                 logger.error(f"Error al iniciar el hilo de correo de verificación a {user.correo}: {e}", exc_info=True)
+                import sys
+                sys.stderr.write(f"[SMTP ERROR] Error enviando correo a {user.correo}: {str(e)}\n")
             
             return Response({
                 'message': 'Usuario registrado. Por favor verifique su correo.',
@@ -210,93 +212,94 @@ class SolicitarRecuperacionView(APIView):
     permission_classes = [permissions.AllowAny]
     
     def post(self, request):
-        correo = request.data.get('correo')
+        phone_or_email = request.data.get('phone') or request.data.get('correo')
+        if not phone_or_email:
+            return Response({'error': 'Proporciona tu teléfono o correo.'}, status=status.HTTP_400_BAD_REQUEST)
+        
         try:
-            usuario = Usuario.objects.get(correo__iexact=correo.strip())
+            from django.db.models import Q
+            usuario = Usuario.objects.get(Q(correo__iexact=phone_or_email.strip()) | Q(telefono=phone_or_email.strip()))
             
-            # Generar token criptográfico
-            token = secrets.token_hex(32)
-            usuario.reset_password_token = token
-            usuario.reset_password_expires = timezone.now() + timedelta(minutes=15)
+            # Generar código numérico de 6 dígitos
+            code = ''.join(random.choices(string.digits, k=6))
+            usuario.reset_code = code
+            usuario.reset_code_expires = timezone.now() + timedelta(minutes=10)
             usuario.save()
             
-            # Detectar origen
-            origin = request.headers.get('Origin')
-            if not origin:
-                origin = "https://edulogica.onrender.com" if not settings.DEBUG else "http://localhost:5173"
+            # Enviar WhatsApp vía Twilio
+            import requests
+            import os
             
-            # Formato limpio con parámetro query string
-            reset_link = f"{origin}/reset-password?token={token}"
+            TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID')
+            TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN')
+            TWILIO_WHATSAPP_NUMBER = os.environ.get('TWILIO_WHATSAPP_NUMBER')
+            
+            if TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN and TWILIO_WHATSAPP_NUMBER:
+                url = f"https://api.twilio.com/2010-04-01/Accounts/{TWILIO_ACCOUNT_SID}/Messages.json"
+                
+                to_number = usuario.telefono if usuario.telefono.startswith('whatsapp:') else f'whatsapp:{usuario.telefono}'
+                from_number = TWILIO_WHATSAPP_NUMBER if TWILIO_WHATSAPP_NUMBER.startswith('whatsapp:') else f'whatsapp:{TWILIO_WHATSAPP_NUMBER}'
+                
+                payload = {
+                    'From': from_number,
+                    'To': to_number,
+                    'Body': f'Tu código de recuperación para EduLógica es: {code}. Expira en 10 minutos.'
+                }
+                
+                def send_whatsapp(url, payload, auth):
+                    try:
+                        requests.post(url, data=payload, auth=auth)
+                    except Exception as e:
+                        import logging
+                        logger = logging.getLogger(__name__)
+                        logger.error(f"Error enviando WhatsApp: {e}")
+                
+                import threading
+                thread = threading.Thread(target=send_whatsapp, args=(url, payload, (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)))
+                thread.daemon = True
+                thread.start()
+            else:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning("Credenciales de Twilio no configuradas. El mensaje no se enviará.")
+                print(f"[TEST LOCAL] Código de recuperación para {usuario.telefono}: {code}")
 
-            subject = 'Restablecimiento de contraseña - EduLógica'
-            html_content = f"""
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; background: #fff; padding: 20px; border-radius: 12px; border: 1px solid #eee;">
-                <h2 style="color: #2563eb; text-align: center;">Restablecimiento de contraseña</h2>
-                <p>Hola <strong>{usuario.nombres}</strong>,</p>
-                <p>Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en <strong>EduLógica</strong>.</p>
-                <p>Este enlace es de un solo uso y expirará en exactamente 15 minutos.</p>
-                <p>Para continuar, haz clic en el siguiente botón:</p>
-                <div style="text-align: center; margin: 35px 0;">
-                    <a href="{reset_link}" style="background: #2563eb; color: #ffffff !important; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block; box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);">
-                        Restablecer Contraseña
-                    </a>
-                </div>
-                <p style="font-size: 14px; color: #666;">Si el botón no funciona, copia y pega el siguiente enlace en tu navegador:</p>
-                <p style="word-break: break-all; font-size: 12px; color: #2563eb; background: #f8fafc; padding: 10px; border-radius: 6px;">{reset_link}</p>
-                <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;" />
-                <p style="font-size: 13px; color: #999; text-align: center;">Si no solicitaste este cambio, puedes ignorar este correo de forma segura.</p>
-            </div>
-            """
+            return Response({'message': 'Si los datos son correctos, recibirás un mensaje de WhatsApp con el código.'}, status=status.HTTP_200_OK)
             
-            text_content = strip_tags(html_content)
-            msg = EmailMultiAlternatives(subject, text_content, settings.DEFAULT_FROM_EMAIL, [usuario.correo])
-            msg.attach_alternative(html_content, "text/html")
-            
-            msg.extra_headers['X-Priority'] = '1 (Highest)'
-            msg.extra_headers['Importance'] = 'High'
-            
-            def send_async_recuperacion(message, target_email):
-                try:
-                    message.send(fail_silently=False)
-                except Exception as ex:
-                    import logging
-                    logger = logging.getLogger(__name__)
-                    logger.error(f"Error enviando correo de recuperación en segundo plano a {target_email}: {ex}")
-
-            import threading
-            email_thread = threading.Thread(target=send_async_recuperacion, args=(msg, usuario.correo))
-            email_thread.daemon = True
-            email_thread.start()
-            
-            return Response({'message': 'Si el correo está registrado, recibirás un enlace de recuperación.'}, status=status.HTTP_200_OK)
         except Usuario.DoesNotExist:
-            return Response({'message': 'Si el correo está registrado, recibirás un enlace de recuperación.'}, status=status.HTTP_200_OK)
+            return Response({'error': 'No existe un usuario registrado con este número de teléfono o correo.'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            print(f"Error en recuperación: {e}")
+            import sys
+            sys.stderr.write(f"Error in SolicitarRecuperacionView: {str(e)}\n")
             return Response({'error': 'Error al procesar la solicitud.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class ConfirmarRecuperacionView(APIView):
     permission_classes = [permissions.AllowAny]
     
     def post(self, request):
-        token = request.data.get('token')
+        phone_or_email = request.data.get('phone') or request.data.get('correo')
+        code = request.data.get('code')
         new_password = request.data.get('new_password')
         
-        if not token or not new_password:
-            return Response({'error': 'Faltan datos obligatorios.'}, status=status.HTTP_400_BAD_REQUEST)
+        if not phone_or_email or not code or not new_password:
+            return Response({'error': 'Faltan datos obligatorios (teléfono, código, o nueva contraseña).'}, status=status.HTTP_400_BAD_REQUEST)
             
         try:
-            usuario = Usuario.objects.get(reset_password_token=token)
+            from django.db.models import Q
+            usuario = Usuario.objects.get(Q(correo__iexact=phone_or_email.strip()) | Q(telefono=phone_or_email.strip()))
             
-            # Validar expiración
-            if usuario.reset_password_expires and usuario.reset_password_expires < timezone.now():
-                usuario.reset_password_token = None
-                usuario.reset_password_expires = None
-                usuario.save()
-                return Response({'error': 'El enlace ha expirado.'}, status=status.HTTP_400_BAD_REQUEST)
+            # Validar código y expiración
+            if not usuario.reset_code or usuario.reset_code != str(code).strip():
+                return Response({'error': 'El código es inválido.'}, status=status.HTTP_400_BAD_REQUEST)
+                
+            if usuario.reset_code_expires and usuario.reset_code_expires < timezone.now():
+                return Response({'error': 'El código ha expirado.'}, status=status.HTTP_400_BAD_REQUEST)
                 
             # Establecer contraseña
             usuario.set_password(new_password)
+            usuario.reset_code = None
+            usuario.reset_code_expires = None
+            # Eliminar tokens anteriores por si acaso
             usuario.reset_password_token = None
             usuario.reset_password_expires = None
             usuario.save()
@@ -304,19 +307,11 @@ class ConfirmarRecuperacionView(APIView):
             return Response({'success': 'Tu contraseña ha sido restablecida con éxito.'}, status=status.HTTP_200_OK)
             
         except Usuario.DoesNotExist:
-            # Soporte de retrocompatibilidad con formato antiguo uid/token
-            uidb64 = request.data.get('uid')
-            if uidb64:
-                try:
-                    uid = force_str(urlsafe_base64_decode(uidb64))
-                    usuario = Usuario.objects.get(pk=uid)
-                    if default_token_generator.check_token(usuario, token):
-                        usuario.set_password(new_password)
-                        usuario.save()
-                        return Response({'success': 'Tu contraseña ha sido restablecida con éxito.'}, status=status.HTTP_200_OK)
-                except Exception:
-                    pass
-            return Response({'error': 'El enlace de recuperación es inválido o ya ha sido utilizado.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Usuario no encontrado o código inválido.'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            import sys
+            sys.stderr.write(f"Error in ConfirmarRecuperacionView: {str(e)}\n")
+            return Response({'error': 'Error al procesar la solicitud.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class AdminEnviarResetPasswordView(APIView):
@@ -369,6 +364,8 @@ class AdminEnviarResetPasswordView(APIView):
                     import logging
                     logger = logging.getLogger(__name__)
                     logger.error(f"Error enviando correo de cambio de contraseña admin en segundo plano a {target_email}: {ex}")
+                    import sys
+                    sys.stderr.write(f"[SMTP ERROR] Fallo al enviar reset admin a {target_email}: {str(ex)}\n")
 
             import threading
             email_thread = threading.Thread(target=send_async_admin_reset, args=(msg, usuario.correo))
