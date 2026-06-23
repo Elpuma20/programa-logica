@@ -202,6 +202,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Email Configuration (Dynamic API & SMTP support)
 EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'plataforma.email_backend.ResendEmailBackend')
 RESEND_API_KEY = os.environ.get('RESEND_API_KEY', 're_3o2qJF61_H1isGm8QQECjMQeJGvfmoW5Q')
+EMAIL_TIMEOUT = 5
 
 # SMTP settings (fallback if EMAIL_BACKEND is set to django.core.mail.backends.smtp.EmailBackend)
 EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
