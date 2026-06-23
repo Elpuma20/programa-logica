@@ -33,7 +33,14 @@ allowed_hosts_env = os.environ.get('ALLOWED_HOSTS')
 if allowed_hosts_env:
     ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(',')]
 else:
-    ALLOWED_HOSTS = ['edulogica.onrender.com', 'localhost', '127.0.0.1']
+    ALLOWED_HOSTS = [
+        'api.matematicalogica.dev',
+        'backend-edulogica.onrender.com',
+        'matematicalogica.dev',
+        'www.matematicalogica.dev',
+        'localhost',
+        '127.0.0.1'
+    ]
 
 
 # Application definition
@@ -141,9 +148,15 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173').rstrip('/')
 
 # CORS & CSRF
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = False
-CORS_ALLOWED_ORIGINS = [] # No necesario si ALLOW_ALL_ORIGINS es True
+# Se deshabilita ALLOW_ALL_ORIGINS en producción para mayor seguridad, 
+# permitiendo explícitamente los dominios requeridos.
+CORS_ALLOW_ALL_ORIGINS = os.environ.get('CORS_ALLOW_ALL_ORIGINS', 'False').lower() == 'true'
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "https://matematicalogica.dev",
+    "https://www.matematicalogica.dev",
+    "http://localhost:5173", # Local dev
+]
 
 # Agregar dominios adicionales si existen en la variable de entorno
 cors_extra = os.environ.get('CORS_EXTRA_ORIGINS')
@@ -156,8 +169,10 @@ if csrf_trusted_origins_env:
 else:
     CSRF_TRUSTED_ORIGINS = [
         FRONTEND_URL,
-        "https://edulogica.onrender.com",
-        "https://edulogica-m.onrender.com",
+        "https://matematicalogica.dev",
+        "https://www.matematicalogica.dev",
+        "https://api.matematicalogica.dev",
+        "https://backend-edulogica.onrender.com",
         "https://*.onrender.com",
     ]
 
