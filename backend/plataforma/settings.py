@@ -34,13 +34,16 @@ if allowed_hosts_env:
     ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(',')]
 else:
     ALLOWED_HOSTS = [
-        'api.matematicalogica.dev',
-        'backend-edulogica.onrender.com',
-        'matematicalogica.dev',
-        'www.matematicalogica.dev',
-        'localhost',
-        '127.0.0.1'
-    ]
+    'api.matematicalogica.dev',
+    'backend-edulogica.onrender.com',
+    'localhost',
+    '127.0.0.1'
+]
+
+CORS_ALLOWED_ORIGINS = [
+    'https://matematicalogica.dev',
+    'https://www.matematicalogica.dev',
+]
 
 
 # Application definition
@@ -61,10 +64,10 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
