@@ -547,7 +547,7 @@ const DynamicGameModule = ({ type, icon: Icon, color }) => {
                             image={(() => {
                                 if (current.imagen.startsWith('http')) return current.imagen;
                                 const base = import.meta.env.PROD 
-                                    ? 'https://api.matematicalogica.dev' 
+                                    ? 'https://backend-edulogica.onrender.com' 
                                     : 'http://localhost:8000';
                                 return `${base}${current.imagen}`;
                             })()} 
