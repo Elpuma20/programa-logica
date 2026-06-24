@@ -54,7 +54,7 @@ const Login = () => {
             }, 1500);
 
             try {
-                await api.get('/ping/');
+                await api.get('/conexion/');
                 clearTimeout(timer);
                 if (isMounted) {
                     setIsWakingUp(false);
@@ -67,7 +67,7 @@ const Login = () => {
                     }
                     retryInterval = setInterval(async () => {
                         try {
-                            await api.get('/ping/');
+                            await api.get('/conexion/');
                             if (isMounted) {
                                 setIsWakingUp(false);
                             }
@@ -329,8 +329,8 @@ const Login = () => {
                                         <AlertCircle size={18} /> {error}
                                     </div>
                                 )}
-                                <Button type="submit" className="w-full auth-btn-submit" disabled={loading || isWakingUp}>
-                                    {isWakingUp ? 'Iniciando servidor...' : loading ? 'Cargando...' : <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Iniciar Sesión <ArrowRight size={18} style={{ marginLeft: '8px' }} /></span>}
+                                <Button type="submit" className="w-full auth-btn-submit" disabled={loading}>
+                                    {loading ? 'Cargando...' : <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Iniciar Sesión <ArrowRight size={18} style={{ marginLeft: '8px' }} /></span>}
                                 </Button>
 
                                 <div className="auth-divider-container">
