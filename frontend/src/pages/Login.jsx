@@ -40,6 +40,62 @@ const Login = () => {
     const navigate = useNavigate();
     const [currentBg, setCurrentBg] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isWakingUp, setIsWakingUp] = useState(false);
+
+    useEffect(() => {
+        let isMounted = true;
+        let retryInterval = null;
+
+        const checkServer = async () => {
+            const timer = setTimeout(() => {
+                if (isMounted) {
+                    setIsWakingUp(true);
+                }
+            }, 1500);
+
+            try {
+                await api.get('/ping/');
+                clearTimeout(timer);
+                if (isMounted) {
+                    setIsWakingUp(false);
+                }
+            } catch (err) {
+                clearTimeout(timer);
+                if (!err.response) {
+                    if (isMounted) {
+                        setIsWakingUp(true);
+                    }
+                    retryInterval = setInterval(async () => {
+                        try {
+                            await api.get('/ping/');
+                            if (isMounted) {
+                                setIsWakingUp(false);
+                            }
+                            clearInterval(retryInterval);
+                        } catch (retryErr) {
+                            if (retryErr.response) {
+                                if (isMounted) {
+                                    setIsWakingUp(false);
+                                }
+                                clearInterval(retryInterval);
+                            }
+                        }
+                    }, 4000);
+                } else {
+                    if (isMounted) {
+                        setIsWakingUp(false);
+                    }
+                }
+            }
+        };
+
+        checkServer();
+
+        return () => {
+            isMounted = false;
+            if (retryInterval) clearInterval(retryInterval);
+        };
+    }, []);
 
     const handleGoogleLogin = useCallback(() => {
 
@@ -239,13 +295,42 @@ const Login = () => {
                                         </button>
                                     </div>
                                 </div>
+                                {isWakingUp && (
+                                    <div style={{ 
+                                        padding: '0.75rem 1rem', 
+                                        borderRadius: '12px', 
+                                        background: 'rgba(245, 158, 11, 0.1)', 
+                                        color: '#d97706', 
+                                        fontSize: '0.85rem', 
+                                        display: 'flex', 
+                                        flexDirection: 'column',
+                                        gap: '0.25rem', 
+                                        marginBottom: '1rem',
+                                        border: '1px solid rgba(245, 158, 11, 0.2)'
+                                    }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }}>
+                                            <span className="spin" style={{ 
+                                                width: '14px', 
+                                                height: '14px', 
+                                                border: '2px solid #d97706', 
+                                                borderTopColor: 'transparent', 
+                                                borderRadius: '50%', 
+                                                display: 'inline-block'
+                                            }}></span>
+                                            Despertando el servidor...
+                                        </div>
+                                        <p style={{ margin: 0, fontSize: '0.8rem', opacity: 0.9 }}>
+                                            El servidor gratuito de Render se suspende por inactividad. Iniciando... (toma unos 50 seg).
+                                        </p>
+                                    </div>
+                                )}
                                 {error && (
                                     <div style={{ padding: '1rem', borderRadius: '12px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', fontSize: '0.85rem', display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
                                         <AlertCircle size={18} /> {error}
                                     </div>
                                 )}
-                                <Button type="submit" className="w-full auth-btn-submit" disabled={loading}>
-                                    {loading ? 'Cargando...' : <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Iniciar Sesión <ArrowRight size={18} style={{ marginLeft: '8px' }} /></span>}
+                                <Button type="submit" className="w-full auth-btn-submit" disabled={loading || isWakingUp}>
+                                    {isWakingUp ? 'Iniciando servidor...' : loading ? 'Cargando...' : <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Iniciar Sesión <ArrowRight size={18} style={{ marginLeft: '8px' }} /></span>}
                                 </Button>
 
                                 <div className="auth-divider-container">

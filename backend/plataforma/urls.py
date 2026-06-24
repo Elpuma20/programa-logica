@@ -7,12 +7,16 @@ from .admin_views import AdminStatsView, SystemStatusView, SecurityStatusView
 def home(request):
     return JsonResponse({"mensaje": "Bienvenido a la API del Proyecto de Grado", "estado": "activo"})
 
+def ping(request):
+    return JsonResponse({"status": "ok"})
+
 from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
     path('', home, name='home'),
     path('admin/', admin.site.urls),
+    path('api/ping/', ping, name='ping'),
     path('api/', include('usuarios.urls')),
     path('api/logica/', include('logica.urls')),
     path('api/auditoria/', include('auditoria.urls')),
